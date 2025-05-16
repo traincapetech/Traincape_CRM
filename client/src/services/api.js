@@ -136,6 +136,7 @@ export const salesAPI = {
   getById: (id) => api.get(`/api/sales/${id}`),
   create: (saleData) => api.post('/api/sales', saleData),
   createReferenceSale: (saleData) => api.post('/api/sales', { ...saleData, source: 'Reference' }),
+  createLeadPersonSale: (saleData) => api.post('/api/sales', { ...saleData, isLeadPersonSale: true }),
   update: (id, saleData) => api.put(`/api/sales/${id}`, saleData),
   delete: (id) => api.delete(`/api/sales/${id}`),
   updateToken: (id, token) => api.put(`/api/sales/${id}/token`, { token }),
@@ -145,6 +146,15 @@ export const salesAPI = {
     console.log('Using new lead-sales endpoint with filters:', filters);
     return api.get('/api/lead-sales', { params: filters });
   }
+};
+
+// Lead Person Sales API services
+export const leadPersonSalesAPI = {
+  getAll: () => api.get('/api/lead-person-sales'),
+  getById: (id) => api.get(`/api/lead-person-sales/${id}`),
+  create: (saleData) => api.post('/api/lead-person-sales', saleData),
+  update: (id, saleData) => api.put(`/api/lead-person-sales/${id}`, saleData),
+  delete: (id) => api.delete(`/api/lead-person-sales/${id}`)
 };
 
 // Currency API services

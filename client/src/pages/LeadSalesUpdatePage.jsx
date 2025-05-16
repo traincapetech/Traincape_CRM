@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { salesAPI, authAPI } from '../services/api';
+import { salesAPI, authAPI, leadPersonSalesAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout/Layout';
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaTrash } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 
 const LeadSalesUpdatePage = () => {
   const [salesList, setSalesList] = useState([]);
@@ -88,7 +89,7 @@ const LeadSalesUpdatePage = () => {
       setLoading(true);
       setError(null);
 
-      const res = await salesAPI.getLeadSheet();
+      const res = await leadPersonSalesAPI.getAll();
       setSalesList(res.data.data);
     } catch (err) {
       console.error('Error loading sales data:', err);
@@ -162,7 +163,7 @@ const LeadSalesUpdatePage = () => {
       
       console.log('Sending sale data:', saleData);
       
-      const res = await salesAPI.create(saleData);
+      const res = await leadPersonSalesAPI.create(saleData);
       
       if (res.data.success) {
         // Reset form
@@ -220,7 +221,7 @@ const LeadSalesUpdatePage = () => {
       
       console.log('Sending test sale data with hardcoded IDs:', testSaleData);
       
-      const res = await salesAPI.create(testSaleData);
+      const res = await leadPersonSalesAPI.create(testSaleData);
       
       if (res.data.success) {
         console.log('Test sale created successfully:', res.data);
@@ -229,6 +230,25 @@ const LeadSalesUpdatePage = () => {
     } catch (err) {
       console.error('Error creating test sale:', err);
       setError(err.response?.data?.message || 'Failed to create test sale');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle delete sale
+  const handleDeleteSale = async (saleId) => {
+    if (!window.confirm('Are you sure you want to delete this sale?')) {
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      await leadPersonSalesAPI.delete(saleId);
+      toast.success('Sale deleted successfully');
+      loadSalesData();
+    } catch (err) {
+      console.error('Error deleting sale:', err);
+      setError(err.response?.data?.message || 'Failed to delete sale');
     } finally {
       setLoading(false);
     }
@@ -558,6 +578,7 @@ const LeadSalesUpdatePage = () => {
                   <th className="border px-4 py-2">TOTAL COST</th>
                   <th className="border px-4 py-2">TOKEN AMOUNT</th>
                   <th className="border px-4 py-2">LEAD PERSON</th>
+                  <th className="border px-4 py-2">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -577,6 +598,15 @@ const LeadSalesUpdatePage = () => {
                       <td className="border px-4 py-2">{sale.totalCost?.toFixed(2) || '0.00'} {sale.totalCostCurrency || 'USD'}</td>
                       <td className="border px-4 py-2">{sale.tokenAmount?.toFixed(2) || '0.00'} {sale.tokenAmountCurrency || 'USD'}</td>
                       <td className="border px-4 py-2">{sale.leadPerson?.fullName}</td>
+                      <td className="border px-4 py-2">
+                        <button
+                          onClick={() => handleDeleteSale(sale._id)}
+                          className="text-red-500 hover:text-red-700 flex items-center"
+                          title="Delete this sale"
+                        >
+                          <FaTrash className="mr-1" /> Delete
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}

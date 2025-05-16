@@ -54,7 +54,11 @@ const SalesTrackingPage = () => {
     contactNumber: "",
     country: "",
     leadPerson: "",
-    countryCode: "+1"
+    countryCode: "+1",
+    loginId: "",
+    password: "",
+    leadBy: "",
+    saleDate: new Date()
   });
   const [availableLeads, setAvailableLeads] = useState([]);
   const [leadOptions, setLeadOptions] = useState([]);
@@ -174,11 +178,15 @@ const SalesTrackingPage = () => {
             // Ensure all financial fields exist
             amount: parseFloat(sale.totalCost || 0),
             token: parseFloat(sale.tokenAmount || 0),
-            pending: parseFloat(sale.totalCost || 0) - parseFloat(sale.tokenAmount || 0),
+            pending: sale.status === 'Completed' ? 0 : parseFloat(sale.totalCost || 0) - parseFloat(sale.tokenAmount || 0),
             // Ensure we have product info
             product: sale.course || sale.product || 'Unknown',
             // Ensure we have a status
             status: sale.status || 'Pending',
+            // Ensure login credentials are preserved
+            loginId: sale.loginId || '',
+            password: sale.password || '',
+            leadBy: sale.leadBy || ''
           };
           
           return formattedSale;
@@ -278,7 +286,11 @@ const SalesTrackingPage = () => {
       contactNumber: "",
       country: "",
       leadPerson: "",
-      countryCode: "+1"
+      countryCode: "+1",
+      loginId: "",
+      password: "",
+      leadBy: "",
+      saleDate: new Date()
     });
   };
 
@@ -409,6 +421,11 @@ const SalesTrackingPage = () => {
                      extractId(selectedLead, 'createdBy') || 
                      user._id, // Fallback to current user
           
+          // Optional fields - new
+          loginId: newSale.loginId || '',
+          password: newSale.password || '',
+          leadBy: newSale.leadBy || '',
+          
           // Source info
           source: selectedLead.source || selectedLead.SOURSE || '',
           clientRemark: selectedLead.client || selectedLead['CLIENT REMARK'] || '',
@@ -418,12 +435,12 @@ const SalesTrackingPage = () => {
           tokenAmount: parseFloat(newSale.token) || 0,
           
           // Status info
-          pending: parseFloat(newSale.pending) > 0, // Boolean based on if any amount is pending
-          status: 'Pending',
+          pending: newSale.status === 'Completed' ? false : parseFloat(newSale.pending) > 0, // Set to false if status is completed
+          status: newSale.status || 'Pending',
           
           // Creation metadata
           createdBy: user._id,
-          date: new Date() // Use current date
+          date: newSale.saleDate || new Date() // Use selected date or current date
         };
       } else {
         // Process reference sale with manually entered data
@@ -440,6 +457,11 @@ const SalesTrackingPage = () => {
           salesPerson: user._id, // Current user is the sales person
           leadPerson: newSale.leadPerson || user._id, // Use selected lead person or current user
           
+          // Optional fields - new
+          loginId: newSale.loginId || '',
+          password: newSale.password || '',
+          leadBy: newSale.leadBy || '',
+          
           // Source info
           source: 'Reference', // Mark as reference
           isReference: true,
@@ -449,12 +471,12 @@ const SalesTrackingPage = () => {
           tokenAmount: parseFloat(newSale.token) || 0,
           
           // Status info
-          pending: parseFloat(newSale.pending) > 0,
-          status: 'Pending',
+          pending: newSale.status === 'Completed' ? false : parseFloat(newSale.pending) > 0, // Set to false if status is completed
+          status: newSale.status || 'Pending',
           
           // Creation metadata
           createdBy: user._id,
-          date: new Date()
+          date: newSale.saleDate || new Date() // Use selected date or current date
         };
       }
       
@@ -463,7 +485,7 @@ const SalesTrackingPage = () => {
       // Use the API service
       const response = await (newSale.isReference ? 
         salesAPI.createReferenceSale(saleData) : 
-        salesAPI.create(saleData));
+        salesAPI.create({ ...saleData, isLeadPersonSale: false }));
       
       if (response.data && response.data.success) {
         console.log("Sale created successfully:", response.data.data);
@@ -486,7 +508,11 @@ const SalesTrackingPage = () => {
           contactNumber: "",
           country: "",
           leadPerson: "",
-          countryCode: "+1"
+          countryCode: "+1",
+          loginId: "",
+          password: "",
+          leadBy: "",
+          saleDate: new Date()
         });
         
         // Show success message
@@ -575,14 +601,19 @@ const SalesTrackingPage = () => {
       token: token,
       pending: pending,
       status: sale.status || 'Pending',
-      product: sale.product || sale.course || ''
+      product: sale.product || sale.course || '',
+      saleDate: sale.date || new Date(),
+      loginId: sale.loginId || '',
+      password: sale.password || '',
+      leadBy: sale.leadBy || ''
     });
     
     console.log("Edit values initialized:", {
       amount,
       token,
       pending,
-      status: sale.status || 'Pending'
+      status: sale.status || 'Pending',
+      saleDate: sale.date || new Date()
     });
   };
 
@@ -628,9 +659,19 @@ const SalesTrackingPage = () => {
             contactNumber: originalSale.contactNumber,
             email: originalSale.email,
             
+            // Date field - allow selection of past dates
+            date: editValues.saleDate || originalSale.date || new Date(),
+            
             // IDs
             salesPerson: salesPersonId,
             leadPerson: leadPersonId,
+            
+            // Lead by field
+            leadBy: editValues.leadBy || originalSale.leadBy || '',
+            
+            // Login credentials
+            loginId: editValues.loginId || originalSale.loginId || '',
+            password: editValues.password || originalSale.password || '',
             
             // Source info - keep original
             source: originalSale.source,
@@ -641,7 +682,7 @@ const SalesTrackingPage = () => {
             tokenAmount: parseFloat(editValues.token) || 0,
             
             // Status info
-            pending: parseFloat(editValues.pending) > 0, // Boolean based on if any amount is pending
+            pending: editValues.status === 'Completed' ? false : parseFloat(editValues.pending) > 0, // Set to false if status is completed
             status: editValues.status || originalSale.status || 'Pending',
             
             // Flag to indicate if it's a reference sale or not
@@ -697,9 +738,19 @@ const SalesTrackingPage = () => {
         contactNumber: originalSale.contactNumber,
         email: originalSale.email,
         
+        // Date field - allow selection of past dates
+        date: editValues.saleDate || originalSale.date || new Date(),
+        
         // IDs
         salesPerson: salesPersonId,
         leadPerson: leadPersonId,
+        
+        // Lead by field
+        leadBy: editValues.leadBy || originalSale.leadBy || '',
+        
+        // Login credentials
+        loginId: editValues.loginId || originalSale.loginId || '',
+        password: editValues.password || originalSale.password || '',
         
         // Source info - keep original
         source: originalSale.source,
@@ -710,7 +761,7 @@ const SalesTrackingPage = () => {
         tokenAmount: parseFloat(editValues.token) || 0,
         
         // Status info
-        pending: parseFloat(editValues.pending) > 0, // Boolean based on if any amount is pending
+        pending: editValues.status === 'Completed' ? false : parseFloat(editValues.pending) > 0, // Set to false if status is completed
         status: editValues.status || originalSale.status || 'Pending',
         
         // Flag to indicate if it's a reference sale or not
@@ -781,6 +832,10 @@ const SalesTrackingPage = () => {
         token: prev.token ?? 0,
         pending: prev.pending ?? 0,
         status: prev.status || 'Pending',
+        saleDate: prev.saleDate || new Date(),
+        loginId: prev.loginId || '',
+        password: prev.password || '',
+        leadBy: prev.leadBy || '',
         ...prev 
       };
       
@@ -801,6 +856,11 @@ const SalesTrackingPage = () => {
         const amount = field === 'amount' ? parsedValue : parseFloat(current.amount) || 0;
         const token = field === 'token' ? parsedValue : parseFloat(current.token) || 0;
         updates.pending = amount - token;
+      }
+      
+      // If status is changed to "Completed", set pending to 0
+      if (field === 'status' && parsedValue === 'Completed') {
+        updates.pending = 0;
       }
       
       return updates;
@@ -969,9 +1029,15 @@ const SalesTrackingPage = () => {
       
       setEditingSale(saleId);
       
-      // Create a minimal update object with just the status
+      // Create update object with status and all existing fields
       const updatedSale = {
-        status: newStatus
+        status: newStatus,
+        // Keep original login credentials
+        loginId: targetSale.loginId || '',
+        password: targetSale.password || '',
+        leadBy: targetSale.leadBy || '',
+        // Set pending to false (zero) if status is Completed
+        pending: newStatus === 'Completed' ? false : targetSale.pending
       };
       
       console.log('Updating status to:', newStatus);
@@ -982,12 +1048,22 @@ const SalesTrackingPage = () => {
       if (response.data && response.data.success) {
         // Update sales state
         setSales(prevSales => prevSales.map(sale => 
-          sale._id === saleId ? {...sale, status: newStatus} : sale
+          sale._id === saleId ? {
+            ...sale, 
+            status: newStatus,
+            // Also update pending status in local state
+            pending: newStatus === 'Completed' ? false : sale.pending
+          } : sale
         ));
         
         // Also update filtered sales
         setFilteredSales(prevSales => prevSales.map(sale => 
-          sale._id === saleId ? {...sale, status: newStatus} : sale
+          sale._id === saleId ? {
+            ...sale, 
+            status: newStatus,
+            // Also update pending status in local state
+            pending: newStatus === 'Completed' ? false : sale.pending
+          } : sale
         ));
         
         toast.success("Sale status updated successfully!");
@@ -1086,11 +1162,15 @@ const SalesTrackingPage = () => {
             // Ensure all financial fields exist
             amount: parseFloat(sale.totalCost || 0),
             token: parseFloat(sale.tokenAmount || 0),
-            pending: parseFloat(sale.totalCost || 0) - parseFloat(sale.tokenAmount || 0),
+            pending: sale.status === 'Completed' ? 0 : parseFloat(sale.totalCost || 0) - parseFloat(sale.tokenAmount || 0),
             // Ensure we have product info
             product: sale.course || sale.product || 'Unknown',
             // Ensure we have a status
             status: sale.status || 'Pending',
+            // Ensure login credentials are preserved
+            loginId: sale.loginId || '',
+            password: sale.password || '',
+            leadBy: sale.leadBy || ''
           };
           
           return formattedSale;
@@ -1236,7 +1316,16 @@ const SalesTrackingPage = () => {
   const renderSaleRow = (sale) => (
     <tr key={sale._id} className="hover:bg-gray-50">
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm text-gray-900">{formatDate(sale.createdAt || new Date())}</div>
+        {editingSale === sale._id ? (
+          <input
+            type="date"
+            value={editValues.saleDate ? new Date(editValues.saleDate).toISOString().split('T')[0] : new Date(sale.date || sale.createdAt).toISOString().split('T')[0]}
+            onChange={(e) => handleInputChange('saleDate', new Date(e.target.value))}
+            className="w-full px-2 border border-gray-300 rounded"
+          />
+        ) : (
+          <div className="text-sm text-gray-900">{formatDate(sale.date || sale.createdAt || new Date())}</div>
+        )}
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm font-medium text-gray-900">
@@ -1245,6 +1334,28 @@ const SalesTrackingPage = () => {
         <div className="text-xs text-gray-500">
           {sale.product || safeGet(sale, 'leadId.course') || 'No product'}
         </div>
+        {editingSale === sale._id && (
+          <div className="mt-2">
+            <input
+              type="text"
+              placeholder="Lead By (Optional)"
+              value={editValues.leadBy || ''}
+              onChange={(e) => handleInputChange('leadBy', e.target.value)}
+              className="w-full text-xs px-2 py-1 border border-gray-300 rounded"
+            />
+            <div className="text-xs text-gray-500 mt-1 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-gray-400 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Name of person who led this sale</span>
+            </div>
+          </div>
+        )}
+        {editingSale !== sale._id && sale.leadBy && (
+          <div className="text-xs text-gray-600 mt-1">
+            Lead By: {sale.leadBy}
+          </div>
+        )}
       </td>
       <td className="px-6 py-4">
         <div className="flex flex-col space-y-1">
@@ -1275,6 +1386,31 @@ const SalesTrackingPage = () => {
                 <FaEnvelope className="mr-1 text-blue-500" /> 
                 {sale.email || safeGet(sale, 'leadId.email')}
               </button>
+            </div>
+          )}
+          {/* Login Credentials */}
+          {editingSale === sale._id && (
+            <div className="mt-2 flex flex-col space-y-2">
+              <input
+                type="text"
+                placeholder="Login ID (Optional)"
+                value={editValues.loginId || ''}
+                onChange={(e) => handleInputChange('loginId', e.target.value)}
+                className="w-full text-xs px-2 py-1 border border-gray-300 rounded"
+              />
+              <input
+                type="text"
+                placeholder="Password (Optional)"
+                value={editValues.password || ''}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                className="w-full text-xs px-2 py-1 border border-gray-300 rounded"
+              />
+            </div>
+          )}
+          {editingSale !== sale._id && (sale.loginId || sale.password) && (
+            <div className="mt-2 text-xs">
+              {sale.loginId && <div>Login ID: {sale.loginId}</div>}
+              {sale.password && <div>Password: {sale.password}</div>}
             </div>
           )}
         </div>
@@ -1328,11 +1464,13 @@ const SalesTrackingPage = () => {
               value={editValues.pending !== undefined ? editValues.pending.toString() : "0"}
               onChange={(e) => handleInputChange('pending', e.target.value)}
               className="w-24 px-2 pl-7 border border-gray-300 rounded"
+              disabled={editValues.status === 'Completed'}
             />
           </div>
         ) : (
           <div className="text-sm font-medium text-gray-900">
             {formatCurrency(
+              sale.status === 'Completed' ? 0 : 
               sale.pending !== undefined ? sale.pending : 
               (sale.amount || sale.totalCost || 0) - (sale.token || sale.tokenAmount || 0)
             )}
@@ -1583,7 +1721,7 @@ const SalesTrackingPage = () => {
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lead</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact/Login</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Token</th>
@@ -1717,6 +1855,41 @@ const SalesTrackingPage = () => {
                         </select>
                       </div>
                       
+                      {/* Sale Date */}
+                      <div className="col-span-2 md:col-span-1">
+                        <label htmlFor="saleDate" className="block text-sm font-medium text-gray-700">Sale Date</label>
+                        <input
+                          id="saleDate"
+                          type="date"
+                          value={newSale.saleDate ? new Date(newSale.saleDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
+                          onChange={(e) => handleNewSaleChange('saleDate', new Date(e.target.value))}
+                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                      
+                      {/* Lead By (Optional) */}
+                      <div className="col-span-2 md:col-span-1">
+                        <label htmlFor="leadBy" className="block text-sm font-medium text-gray-700">
+                          Lead By (Optional)
+                          <span className="ml-1 inline-block relative group">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 hidden group-hover:block">
+                              Name of the person who led this sale (can be different from the Lead Person assigned in the system)
+                            </span>
+                          </span>
+                        </label>
+                        <input
+                          id="leadBy"
+                          type="text"
+                          value={newSale.leadBy}
+                          onChange={(e) => handleNewSaleChange('leadBy', e.target.value)}
+                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Who led this sale?"
+                        />
+                      </div>
+                      
                       {/* Product (pulled from lead but can be modified) */}
                       <div className="col-span-2">
                         <label htmlFor="product" className="block text-sm font-medium text-gray-700">Product</label>
@@ -1727,6 +1900,31 @@ const SalesTrackingPage = () => {
                           onChange={(e) => handleNewSaleChange('product', e.target.value)}
                           className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                           placeholder="Product or course name"
+                        />
+                      </div>
+                      
+                      {/* Login Credentials (Optional) */}
+                      <div className="col-span-2 md:col-span-1">
+                        <label htmlFor="loginId" className="block text-sm font-medium text-gray-700">Login ID (Optional)</label>
+                        <input
+                          id="loginId"
+                          type="text"
+                          value={newSale.loginId}
+                          onChange={(e) => handleNewSaleChange('loginId', e.target.value)}
+                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Customer login ID"
+                        />
+                      </div>
+                      
+                      <div className="col-span-2 md:col-span-1">
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password (Optional)</label>
+                        <input
+                          id="password"
+                          type="text"
+                          value={newSale.password}
+                          onChange={(e) => handleNewSaleChange('password', e.target.value)}
+                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Customer password"
                         />
                       </div>
                       
@@ -1774,7 +1972,7 @@ const SalesTrackingPage = () => {
                             onChange={(e) => handleNewSaleChange('pending', e.target.value)}
                             className="block w-full pl-7 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             placeholder="0.00"
-                            disabled
+                            disabled={newSale.status === 'Completed'}
                           />
                         </div>
                       </div>
@@ -1809,6 +2007,18 @@ const SalesTrackingPage = () => {
                           onChange={(e) => handleNewSaleChange('customerName', e.target.value)}
                           className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                           placeholder="Enter customer name"
+                        />
+                      </div>
+
+                      {/* Sale Date */}
+                      <div className="col-span-2 md:col-span-1">
+                        <label htmlFor="saleDate" className="block text-sm font-medium text-gray-700">Sale Date</label>
+                        <input
+                          id="saleDate"
+                          type="date"
+                          value={newSale.saleDate ? new Date(newSale.saleDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
+                          onChange={(e) => handleNewSaleChange('saleDate', new Date(e.target.value))}
+                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                         />
                       </div>
                       
@@ -1863,8 +2073,31 @@ const SalesTrackingPage = () => {
                         />
                       </div>
                       
+                      {/* Lead By (Optional) */}
+                      <div className="col-span-2 md:col-span-1">
+                        <label htmlFor="leadBy" className="block text-sm font-medium text-gray-700">
+                          Lead By (Optional)
+                          <span className="ml-1 inline-block relative group">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 hidden group-hover:block">
+                              Name of the person who led this sale (can be different from the Lead Person assigned in the system)
+                            </span>
+                          </span>
+                        </label>
+                        <input
+                          id="leadBy"
+                          type="text"
+                          value={newSale.leadBy}
+                          onChange={(e) => handleNewSaleChange('leadBy', e.target.value)}
+                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Who led this sale?"
+                        />
+                      </div>
+                      
                       {/* Product */}
-                      <div className="col-span-2">
+                      <div className="col-span-2 md:col-span-1">
                         <label htmlFor="product" className="block text-sm font-medium text-gray-700">Product</label>
                         <input
                           id="product"
@@ -1873,6 +2106,31 @@ const SalesTrackingPage = () => {
                           onChange={(e) => handleNewSaleChange('product', e.target.value)}
                           className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                           placeholder="Product or course name"
+                        />
+                      </div>
+                      
+                      {/* Login Credentials (Optional) */}
+                      <div className="col-span-2 md:col-span-1">
+                        <label htmlFor="loginId" className="block text-sm font-medium text-gray-700">Login ID (Optional)</label>
+                        <input
+                          id="loginId"
+                          type="text"
+                          value={newSale.loginId}
+                          onChange={(e) => handleNewSaleChange('loginId', e.target.value)}
+                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Customer login ID"
+                        />
+                      </div>
+                      
+                      <div className="col-span-2 md:col-span-1">
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password (Optional)</label>
+                        <input
+                          id="password"
+                          type="text"
+                          value={newSale.password}
+                          onChange={(e) => handleNewSaleChange('password', e.target.value)}
+                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Customer password"
                         />
                       </div>
                       
@@ -1939,7 +2197,7 @@ const SalesTrackingPage = () => {
                             onChange={(e) => handleNewSaleChange('pending', e.target.value)}
                             className="block w-full pl-7 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             placeholder="0.00"
-                            disabled
+                            disabled={newSale.status === 'Completed'}
                           />
                         </div>
                       </div>
