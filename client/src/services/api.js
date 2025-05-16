@@ -141,7 +141,10 @@ export const salesAPI = {
   updateToken: (id, token) => api.put(`/api/sales/${id}/token`, { token }),
   updatePending: (id, pending) => api.put(`/api/sales/${id}/pending`, { pending }),
   importSales: (data) => api.post('/api/sales/import', data),
-  getLeadSheet: (filters = {}) => api.get('/api/sales/lead-sheet', { params: filters })
+  getLeadSheet: (filters = {}) => {
+    console.log('Using new lead-sales endpoint with filters:', filters);
+    return api.get('/api/lead-sales', { params: filters });
+  }
 };
 
 // Currency API services

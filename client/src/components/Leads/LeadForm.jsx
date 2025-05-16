@@ -204,7 +204,7 @@ const LeadForm = ({ lead = null, onSuccess }) => {
         return;
       }
       
-      // Validate email only if provided (email is optional)
+      // Validate email only if provided and not empty (email is optional)
       if (dataToSubmit['E-MAIL'] && dataToSubmit['E-MAIL'].trim() !== '') {
         // Simple check for @ symbol - don't be too strict on format to allow international emails
         if (!dataToSubmit['E-MAIL'].includes('@')) {
@@ -213,6 +213,10 @@ const LeadForm = ({ lead = null, onSuccess }) => {
           setLoading(false);
           return;
         }
+      } else {
+        // Ensure empty email is properly handled by setting to empty string
+        dataToSubmit['E-MAIL'] = '';
+        console.log('Email field is blank, setting to empty string');
       }
       
       // Log the final data being sent for debugging
@@ -273,13 +277,6 @@ const LeadForm = ({ lead = null, onSuccess }) => {
         // If we have detailed error data, log it
         if (err.response.data?.missingFields) {
           console.error('Missing fields reported by server:', err.response.data.missingFields);
-        }
-        
-        // Check for duplicate email error
-        const errorMessage = err.response.data?.message || '';
-        if (errorMessage.includes('duplicate key') && errorMessage.includes('email')) {
-          setError(`This email (${formData.email}) is already in use for another lead. Please use a different email or leave it blank.`);
-          return;
         }
         
         // Show more specific error message based on status code

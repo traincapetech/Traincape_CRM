@@ -42,7 +42,14 @@ router.route('/:id/pending')
 // @access  Private (Lead Person, Manager, Admin)
 router.get('/lead-sheet', authorize('Lead Person', 'Manager', 'Admin'), async (req, res) => {
   try {
-    console.log('Fetching sales data for lead person sheet');
+    console.log('============= LEAD SHEET REQUEST =============');
+    console.log('User making request:', {
+      id: req.user.id,
+      _id: req.user._id,
+      idString: req.user._id ? req.user._id.toString() : 'undefined',
+      role: req.user.role,
+      name: req.user.fullName
+    });
     
     // Get query parameters for filtering
     const { startDate, endDate, leadPerson, salesPerson } = req.query;
@@ -60,7 +67,22 @@ router.get('/lead-sheet', authorize('Lead Person', 'Manager', 'Admin'), async (r
     // Lead person filter - if user is a lead person, only show their leads
     // If admin or manager, allow filtering by lead person
     if (req.user.role === 'Lead Person') {
-      filter.leadPerson = req.user.id;
+      // Convert to string ID for comparison
+      const userId = req.user._id.toString();
+      console.log('Filtering by lead person ID (string):', userId);
+      
+      // Use mongoose ObjectId for the query
+      const mongoose = require('mongoose');
+      const ObjectId = mongoose.Types.ObjectId;
+      
+      try {
+        filter.leadPerson = new ObjectId(userId);
+        console.log('Converted to ObjectId:', filter.leadPerson);
+      } catch (err) {
+        console.error('Error converting ID to ObjectId:', err);
+        // Fallback to string ID
+        filter.leadPerson = userId;
+      }
     } else if (leadPerson) {
       filter.leadPerson = leadPerson;
     }
@@ -70,7 +92,7 @@ router.get('/lead-sheet', authorize('Lead Person', 'Manager', 'Admin'), async (r
       filter.salesPerson = salesPerson;
     }
     
-    console.log('Applying filters:', filter);
+    console.log('Applying filters:', JSON.stringify(filter));
     
     // Get sales data with all fields
     // Populate both leadPerson and salesPerson fields
@@ -79,6 +101,8 @@ router.get('/lead-sheet', authorize('Lead Person', 'Manager', 'Admin'), async (r
       .populate('salesPerson', 'fullName')
       .populate('leadPerson', 'fullName')
       .sort({ date: -1 });
+    
+    console.log(`Found ${sales.length} sales records for lead sheet`);
     
     // Post-process results to ensure currency fields exist
     const processedSales = sales.map(sale => {
@@ -95,7 +119,8 @@ router.get('/lead-sheet', authorize('Lead Person', 'Manager', 'Admin'), async (r
       return saleObj;
     });
     
-    console.log(`Found ${processedSales.length} sales records for lead sheet`);
+    console.log('============= LEAD SHEET RESPONSE =============');
+    console.log(`Returning ${processedSales.length} sales records`);
     
     res.status(200).json({
       success: true,
@@ -103,10 +128,12 @@ router.get('/lead-sheet', authorize('Lead Person', 'Manager', 'Admin'), async (r
       data: processedSales
     });
   } catch (err) {
-    console.error('Error fetching lead sheet data:', err.message);
+    console.error('Error fetching lead sheet data:', err);
+    console.error('Error stack:', err.stack);
     res.status(500).json({
       success: false,
-      message: 'Server error while fetching sales data'
+      message: 'Server error while fetching sales data',
+      error: err.message
     });
   }
 });

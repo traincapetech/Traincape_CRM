@@ -18,6 +18,7 @@ connectDB();
 const authRoutes = require('./routes/auth');
 const leadRoutes = require('./routes/leads');
 const saleRoutes = require('./routes/sales');
+const leadSalesRoutes = require('./routes/leadSalesRoute');
 const currencyRoutes = require('./routes/currency');
 const taskRoutes = require('./routes/taskRoutes');
 const app = express();
@@ -67,6 +68,7 @@ app.use(cors(corsOptions));
 app.use('/api/auth', authRoutes);
 app.use('/api/leads', leadRoutes);
 app.use('/api/sales', saleRoutes);
+app.use('/api/lead-sales', leadSalesRoutes);
 app.use('/api/currency', currencyRoutes);
 app.use('/api/tasks', taskRoutes);
 

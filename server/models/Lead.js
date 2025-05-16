@@ -35,7 +35,9 @@ const LeadSchema = new mongoose.Schema({
   phone: {
     type: String,
     required: [true, 'Please add a phone number'],
-    maxlength: [20, 'Phone number cannot be longer than 20 characters']
+    maxlength: [20, 'Phone number cannot be longer than 20 characters'],
+    // Don't enforce unique index on phone - allow duplicates
+    index: false
   },
   country: {
     type: String,

@@ -305,13 +305,53 @@ exports.createLead = async (req, res) => {
       
       console.error(`Duplicate key error for field: ${field}, value: ${value}`);
       
-      return res.status(400).json({
-        success: false,
-        code: 'DUPLICATE_KEY',
-        field: field,
-        value: value,
-        message: `A lead with this ${field} (${value}) already exists.`
-      });
+      // Instead of returning an error, we'll allow duplicates for repeat customers
+      console.log('Allowing duplicate value for repeat customer');
+      
+      // Try creating the lead again without the unique constraint
+      try {
+        // Modify the data to work around the duplicate key issue
+        if (field === 'email') {
+          // For email duplicates, proceed with creating the lead
+          // The email validation in the model already allows duplicates
+          const leadData = {
+            name: req.body.NAME,
+            email: '',  // Set empty email to avoid duplicate
+            course: req.body.COURSE,
+            countryCode: req.body.CODE,
+            phone: req.body.NUMBER,
+            country: req.body.COUNTRY,
+            pseudoId: req.body['PSUDO ID'],
+            client: req.body['CLIENT REMARK'],
+            status: req.body.status || 'Introduction',
+            source: req.body.SOURSE,
+            sourceLink: req.body['SOURCE LINK'],
+            assignedTo: req.body['SALE PERSON'],
+            leadPerson: req.body['LEAD PERSON'],
+            feedback: req.body.FEEDBACK,
+            createdAt: req.body.DATE ? new Date(req.body.DATE) : Date.now(),
+            isRepeatCustomer: true,
+            previousCourses: [],
+            relatedLeads: [],
+            createdBy: req.user._id,
+            updatedAt: Date.now()
+          };
+        
+          // Create the lead with the modified data
+          const lead = await Lead.create(leadData);
+          
+          return res.status(201).json({
+            success: true,
+            data: lead
+          });
+        }
+      } catch (retryErr) {
+        console.error('Error on retry after duplicate key:', retryErr);
+        return res.status(400).json({
+          success: false,
+          message: 'Failed to create lead even after handling duplicate key'
+        });
+      }
     }
     
     // Provide more detailed error messages for common validation errors
