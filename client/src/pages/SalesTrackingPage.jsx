@@ -58,7 +58,8 @@ const SalesTrackingPage = () => {
     loginId: "",
     password: "",
     leadBy: "",
-    saleDate: new Date()
+    saleDate: new Date(),
+    currency: "USD" // Default currency
   });
   const [availableLeads, setAvailableLeads] = useState([]);
   const [leadOptions, setLeadOptions] = useState([]);
@@ -70,6 +71,19 @@ const SalesTrackingPage = () => {
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1); // Current month (1-12)
   const [filterYear, setFilterYear] = useState(new Date().getFullYear()); // Current year
   const [showCurrentMonth, setShowCurrentMonth] = useState(true); // Flag to show current month by default
+  const [showAllSales, setShowAllSales] = useState(false); // New flag to show all sales regardless of date
+  
+  // Currency options
+  const currencyOptions = [
+    { value: "USD", label: "USD ($)", symbol: "$" },
+    { value: "EUR", label: "EUR (€)", symbol: "€" },
+    { value: "GBP", label: "GBP (£)", symbol: "£" },
+    { value: "INR", label: "INR (₹)", symbol: "₹" },
+    { value: "CAD", label: "CAD ($)", symbol: "$" },
+    { value: "AUD", label: "AUD ($)", symbol: "$" },
+    { value: "JPY", label: "JPY (¥)", symbol: "¥" },
+    { value: "CNY", label: "CNY (¥)", symbol: "¥" }
+  ];
   
   // Generate month options
   const months = [
@@ -107,12 +121,23 @@ const SalesTrackingPage = () => {
     fetchSales();
   }, [user]);
   
-  // Apply date filters when sales, month, or year changes
+  // Apply date filters when leads, month, or year changes
   useEffect(() => {
+    console.log('useEffect for applyDateFilters triggered:', {
+      salesLength: sales.length,
+      showAllSales,
+      showCurrentMonth,
+      filterMonth,
+      filterYear
+    });
+    
     if (sales.length > 0) {
-      filterSalesByDate();
+      applyDateFilters();
+    } else {
+      // If no sales, clear filtered sales
+      setFilteredSales([]);
     }
-  }, [sales, filterMonth, filterYear, showCurrentMonth]);
+  }, [sales, filterMonth, filterYear, showCurrentMonth, showAllSales]);
   
   // Fetch lead persons when in reference sale mode
   useEffect(() => {
@@ -122,82 +147,183 @@ const SalesTrackingPage = () => {
   }, [newSale.isReference]);
   
   // Function to filter sales by selected date
-  const filterSalesByDate = () => {
+  const applyDateFilters = () => {
+    console.log('applyDateFilters called with:', {
+      showAllSales,
+      showCurrentMonth,
+      filterMonth,
+      filterYear,
+      userRole: user?.role,
+      totalSales: sales.length
+    });
+
+    // Special case for Managers and Admins - option to see all sales regardless of date
+    if ((user?.role === 'Manager' || user?.role === 'Admin') && showAllSales) {
+      console.log('Showing all sales for Manager/Admin regardless of date:', sales.length);
+      setFilteredSales(sales);
+      return;
+    }
+    
+    let filtered = [];
+    
     if (showCurrentMonth) {
       // Show current month data
-      const thisMonth = new Date().getMonth() + 1; // 1-12
-      const thisYear = new Date().getFullYear();
+      const currentMonth = new Date().getMonth() + 1; // 1-12
+      const currentYear = new Date().getFullYear();
       
-      const filtered = sales.filter(sale => {
-        const saleDate = new Date(sale.createdAt);
+      filtered = sales.filter(sale => {
+        // Make sure we have a valid date to work with
+        if (!sale.date && !sale.createdAt) {
+          console.log('Sale has no date:', sale);
+          return false;
+        }
+        
+        const saleDate = new Date(sale.date || sale.createdAt);
+        const saleMonth = saleDate.getMonth() + 1; // Convert to 1-12 format
+        const saleYear = saleDate.getFullYear();
+        
         return (
-          saleDate.getMonth() + 1 === thisMonth && 
-          saleDate.getFullYear() === thisYear
+          saleMonth === currentMonth && 
+          saleYear === currentYear
         );
       });
       
-      setFilteredSales(filtered);
+      console.log(`Filtered to current month: ${currentMonth}/${currentYear}. Found ${filtered.length} sales.`);
     } else {
       // Show selected month/year data
-      const filtered = sales.filter(sale => {
-        const saleDate = new Date(sale.createdAt);
+      filtered = sales.filter(sale => {
+        // Make sure we have a valid date to work with
+        if (!sale.date && !sale.createdAt) {
+          console.log('Sale has no date:', sale);
+          return false;
+        }
+        
+        const saleDate = new Date(sale.date || sale.createdAt);
+        const saleMonth = saleDate.getMonth() + 1; // Convert to 1-12 format
+        const saleYear = saleDate.getFullYear();
+        
+        // Debug logging
+        console.log(`Sale date: ${saleDate.toISOString()}, Month: ${saleMonth}, Year: ${saleYear}, Filter: ${filterMonth}/${filterYear}`);
+        
         return (
-          saleDate.getMonth() + 1 === filterMonth && 
-          saleDate.getFullYear() === filterYear
+          saleMonth === filterMonth && 
+          saleYear === filterYear
         );
       });
       
-      setFilteredSales(filtered);
+      console.log(`Filtered to ${filterMonth}/${filterYear}. Found ${filtered.length} sales.`);
     }
+    
+    setFilteredSales(filtered);
   };
 
+  // Fetch sales data
   const fetchSales = async () => {
     try {
       setLoading(true);
+      console.log("Fetching sales for user:", user?.fullName, user?.role);
       
-      console.log("Fetching sales...");
+      // For debugging purposes - log token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.warn("No token found when fetching sales");
+        setError("Authentication token not found. Please log in again.");
+        return;
+      }
       
-      // Use the API service instead of direct Axios call
-      const response = await salesAPI.getAll();
-      
-      console.log("Sales API response status:", response.status);
-      console.log("Sales API response success:", response.data?.success);
-      console.log("Sales count:", response.data?.count || 0);
-      
-      if (response.data && response.data.success) {
-        // Initialize sales with additional fields we want to track
-        const processedSales = response.data.data.map(sale => {
-          // Create a properly formatted sale object with consistent fields
-          const formattedSale = {
-            ...sale,
-            _id: sale._id,
-            // Convert ObjectId to string if needed 
-            salesPerson: typeof sale.salesPerson === 'object' ? 
-                         (sale.salesPerson._id || sale.salesPerson) : 
-                         sale.salesPerson,
-            // Ensure all financial fields exist
-            amount: parseFloat(sale.totalCost || 0),
-            token: parseFloat(sale.tokenAmount || 0),
-            pending: sale.status === 'Completed' ? 0 : parseFloat(sale.totalCost || 0) - parseFloat(sale.tokenAmount || 0),
-            // Ensure we have product info
-            product: sale.course || sale.product || 'Unknown',
-            // Ensure we have a status
-            status: sale.status || 'Pending',
-            // Ensure login credentials are preserved
-            loginId: sale.loginId || '',
-            password: sale.password || '',
-            leadBy: sale.leadBy || ''
-          };
-          
-          return formattedSale;
+      // Use direct axios for more reliable data fetching
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/sales?full=true&nocache=${new Date().getTime()}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         });
         
-        console.log("Processed sales:", processedSales.slice(0, 2)); // Show first 2 for debugging
+        console.log("Direct API response:", response);
         
-        setSales(processedSales);
-      } else {
-        console.error("Failed to load sales data:", response.data?.message || "Unknown error");
-        setError("Failed to load sales data: " + (response.data?.message || "Unknown error"));
+        if (response.data && response.data.success) {
+          console.log("Sales data fetched:", response.data.data.length, "sales");
+          
+          // Initialize sales with additional fields we want to track
+          const processedSales = response.data.data.map(sale => {
+            // Create a properly formatted sale object with consistent fields
+            const formattedSale = {
+              ...sale,
+              _id: sale._id,
+              // Convert ObjectId to string if needed 
+              salesPerson: typeof sale.salesPerson === 'object' ? 
+                           (sale.salesPerson._id || sale.salesPerson) : 
+                           sale.salesPerson,
+              // Ensure all financial fields exist
+              amount: parseFloat(sale.totalCost || 0),
+              token: parseFloat(sale.tokenAmount || 0),
+              pending: sale.status === 'Completed' ? 0 : parseFloat(sale.totalCost || 0) - parseFloat(sale.tokenAmount || 0),
+              // Ensure we have product info
+              product: sale.course || sale.product || 'Unknown',
+              // Ensure we have a status
+              status: sale.status || 'Pending',
+              // Ensure login credentials are preserved
+              loginId: sale.loginId || '',
+              password: sale.password || '',
+              leadBy: sale.leadBy || '',
+              // Ensure currency is preserved
+              currency: sale.currency || 'USD',
+              // Ensure date is properly captured
+              date: sale.date || sale.createdAt
+            };
+            
+            return formattedSale;
+          });
+          
+          // Set sales data
+          setSales(processedSales);
+          
+          // Don't call applyDateFilters here - let the useEffect handle it
+        } else {
+          console.error("Failed to load sales data:", response.data?.message || "Unknown error");
+          setError("Failed to load sales data: " + (response.data?.message || "Unknown error"));
+        }
+      } catch (axiosError) {
+        console.error("Direct API call failed:", axiosError);
+        
+        // Fall back to using the API service
+        try {
+          const fallbackResponse = await salesAPI.getAllForced();
+          
+          if (fallbackResponse.data && fallbackResponse.data.success) {
+            console.log("Sales data fetched from fallback:", fallbackResponse.data.data.length, "sales");
+            
+            // Process sales data
+            const processedSales = fallbackResponse.data.data.map(sale => ({
+              ...sale,
+              _id: sale._id,
+              salesPerson: typeof sale.salesPerson === 'object' ? 
+                           (sale.salesPerson._id || sale.salesPerson) : 
+                           sale.salesPerson,
+              amount: parseFloat(sale.totalCost || 0),
+              token: parseFloat(sale.tokenAmount || 0),
+              pending: sale.status === 'Completed' ? 0 : parseFloat(sale.totalCost || 0) - parseFloat(sale.tokenAmount || 0),
+              product: sale.course || sale.product || 'Unknown',
+              status: sale.status || 'Pending',
+              loginId: sale.loginId || '',
+              password: sale.password || '',
+              leadBy: sale.leadBy || '',
+              currency: sale.currency || 'USD',
+              date: sale.date || sale.createdAt
+            }));
+            
+            setSales(processedSales);
+            
+            // Don't call applyDateFilters here - let the useEffect handle it
+          } else {
+            console.error("Fallback API call failed:", fallbackResponse.data?.message || "Unknown error");
+            setError("Failed to load sales data. Please try again.");
+          }
+        } catch (fallbackError) {
+          console.error("Fallback API call failed:", fallbackError);
+          setError("Failed to load sales data. Please try again.");
+        }
       }
     } catch (err) {
       console.error("Error fetching sales:", err);
@@ -249,7 +375,7 @@ const SalesTrackingPage = () => {
     }
   };
 
-  // Fetch available lead persons (admins, managers) 
+  // Fetch available lead persons (for lead selection in sales)
   const fetchLeadPersons = async () => {
     try {
       setLoadingLeadPersons(true);
@@ -271,6 +397,8 @@ const SalesTrackingPage = () => {
   // Handle opening add sale modal
   const handleAddSaleClick = () => {
     fetchAvailableLeads();
+    // Always fetch lead persons when opening the add sale modal
+    fetchLeadPersons();
     setShowAddModal(true);
     // Reset new sale form
     setNewSale({
@@ -290,7 +418,8 @@ const SalesTrackingPage = () => {
       loginId: "",
       password: "",
       leadBy: "",
-      saleDate: new Date()
+      saleDate: new Date(),
+      currency: "USD" // Default currency
     });
   };
 
@@ -316,28 +445,39 @@ const SalesTrackingPage = () => {
   // Handle new sale form input changes
   const handleNewSaleChange = (field, value) => {
     setNewSale(prev => {
-      const updates = { ...prev, [field]: value };
+      const updated = { ...prev, [field]: value };
       
-      // Automatically calculate pending when amount or token changes
+      // If amount or token changes, recalculate pending
       if (field === 'amount' || field === 'token') {
-        const amount = field === 'amount' ? parseFloat(value) || 0 : parseFloat(prev.amount) || 0;
-        const token = field === 'token' ? parseFloat(value) || 0 : parseFloat(prev.token) || 0;
-        updates.pending = amount - token;
+        const amount = field === 'amount' ? parseFloat(value) : parseFloat(prev.amount);
+        const token = field === 'token' ? parseFloat(value) : parseFloat(prev.token);
+        updated.pending = amount - token;
       }
       
-      return updates;
+      // If status is Completed, set pending to 0
+      if (field === 'status' && value === 'Completed') {
+        updated.pending = 0;
+      }
+      
+      return updated;
     });
   };
 
-  // Handle toggle for reference sale
+  // Toggle between reference and lead-based sale
   const handleReferenceToggle = (isReference) => {
-    setNewSale(prev => ({
-      ...prev,
+    // If switching to reference sale, fetch lead persons for selection
+    setNewSale({
+      ...newSale,
       isReference,
-      leadId: isReference ? "" : prev.leadId // Clear lead selection if toggling to reference
-    }));
+      leadId: isReference ? "" : newSale.leadId,
+      customerName: isReference ? newSale.customerName : "",
+      contactNumber: isReference ? newSale.contactNumber : "",
+      email: isReference ? newSale.email : "",
+      country: isReference ? newSale.country : "",
+      countryCode: isReference ? newSale.countryCode : "+1",
+      // Don't reset leadPerson - we want to preserve this selection
+    });
     
-    // Fetch lead persons when toggling to reference
     if (isReference && leadPersonOptions.length === 0) {
       fetchLeadPersons();
     }
@@ -358,6 +498,12 @@ const SalesTrackingPage = () => {
         
         if (!newSale.product) {
           setError("Please enter a product/course name");
+          return;
+        }
+        
+        // Require a lead person to be selected for regular sales too
+        if (!newSale.leadPerson) {
+          setError("Please select a lead person who will see this sale");
           return;
         }
       } else {
@@ -381,6 +527,9 @@ const SalesTrackingPage = () => {
           setError("Please enter country");
           return;
         }
+        
+        // For reference sales, lead person is optional
+        // No validation for leadPerson
       }
       
       // Get fresh token
@@ -416,10 +565,8 @@ const SalesTrackingPage = () => {
           
           // ID references
           salesPerson: user._id, // Current user is the sales person
-          // Extract leadPerson from lead data if available
-          leadPerson: extractId(selectedLead, 'leadPerson') || 
-                     extractId(selectedLead, 'createdBy') || 
-                     user._id, // Fallback to current user
+          // Use the explicitly selected lead person
+          leadPerson: newSale.leadPerson,
           
           // Optional fields - new
           loginId: newSale.loginId || '',
@@ -430,9 +577,10 @@ const SalesTrackingPage = () => {
           source: selectedLead.source || selectedLead.SOURSE || '',
           clientRemark: selectedLead.client || selectedLead['CLIENT REMARK'] || '',
           
-          // Financial info - simplified without currency conversion
+          // Financial info - with currency
           totalCost: parseFloat(newSale.amount) || 0,
           tokenAmount: parseFloat(newSale.token) || 0,
+          currency: newSale.currency || 'USD',
           
           // Status info
           pending: newSale.status === 'Completed' ? false : parseFloat(newSale.pending) > 0, // Set to false if status is completed
@@ -440,7 +588,10 @@ const SalesTrackingPage = () => {
           
           // Creation metadata
           createdBy: user._id,
-          date: newSale.saleDate || new Date() // Use selected date or current date
+          date: newSale.saleDate || new Date(), // Use selected date or current date
+          
+          // Flag to ensure this shows in lead person's dashboard
+          isLeadPersonSale: true
         };
       } else {
         // Process reference sale with manually entered data
@@ -455,7 +606,7 @@ const SalesTrackingPage = () => {
           
           // ID references
           salesPerson: user._id, // Current user is the sales person
-          leadPerson: newSale.leadPerson || user._id, // Use selected lead person or current user
+          leadPerson: newSale.leadPerson, // Use selected lead person
           
           // Optional fields - new
           loginId: newSale.loginId || '',
@@ -466,9 +617,10 @@ const SalesTrackingPage = () => {
           source: 'Reference', // Mark as reference
           isReference: true,
           
-          // Financial info
+          // Financial info - with currency
           totalCost: parseFloat(newSale.amount) || 0,
           tokenAmount: parseFloat(newSale.token) || 0,
+          currency: newSale.currency || 'USD',
           
           // Status info
           pending: newSale.status === 'Completed' ? false : parseFloat(newSale.pending) > 0, // Set to false if status is completed
@@ -476,16 +628,17 @@ const SalesTrackingPage = () => {
           
           // Creation metadata
           createdBy: user._id,
-          date: newSale.saleDate || new Date() // Use selected date or current date
+          date: newSale.saleDate || new Date(), // Use selected date or current date
+          
+          // Flag to ensure this shows in lead person's dashboard
+          isLeadPersonSale: true
         };
       }
       
       console.log("Submitting new sale with matching schema:", saleData);
       
-      // Use the API service
-      const response = await (newSale.isReference ? 
-        salesAPI.createReferenceSale(saleData) : 
-        salesAPI.create({ ...saleData, isLeadPersonSale: false }));
+      // Use the API service - explicitly set isLeadPersonSale flag to true for both types
+      const response = await salesAPI.create({ ...saleData, isLeadPersonSale: true });
       
       if (response.data && response.data.success) {
         console.log("Sale created successfully:", response.data.data);
@@ -512,7 +665,8 @@ const SalesTrackingPage = () => {
           loginId: "",
           password: "",
           leadBy: "",
-          saleDate: new Date()
+          saleDate: new Date(),
+          currency: "USD" // Default currency
         });
         
         // Show success message
@@ -605,7 +759,8 @@ const SalesTrackingPage = () => {
       saleDate: sale.date || new Date(),
       loginId: sale.loginId || '',
       password: sale.password || '',
-      leadBy: sale.leadBy || ''
+      leadBy: sale.leadBy || '',
+      currency: sale.currency || 'USD' // Default to USD if not specified
     });
     
     console.log("Edit values initialized:", {
@@ -613,7 +768,8 @@ const SalesTrackingPage = () => {
       token,
       pending,
       status: sale.status || 'Pending',
-      saleDate: sale.date || new Date()
+      saleDate: sale.date || new Date(),
+      currency: sale.currency || 'USD'
     });
   };
 
@@ -680,6 +836,9 @@ const SalesTrackingPage = () => {
             // Updated financial info
             totalCost: parseFloat(editValues.amount) || 0,
             tokenAmount: parseFloat(editValues.token) || 0,
+            
+            // Currency info
+            currency: editValues.currency || originalSale.currency || 'USD',
             
             // Status info
             pending: editValues.status === 'Completed' ? false : parseFloat(editValues.pending) > 0, // Set to false if status is completed
@@ -760,6 +919,9 @@ const SalesTrackingPage = () => {
         totalCost: parseFloat(editValues.amount) || 0,
         tokenAmount: parseFloat(editValues.token) || 0,
         
+        // Currency info
+        currency: editValues.currency || originalSale.currency || 'USD',
+        
         // Status info
         pending: editValues.status === 'Completed' ? false : parseFloat(editValues.pending) > 0, // Set to false if status is completed
         status: editValues.status || originalSale.status || 'Pending',
@@ -826,44 +988,21 @@ const SalesTrackingPage = () => {
   // Fixed handleInputChange to properly handle numeric values
   const handleInputChange = (field, value) => {
     setEditValues(prev => {
-      // Create a copy with defaults for any missing values
-      const current = { 
-        amount: prev.amount ?? 0,
-        token: prev.token ?? 0,
-        pending: prev.pending ?? 0,
-        status: prev.status || 'Pending',
-        saleDate: prev.saleDate || new Date(),
-        loginId: prev.loginId || '',
-        password: prev.password || '',
-        leadBy: prev.leadBy || '',
-        ...prev 
-      };
+      const updated = { ...prev, [field]: value };
       
-      let parsedValue = value;
-      
-      // Convert to number for numeric fields
-      if (['amount', 'token', 'pending'].includes(field)) {
-        // Handle empty string case
-        parsedValue = value === '' ? 0 : parseFloat(value);
-        // If NaN, use 0
-        if (isNaN(parsedValue)) parsedValue = 0;
-      }
-      
-      const updates = { ...current, [field]: parsedValue };
-      
-      // Automatically calculate pending amount when amount or token changes
+      // If we're updating amount or token, recalculate the pending amount
       if (field === 'amount' || field === 'token') {
-        const amount = field === 'amount' ? parsedValue : parseFloat(current.amount) || 0;
-        const token = field === 'token' ? parsedValue : parseFloat(current.token) || 0;
-        updates.pending = amount - token;
+        const amount = parseFloat(field === 'amount' ? value : prev.amount) || 0;
+        const tokenAmount = parseFloat(field === 'token' ? value : prev.token) || 0;
+        updated.pending = amount - tokenAmount;
       }
       
-      // If status is changed to "Completed", set pending to 0
-      if (field === 'status' && parsedValue === 'Completed') {
-        updates.pending = 0;
+      // If status is set to Completed, set pending to 0
+      if (field === 'status' && value === 'Completed') {
+        updated.pending = 0;
       }
       
-      return updates;
+      return updated;
     });
   };
 
@@ -990,12 +1129,14 @@ const SalesTrackingPage = () => {
   const handleMonthChange = (e) => {
     setFilterMonth(parseInt(e.target.value));
     setShowCurrentMonth(false);
+    setShowAllSales(false); // Disable show all when selecting specific month
   };
   
   // Handle year change
   const handleYearChange = (e) => {
     setFilterYear(parseInt(e.target.value));
     setShowCurrentMonth(false);
+    setShowAllSales(false); // Disable show all when selecting specific year
   };
   
   // Handle reset to current month
@@ -1004,6 +1145,26 @@ const SalesTrackingPage = () => {
     setFilterMonth(today.getMonth() + 1);
     setFilterYear(today.getFullYear());
     setShowCurrentMonth(true);
+    setShowAllSales(false); // Disable show all when resetting to current month
+  };
+  
+  // Handle show all sales toggle for Managers and Admins
+  const handleShowAllSales = () => {
+    console.log('handleShowAllSales called, current state:', {
+      showAllSales,
+      showCurrentMonth,
+      salesLength: sales.length,
+      filteredSalesLength: filteredSales.length
+    });
+    
+    setShowAllSales(!showAllSales);
+    if (!showAllSales) {
+      // When enabling show all, disable other filters
+      setShowCurrentMonth(false);
+      console.log('Enabling show all sales, disabling current month filter');
+    } else {
+      console.log('Disabling show all sales');
+    }
   };
 
   // Improve the status change handler to match schema
@@ -1122,10 +1283,10 @@ const SalesTrackingPage = () => {
       console.log('Opening WhatsApp URL:', whatsappUrl);
       
       // Open WhatsApp in a new tab
-      window.open(whatsappUrl, '_blank');
+      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
     } catch (error) {
       console.error('Error opening WhatsApp:', error);
-      toast.error('Could not open WhatsApp. Please check the phone number format.');
+      toast.error('Could not open WhatsApp. Please try again.');
     }
   };
 
@@ -1138,6 +1299,8 @@ const SalesTrackingPage = () => {
   // Add function to refresh data after operations
   const refreshData = async () => {
     try {
+      console.log("Refreshing sales data...");
+      
       // Clear the state first to ensure update
       setSales([]);
       setFilteredSales([]);
@@ -1145,10 +1308,13 @@ const SalesTrackingPage = () => {
       // Set loading state
       setLoading(true);
       
-      // Use the API service
+      // Use the API service with cache busting parameter
+      const timestamp = new Date().getTime();
       const response = await salesAPI.getAll();
       
       if (response.data && response.data.success) {
+        console.log("Refreshed sales data:", response.data.data);
+        
         // Initialize sales with additional fields we want to track
         const processedSales = response.data.data.map(sale => {
           // Create a properly formatted sale object with consistent fields
@@ -1170,7 +1336,11 @@ const SalesTrackingPage = () => {
             // Ensure login credentials are preserved
             loginId: sale.loginId || '',
             password: sale.password || '',
-            leadBy: sale.leadBy || ''
+            leadBy: sale.leadBy || '',
+            // Ensure currency is preserved
+            currency: sale.currency || 'USD',
+            // Ensure date is properly captured
+            date: sale.date || sale.createdAt
           };
           
           return formattedSale;
@@ -1179,34 +1349,12 @@ const SalesTrackingPage = () => {
         // Update the sales state
         setSales(processedSales);
         
-        // Apply the current date filters
-        const selectedMonth = filterMonth;
-        const selectedYear = filterYear;
+        // Don't call applyDateFilters here - let the useEffect handle it
         
-        if (showCurrentMonth) {
-          // Filter for current month
-          const now = new Date();
-          const filtered = processedSales.filter(sale => {
-            const saleDate = new Date(sale.createdAt);
-            return (
-              saleDate.getMonth() + 1 === now.getMonth() + 1 && 
-              saleDate.getFullYear() === now.getFullYear()
-            );
-          });
-          setFilteredSales(filtered);
-        } else {
-          // Filter for selected month/year
-          const filtered = processedSales.filter(sale => {
-            const saleDate = new Date(sale.createdAt);
-            return (
-              saleDate.getMonth() + 1 === selectedMonth && 
-              saleDate.getFullYear() === selectedYear
-            );
-          });
-          setFilteredSales(filtered);
-        }
-        
-        toast.success("Data refreshed successfully");
+        console.log("Sales data refreshed successfully", {
+          total: processedSales.length,
+          filtered: filteredSales.length
+        });
       } else {
         console.error("Failed to refresh sales data:", response.data?.message || "Unknown error");
         toast.error("Failed to refresh sales data. Please try again.");
@@ -1317,14 +1465,40 @@ const SalesTrackingPage = () => {
     <tr key={sale._id} className="hover:bg-gray-50">
       <td className="px-6 py-4 whitespace-nowrap">
         {editingSale === sale._id ? (
-          <input
-            type="date"
-            value={editValues.saleDate ? new Date(editValues.saleDate).toISOString().split('T')[0] : new Date(sale.date || sale.createdAt).toISOString().split('T')[0]}
-            onChange={(e) => handleInputChange('saleDate', new Date(e.target.value))}
-            className="w-full px-2 border border-gray-300 rounded"
-          />
+          <div className="flex flex-col space-y-2">
+            <input
+              type="date"
+              value={editValues.saleDate ? new Date(editValues.saleDate).toISOString().split('T')[0] : new Date(sale.date || sale.createdAt).toISOString().split('T')[0]}
+              onChange={(e) => handleInputChange('saleDate', new Date(e.target.value))}
+              className="w-full px-2 border border-gray-300 rounded"
+            />
+            <div className="flex space-x-2">
+              <button
+                onClick={() => handleSave(sale._id)}
+                className="text-green-600 hover:text-green-900 flex items-center text-xs px-2 py-1 bg-green-50 rounded"
+              >
+                <FaCheck className="mr-1" /> Save
+              </button>
+              <button
+                onClick={() => setEditingSale(null)}
+                className="text-red-600 hover:text-red-900 flex items-center text-xs px-2 py-1 bg-red-50 rounded"
+              >
+                <FaTimes className="mr-1" /> Cancel
+              </button>
+            </div>
+          </div>
         ) : (
-          <div className="text-sm text-gray-900">{formatDate(sale.date || sale.createdAt || new Date())}</div>
+          <div className="flex flex-col space-y-2">
+            <div className="text-sm text-gray-900">{formatDate(sale.date || sale.createdAt || new Date())}</div>
+            {canEditSale(sale) && (
+              <button
+                onClick={() => handleEdit(sale)}
+                className="text-blue-600 hover:text-blue-900 flex items-center text-xs px-2 py-1 bg-blue-50 rounded w-16"
+              >
+                <FaEdit className="mr-1" /> Edit
+              </button>
+            )}
+          </div>
         )}
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
@@ -1416,30 +1590,71 @@ const SalesTrackingPage = () => {
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm text-gray-900">{sale.product || safeGet(sale, 'course') || 'N/A'}</div>
+        {editingSale === sale._id ? (
+          <div>
+            <input
+              type="text"
+              value={editValues.product || ''}
+              onChange={(e) => handleInputChange('product', e.target.value)}
+              className="w-full px-2 border border-gray-300 rounded"
+              placeholder="Product or course name"
+            />
+            {/* Display lead person info while editing */}
+            {(sale.leadPerson && typeof sale.leadPerson === 'object' && sale.leadPerson.fullName) && (
+              <div className="text-xs text-gray-500 mt-1">
+                Lead Person: {sale.leadPerson.fullName}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-sm text-gray-900">{sale.product || safeGet(sale, 'course') || 'N/A'}</div>
+        )}
+        {/* Show Lead Person if available */}
+        {!editingSale === sale._id && (sale.leadPerson && typeof sale.leadPerson === 'object' && sale.leadPerson.fullName) && (
+          <div className="text-xs text-gray-500 mt-1">
+            Lead Person: {sale.leadPerson.fullName}
+          </div>
+        )}
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         {editingSale === sale._id ? (
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-            <input
-              id="amount"
-              type="number"
-              value={editValues.amount !== undefined ? editValues.amount.toString() : "0"}
-              onChange={(e) => handleInputChange('amount', e.target.value)}
-              className="w-24 px-2 pl-7 border border-gray-300 rounded"
-            />
+          <div className="flex flex-col space-y-2">
+            <div className="flex items-center space-x-2">
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                  {getCurrencySymbol(editValues.currency)}
+                </span>
+                <input
+                  id="amount"
+                  type="number"
+                  value={editValues.amount !== undefined ? editValues.amount.toString() : "0"}
+                  onChange={(e) => handleInputChange('amount', e.target.value)}
+                  className="w-24 px-2 pl-7 border border-gray-300 rounded"
+                />
+              </div>
+              <select
+                value={editValues.currency || 'USD'}
+                onChange={(e) => handleInputChange('currency', e.target.value)}
+                className="border border-gray-300 rounded p-1 text-xs"
+              >
+                {currencyOptions.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
         ) : (
           <div className="text-sm font-medium text-gray-900">
-            {formatCurrency(sale.amount || sale.totalCost || 0)}
+            {formatCurrency(sale.amount || sale.totalCost || 0, sale.currency || 'USD')}
           </div>
         )}
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         {editingSale === sale._id ? (
           <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+              {getCurrencySymbol(editValues.currency)}
+            </span>
             <input
               id="token"
               type="number"
@@ -1450,14 +1665,16 @@ const SalesTrackingPage = () => {
           </div>
         ) : (
           <div className="text-sm font-medium text-gray-900">
-            {formatCurrency(sale.token || sale.tokenAmount || 0)}
+            {formatCurrency(sale.token || sale.tokenAmount || 0, sale.currency || 'USD')}
           </div>
         )}
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         {editingSale === sale._id ? (
           <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+              {getCurrencySymbol(editValues.currency)}
+            </span>
             <input
               id="pending"
               type="number"
@@ -1472,7 +1689,8 @@ const SalesTrackingPage = () => {
             {formatCurrency(
               sale.status === 'Completed' ? 0 : 
               sale.pending !== undefined ? sale.pending : 
-              (sale.amount || sale.totalCost || 0) - (sale.token || sale.tokenAmount || 0)
+              (sale.amount || sale.totalCost || 0) - (sale.token || sale.tokenAmount || 0),
+              sale.currency || 'USD'
             )}
           </div>
         )}
@@ -1537,55 +1755,26 @@ const SalesTrackingPage = () => {
         )}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-        {editingSale === sale._id ? (
-          <div className="flex space-x-2 justify-end">
-            <button
-              onClick={() => handleSave(sale._id)}
-              className="text-green-600 hover:text-green-900 flex items-center"
-            >
-              <FaCheck className="mr-1" /> Save
-            </button>
-            <button
-              onClick={() => setEditingSale(null)}
-              className="text-red-600 hover:text-red-900 flex items-center"
-            >
-              <FaTimes className="mr-1" /> Cancel
-            </button>
-          </div>
-        ) : (
-          <div className="flex space-x-2 justify-end">
-            {canEditSale(sale) ? (
-              <button
-                onClick={() => handleEdit(sale)}
-                className="text-blue-600 hover:text-blue-900 flex items-center"
-              >
-                <FaEdit className="mr-1" /> Edit
-              </button>
-            ) : (
-              <div className="flex items-center text-gray-400 text-xs">
-                <span className="italic">Not Editable</span>
-                <PermissionTooltip role={user?.role} />
-              </div>
-            )}
-            
+        {/* Delete button only shown when not in edit mode */}
+        {editingSale !== sale._id && (
+          <div className="flex justify-end">
             {canDeleteSale(sale) ? (
-              deletingSale === sale._id && confirmDelete ? (
-                <div className="flex items-center space-x-1">
-                  <span className="text-xs text-gray-500">Confirm?</span>
+              confirmDelete && deletingSale === sale._id ? (
+                <div className="flex space-x-2">
                   <button
                     onClick={() => handleDeleteSale(sale._id)}
-                    className="text-red-600 hover:text-red-900"
+                    className="text-red-600 hover:text-red-900 flex items-center"
                   >
-                    Yes
+                    <FaCheck className="mr-1" /> Confirm
                   </button>
                   <button
                     onClick={() => {
                       setDeletingSale(null);
                       setConfirmDelete(false);
                     }}
-                    className="text-gray-600 hover:text-gray-900"
+                    className="text-gray-600 hover:text-gray-900 flex items-center"
                   >
-                    No
+                    <FaTimes className="mr-1" /> Cancel
                   </button>
                 </div>
               ) : (
@@ -1595,7 +1784,6 @@ const SalesTrackingPage = () => {
                     setConfirmDelete(true);
                   }}
                   className="text-red-600 hover:text-red-900 flex items-center"
-                  disabled={deletingSale === sale._id}
                 >
                   <FaTrash className="mr-1" /> Delete
                 </button>
@@ -1612,10 +1800,23 @@ const SalesTrackingPage = () => {
     </tr>
   );
 
-  // Format currency for display (simplified to remove conversion)
-  const formatCurrency = (value) => {
-    // Return plain number with 2 decimal places
-    return `$${parseFloat(value || 0).toFixed(2)}`;
+  // Format currency for display
+  const formatCurrency = (value, currencyCode = 'USD') => {
+    // Add debugging for currency formatting
+    console.log(`Formatting currency: value=${value}, currencyCode=${currencyCode}`);
+    
+    // Get the currency symbol
+    const currency = currencyOptions.find(c => c.value === currencyCode) || currencyOptions[0];
+    const symbol = currency.symbol;
+    
+    // Return formatted currency
+    return `${symbol}${parseFloat(value || 0).toFixed(2)}`;
+  };
+  
+  // Get currency symbol
+  const getCurrencySymbol = (currencyCode = 'USD') => {
+    const currency = currencyOptions.find(c => c.value === currencyCode) || currencyOptions[0];
+    return currency.symbol;
   };
 
   return (
@@ -1689,13 +1890,34 @@ const SalesTrackingPage = () => {
                     id="currentMonth"
                     type="checkbox"
                     checked={showCurrentMonth}
-                    onChange={() => setShowCurrentMonth(!showCurrentMonth)}
+                    onChange={() => {
+                      setShowCurrentMonth(!showCurrentMonth);
+                      if (!showCurrentMonth) {
+                        setShowAllSales(false); // Disable show all when showing current month
+                      }
+                    }}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <label htmlFor="currentMonth" className="ml-2 block text-sm text-gray-700">
                     Show Current Month Only
                   </label>
                 </div>
+                
+                {/* Show All Sales option for Managers and Admins */}
+                {(user?.role === 'Manager' || user?.role === 'Admin') && (
+                  <div className="flex items-center ml-4">
+                    <input
+                      id="showAllSales"
+                      type="checkbox"
+                      checked={showAllSales}
+                      onChange={handleShowAllSales}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="showAllSales" className="ml-2 block text-sm text-gray-700 font-semibold text-blue-600">
+                      Show All Sales (No Date Filter)
+                    </label>
+                  </div>
+                )}
                 
                 <button
                   onClick={handleResetToCurrentMonth}
@@ -1706,7 +1928,9 @@ const SalesTrackingPage = () => {
               </div>
               
               <div className="mt-3 text-sm text-gray-500">
-                {showCurrentMonth ? (
+                {showAllSales ? (
+                  <p>Showing all sales regardless of date: {sales.length} total sales</p>
+                ) : showCurrentMonth ? (
                   <p>Showing sales for current month: {months[new Date().getMonth()].label} {new Date().getFullYear()}</p>
                 ) : (
                   <p>Showing sales for: {months[filterMonth - 1].label} {filterYear}</p>
@@ -1744,8 +1968,8 @@ const SalesTrackingPage = () => {
               </table>
             </div>
             
-            {/* Debug Panel - only shown for Admin users */}
-            {user && user.role === 'Admin' && (
+            {/* Debug Panel - shown for Admin and Manager users */}
+            {user && (user.role === 'Admin' || user.role === 'Manager') && (
               <div className="mt-8 p-4 bg-gray-800 text-white rounded-lg shadow-md">
                 <h3 className="text-lg font-semibold mb-3 flex items-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -1774,6 +1998,18 @@ const SalesTrackingPage = () => {
                   </div>
                   <div>
                     <span className="text-gray-400">Filtered Sales:</span> {filteredSales.length}
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Show All Sales:</span> {showAllSales ? 'Yes' : 'No'}
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Show Current Month:</span> {showCurrentMonth ? 'Yes' : 'No'}
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Filter Month:</span> {filterMonth}
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Filter Year:</span> {filterYear}
                   </div>
                   <div>
                     <details>
@@ -1855,6 +2091,31 @@ const SalesTrackingPage = () => {
                         </select>
                       </div>
                       
+                      {/* Lead Person Selection */}
+                      <div className="col-span-2">
+                        <label htmlFor="leadPerson" className="block text-sm font-medium text-gray-700">
+                          Lead Person
+                          <span className="ml-1 text-xs text-blue-600 font-normal">(Who should see this sale on their dashboard)</span>
+                        </label>
+                        <select
+                          id="leadPerson"
+                          value={newSale.leadPerson}
+                          onChange={(e) => handleNewSaleChange('leadPerson', e.target.value)}
+                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="">Select a lead person</option>
+                          {leadPersonOptions.map(person => (
+                            <option key={person.value} value={person.value}>{person.label}</option>
+                          ))}
+                        </select>
+                        {loadingLeadPersons && (
+                          <div className="mt-1 text-sm text-gray-500">Loading lead persons...</div>
+                        )}
+                        <p className="mt-1 text-xs text-gray-500">
+                          The selected lead person will see this sale on their dashboard
+                        </p>
+                      </div>
+                      
                       {/* Sale Date */}
                       <div className="col-span-2 md:col-span-1">
                         <label htmlFor="saleDate" className="block text-sm font-medium text-gray-700">Sale Date</label>
@@ -1928,11 +2189,26 @@ const SalesTrackingPage = () => {
                         />
                       </div>
                       
+                      {/* Currency */}
+                      <div className="col-span-2 md:col-span-1">
+                        <label htmlFor="currency" className="block text-sm font-medium text-gray-700">Currency</label>
+                        <select
+                          id="currency"
+                          value={newSale.currency}
+                          onChange={(e) => handleNewSaleChange('currency', e.target.value)}
+                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          {currencyOptions.map(option => (
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      
                       {/* Amount */}
                       <div className="col-span-2 md:col-span-1">
                         <label htmlFor="amount" className="block text-sm font-medium text-gray-700">Amount</label>
                         <div className="relative mt-1">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">{getCurrencySymbol(newSale.currency)}</span>
                           <input
                             id="amount"
                             type="number"
@@ -1948,7 +2224,7 @@ const SalesTrackingPage = () => {
                       <div className="col-span-2 md:col-span-1">
                         <label htmlFor="token" className="block text-sm font-medium text-gray-700">Token</label>
                         <div className="relative mt-1">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">{getCurrencySymbol(newSale.currency)}</span>
                           <input
                             id="token"
                             type="number"
@@ -1964,7 +2240,7 @@ const SalesTrackingPage = () => {
                       <div className="col-span-2 md:col-span-1">
                         <label htmlFor="pending" className="block text-sm font-medium text-gray-700">Pending</label>
                         <div className="relative mt-1">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">{getCurrencySymbol(newSale.currency)}</span>
                           <input
                             id="pending"
                             type="number"
@@ -2096,6 +2372,21 @@ const SalesTrackingPage = () => {
                         />
                       </div>
                       
+                      {/* Currency */}
+                      <div className="col-span-2 md:col-span-1">
+                        <label htmlFor="currency" className="block text-sm font-medium text-gray-700">Currency</label>
+                        <select
+                          id="currency"
+                          value={newSale.currency}
+                          onChange={(e) => handleNewSaleChange('currency', e.target.value)}
+                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          {currencyOptions.map(option => (
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      
                       {/* Product */}
                       <div className="col-span-2 md:col-span-1">
                         <label htmlFor="product" className="block text-sm font-medium text-gray-700">Product</label>
@@ -2157,7 +2448,7 @@ const SalesTrackingPage = () => {
                       <div className="col-span-2 md:col-span-1">
                         <label htmlFor="amount" className="block text-sm font-medium text-gray-700">Amount</label>
                         <div className="relative mt-1">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">{getCurrencySymbol(newSale.currency)}</span>
                           <input
                             id="amount"
                             type="number"
@@ -2173,7 +2464,7 @@ const SalesTrackingPage = () => {
                       <div className="col-span-2 md:col-span-1">
                         <label htmlFor="token" className="block text-sm font-medium text-gray-700">Token</label>
                         <div className="relative mt-1">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">{getCurrencySymbol(newSale.currency)}</span>
                           <input
                             id="token"
                             type="number"
@@ -2189,7 +2480,7 @@ const SalesTrackingPage = () => {
                       <div className="col-span-2 md:col-span-1">
                         <label htmlFor="pending" className="block text-sm font-medium text-gray-700">Pending</label>
                         <div className="relative mt-1">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">{getCurrencySymbol(newSale.currency)}</span>
                           <input
                             id="pending"
                             type="number"

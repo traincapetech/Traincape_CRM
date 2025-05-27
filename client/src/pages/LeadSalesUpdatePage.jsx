@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { salesAPI, authAPI, leadPersonSalesAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout/Layout';
-import { FaPlus, FaTrash } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaEdit, FaSave, FaTimes } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 const LeadSalesUpdatePage = () => {
@@ -11,6 +11,7 @@ const LeadSalesUpdatePage = () => {
   const [error, setError] = useState(null);
   const [salesPersons, setSalesPersons] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [editingSaleId, setEditingSaleId] = useState(null);
   const [formData, setFormData] = useState({
     DATE: new Date().toISOString().split('T')[0],
     NAME: '',
@@ -89,11 +90,13 @@ const LeadSalesUpdatePage = () => {
       setLoading(true);
       setError(null);
 
-      const res = await leadPersonSalesAPI.getAll();
+      // Get all lead-related sales (both lead person sales and assigned sales)
+      const res = await salesAPI.getLeadSheet();
       setSalesList(res.data.data);
     } catch (err) {
       console.error('Error loading sales data:', err);
       setError('Failed to load sales data. Please try again.');
+      toast.error('Failed to load sales data');
     } finally {
       setLoading(false);
     }
@@ -106,6 +109,7 @@ const LeadSalesUpdatePage = () => {
       setSalesPersons(salesRes.data.data || []);
     } catch (err) {
       console.error('Error loading users:', err);
+      toast.error('Failed to load sales persons');
     }
   };
 
@@ -158,12 +162,23 @@ const LeadSalesUpdatePage = () => {
         leadPerson: userId,
         source: formData.SOURSE,
         clientRemark: formData['CLIENT REMARK'],
-        feedback: formData.FEEDBACK
+        feedback: formData.FEEDBACK,
+        isLeadPersonSale: true // Mark as lead person sale
       };
       
       console.log('Sending sale data:', saleData);
       
-      const res = await leadPersonSalesAPI.create(saleData);
+      let res;
+      
+      if (editingSaleId) {
+        // Update existing sale
+        res = await leadPersonSalesAPI.update(editingSaleId, saleData);
+        toast.success('Sale updated successfully');
+      } else {
+        // Create new sale
+        res = await leadPersonSalesAPI.create(saleData);
+        toast.success('Sale created successfully');
+      }
       
       if (res.data.success) {
         // Reset form
@@ -188,48 +203,13 @@ const LeadSalesUpdatePage = () => {
         });
         
         setShowForm(false);
+        setEditingSaleId(null);
         loadSalesData();
       }
     } catch (err) {
-      console.error('Error creating sale:', err);
-      setError(err.response?.data?.message || 'Failed to create sale. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  // Add a direct test button that uses a hardcoded ID for testing
-  const handleDirectTest = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Hard-coded test data with explicit leadPerson ID
-      const testSaleData = {
-        date: new Date().toISOString(),
-        customerName: "Test Customer",
-        course: "Test Course",
-        contactNumber: "1234567890",
-        country: "Test Country",
-        salesPerson: salesPersons.length > 0 ? salesPersons[0]._id : '681b2b9c4e40e43301577c7c', // Fallback ID
-        totalCost: 100,
-        totalCostCurrency: 'USD',
-        tokenAmount: 10,
-        tokenAmountCurrency: 'USD',
-        leadPerson: '681b2b9c4e40e43301577c7d' // Hardcoded Lead Person ID (replace with a real ID from your DB)
-      };
-      
-      console.log('Sending test sale data with hardcoded IDs:', testSaleData);
-      
-      const res = await leadPersonSalesAPI.create(testSaleData);
-      
-      if (res.data.success) {
-        console.log('Test sale created successfully:', res.data);
-        loadSalesData();
-      }
-    } catch (err) {
-      console.error('Error creating test sale:', err);
-      setError(err.response?.data?.message || 'Failed to create test sale');
+      console.error('Error with sale:', err);
+      setError(err.response?.data?.message || 'Failed to process sale. Please try again.');
+      toast.error(err.response?.data?.message || 'Failed to process sale');
     } finally {
       setLoading(false);
     }
@@ -248,118 +228,157 @@ const LeadSalesUpdatePage = () => {
       loadSalesData();
     } catch (err) {
       console.error('Error deleting sale:', err);
-      setError(err.response?.data?.message || 'Failed to delete sale');
+      toast.error('Failed to delete sale');
     } finally {
       setLoading(false);
     }
   };
 
+  // Handle edit sale
+  const handleEditSale = (sale) => {
+    setEditingSaleId(sale._id);
+    
+    // Map the sale data to form fields
+    setFormData({
+      DATE: new Date(sale.date).toISOString().split('T')[0],
+      NAME: sale.customerName || '',
+      COUNTRY: sale.country || '',
+      COURSE: sale.course || '',
+      CODE: sale.countryCode || '',
+      NUMBER: sale.contactNumber || '',
+      'E-MAIL': sale.email || '',
+      'PSUDO ID': sale.pseudoId || '',
+      'SALE PERSON': sale.salesPerson?._id || sale.salesPerson || '',
+      'LEAD PERSON': sale.leadPerson?._id || sale.leadPerson || '',
+      SOURSE: sale.source || '',
+      'CLIENT REMARK': sale.clientRemark || '',
+      FEEDBACK: sale.feedback || '',
+      'TOTAL COST': sale.totalCost || 0,
+      'TOTAL COST CURRENCY': sale.totalCostCurrency || 'USD',
+      'TOKEN AMOUNT': sale.tokenAmount || 0,
+      'TOKEN AMOUNT CURRENCY': sale.tokenAmountCurrency || 'USD'
+    });
+    
+    setShowForm(true);
+    
+    // Scroll to form
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
+  // Reset form and cancel editing
+  const handleCancelEdit = () => {
+    setEditingSaleId(null);
+    setFormData({
+      DATE: new Date().toISOString().split('T')[0],
+      NAME: '',
+      COUNTRY: '',
+      COURSE: '',
+      CODE: '',
+      NUMBER: '',
+      'E-MAIL': '',
+      'PSUDO ID': '',
+      'SALE PERSON': '',
+      'LEAD PERSON': user?.id || user?._id || user?.userId || '',
+      SOURSE: '',
+      'CLIENT REMARK': '',
+      FEEDBACK: '',
+      'TOTAL COST': 0,
+      'TOTAL COST CURRENCY': 'USD',
+      'TOKEN AMOUNT': 0,
+      'TOKEN AMOUNT CURRENCY': 'USD'
+    });
+    setShowForm(false);
+  };
+
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto p-4">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Update Sales</h1>
-          
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center"
-            >
-              <FaPlus className="mr-2" /> {showForm ? "Cancel" : "Add New Sale"}
-            </button>
-            <button
-              onClick={loadSalesData}
-              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-            >
-              Refresh
-            </button>
-            <button
-              onClick={handleDirectTest}
-              className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
-              title="Add a test sale with fixed data"
-            >
-              Add Test Sale
-            </button>
-          </div>
+          <h1 className="text-2xl font-bold">Lead Sales Management</h1>
+          <button
+            onClick={() => {
+              setEditingSaleId(null);
+              setShowForm(!showForm);
+            }}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            {showForm ? 'Cancel' : <>
+              <FaPlus className="mr-2" /> Add New Sale
+            </>}
+          </button>
         </div>
-        
+
         {error && (
-          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4">
-            <p>{error}</p>
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+            {error}
           </div>
         )}
-        
+
         {showForm && (
-          <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h2 className="text-xl font-semibold mb-4">Add New Sale</h2>
-            
+          <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+            <h2 className="text-xl font-semibold mb-4">
+              {editingSaleId ? 'Edit Sale' : 'Add New Sale'}
+            </h2>
             <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Date */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    DATE*
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
                   <input
                     type="date"
                     name="DATE"
                     value={formData.DATE}
                     onChange={handleChange}
-                    required
                     className="w-full p-2 border border-gray-300 rounded-md"
+                    required
                   />
                 </div>
-                
-                {/* Name */}
+
+                {/* Customer Name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    NAME*
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
                   <input
                     type="text"
                     name="NAME"
                     value={formData.NAME}
                     onChange={handleChange}
-                    required
                     className="w-full p-2 border border-gray-300 rounded-md"
+                    required
                   />
                 </div>
-                
+
                 {/* Country */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    COUNTRY*
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
                   <input
                     type="text"
                     name="COUNTRY"
                     value={formData.COUNTRY}
                     onChange={handleChange}
-                    required
                     className="w-full p-2 border border-gray-300 rounded-md"
+                    required
                   />
                 </div>
-                
+
                 {/* Course */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    COURSE*
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
                   <input
                     type="text"
                     name="COURSE"
                     value={formData.COURSE}
                     onChange={handleChange}
-                    required
                     className="w-full p-2 border border-gray-300 rounded-md"
+                    required
                   />
                 </div>
-                
+
                 {/* Country Code */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    CODE
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Country Code</label>
                   <input
                     type="text"
                     name="CODE"
@@ -368,27 +387,23 @@ const LeadSalesUpdatePage = () => {
                     className="w-full p-2 border border-gray-300 rounded-md"
                   />
                 </div>
-                
-                {/* Number */}
+
+                {/* Phone Number */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    NUMBER*
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                   <input
                     type="text"
                     name="NUMBER"
                     value={formData.NUMBER}
                     onChange={handleChange}
-                    required
                     className="w-full p-2 border border-gray-300 rounded-md"
+                    required
                   />
                 </div>
-                
+
                 {/* Email */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    E-MAIL
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                   <input
                     type="email"
                     name="E-MAIL"
@@ -397,12 +412,10 @@ const LeadSalesUpdatePage = () => {
                     className="w-full p-2 border border-gray-300 rounded-md"
                   />
                 </div>
-                
+
                 {/* Pseudo ID */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    PSUDO ID
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Pseudo ID</label>
                   <input
                     type="text"
                     name="PSUDO ID"
@@ -411,17 +424,14 @@ const LeadSalesUpdatePage = () => {
                     className="w-full p-2 border border-gray-300 rounded-md"
                   />
                 </div>
-                
+
                 {/* Sales Person */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    SALE PERSON*
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Sales Person</label>
                   <select
                     name="SALE PERSON"
                     value={formData['SALE PERSON']}
                     onChange={handleChange}
-                    required
                     className="w-full p-2 border border-gray-300 rounded-md"
                   >
                     <option value="">Select Sales Person</option>
@@ -432,12 +442,10 @@ const LeadSalesUpdatePage = () => {
                     ))}
                   </select>
                 </div>
-                
+
                 {/* Source */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    SOURSE
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Source</label>
                   <input
                     type="text"
                     name="SOURSE"
@@ -446,174 +454,182 @@ const LeadSalesUpdatePage = () => {
                     className="w-full p-2 border border-gray-300 rounded-md"
                   />
                 </div>
-                
-                {/* Client Remark */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    CLIENT REMARK
-                  </label>
-                  <input
-                    type="text"
-                    name="CLIENT REMARK"
-                    value={formData['CLIENT REMARK']}
-                    onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-                
-                {/* Feedback */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    FEEDBACK
-                  </label>
-                  <input
-                    type="text"
-                    name="FEEDBACK"
-                    value={formData.FEEDBACK}
-                    onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-                
+
                 {/* Total Cost */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    TOTAL COST*
-                  </label>
-                  <div className="flex space-x-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Total Cost</label>
+                  <div className="flex">
                     <input
                       type="number"
                       name="TOTAL COST"
                       value={formData['TOTAL COST']}
                       onChange={handleChange}
+                      className="w-2/3 p-2 border border-gray-300 rounded-l-md"
                       required
-                      className="w-full p-2 border border-gray-300 rounded-md"
                     />
                     <select
                       name="TOTAL COST CURRENCY"
                       value={formData['TOTAL COST CURRENCY']}
                       onChange={handleChange}
-                      className="p-2 border border-gray-300 rounded-md"
+                      className="w-1/3 p-2 border border-gray-300 rounded-r-md"
                     >
                       <option value="USD">USD</option>
                       <option value="EUR">EUR</option>
                       <option value="GBP">GBP</option>
-                      <option value="CAD">CAD</option>
-                      <option value="AUD">AUD</option>
                       <option value="INR">INR</option>
-                      <option value="JPY">JPY</option>
-                      <option value="CNY">CNY</option>
                     </select>
                   </div>
                 </div>
-                
+
                 {/* Token Amount */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    TOKEN AMOUNT*
-                  </label>
-                  <div className="flex space-x-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Token Amount</label>
+                  <div className="flex">
                     <input
                       type="number"
                       name="TOKEN AMOUNT"
                       value={formData['TOKEN AMOUNT']}
                       onChange={handleChange}
+                      className="w-2/3 p-2 border border-gray-300 rounded-l-md"
                       required
-                      className="w-full p-2 border border-gray-300 rounded-md"
                     />
                     <select
                       name="TOKEN AMOUNT CURRENCY"
                       value={formData['TOKEN AMOUNT CURRENCY']}
                       onChange={handleChange}
-                      className="p-2 border border-gray-300 rounded-md"
+                      className="w-1/3 p-2 border border-gray-300 rounded-r-md"
                     >
                       <option value="USD">USD</option>
                       <option value="EUR">EUR</option>
                       <option value="GBP">GBP</option>
-                      <option value="CAD">CAD</option>
-                      <option value="AUD">AUD</option>
                       <option value="INR">INR</option>
-                      <option value="JPY">JPY</option>
-                      <option value="CNY">CNY</option>
                     </select>
                   </div>
                 </div>
               </div>
-              
-              <div className="mt-6 flex justify-end">
+
+              {/* Client Remark */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Client Remark</label>
+                <textarea
+                  name="CLIENT REMARK"
+                  value={formData['CLIENT REMARK']}
+                  onChange={handleChange}
+                  rows="2"
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                ></textarea>
+              </div>
+
+              {/* Feedback */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Feedback</label>
+                <textarea
+                  name="FEEDBACK"
+                  value={formData.FEEDBACK}
+                  onChange={handleChange}
+                  rows="2"
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                ></textarea>
+              </div>
+
+              <div className="mt-6 flex justify-end space-x-4">
                 <button
                   type="button"
-                  onClick={() => setShowForm(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded mr-2 hover:bg-gray-400"
+                  onClick={handleCancelEdit}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                   disabled={loading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
                 >
-                  {loading ? 'Saving...' : 'Save Sale'}
+                  {loading ? 'Processing...' : (editingSaleId ? 'Update Sale' : 'Add Sale')}
                 </button>
               </div>
             </form>
           </div>
         )}
-        
-        {loading && !showForm ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white border border-gray-200">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="border px-4 py-2">DATE</th>
-                  <th className="border px-4 py-2">NAME</th>
-                  <th className="border px-4 py-2">COURSE</th>
-                  <th className="border px-4 py-2">NUMBER</th>
-                  <th className="border px-4 py-2">COUNTRY</th>
-                  <th className="border px-4 py-2">SALES PERSON</th>
-                  <th className="border px-4 py-2">TOTAL COST</th>
-                  <th className="border px-4 py-2">TOKEN AMOUNT</th>
-                  <th className="border px-4 py-2">LEAD PERSON</th>
-                  <th className="border px-4 py-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {salesList.length === 0 ? (
+
+        {/* Sales List */}
+        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <h2 className="text-xl font-semibold p-4 bg-gray-50">Sales List</h2>
+          
+          {loading && !showForm ? (
+            <div className="flex justify-center items-center p-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : salesList.length === 0 ? (
+            <div className="p-6 text-center text-gray-500">
+              No sales found. Add your first sale above.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
                   <tr>
-                    <td colSpan="9" className="border px-4 py-2 text-center">No sales data found</td>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sales Person</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Token</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
-                ) : (
-                  salesList.map(sale => (
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {salesList.map(sale => (
                     <tr key={sale._id} className="hover:bg-gray-50">
-                      <td className="border px-4 py-2">{new Date(sale.date).toLocaleDateString()}</td>
-                      <td className="border px-4 py-2">{sale.customerName}</td>
-                      <td className="border px-4 py-2">{sale.course}</td>
-                      <td className="border px-4 py-2">{sale.contactNumber}</td>
-                      <td className="border px-4 py-2">{sale.country}</td>
-                      <td className="border px-4 py-2">{sale.salesPerson?.fullName}</td>
-                      <td className="border px-4 py-2">{sale.totalCost?.toFixed(2) || '0.00'} {sale.totalCostCurrency || 'USD'}</td>
-                      <td className="border px-4 py-2">{sale.tokenAmount?.toFixed(2) || '0.00'} {sale.tokenAmountCurrency || 'USD'}</td>
-                      <td className="border px-4 py-2">{sale.leadPerson?.fullName}</td>
-                      <td className="border px-4 py-2">
-                        <button
-                          onClick={() => handleDeleteSale(sale._id)}
-                          className="text-red-500 hover:text-red-700 flex items-center"
-                          title="Delete this sale"
-                        >
-                          <FaTrash className="mr-1" /> Delete
-                        </button>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {new Date(sale.date).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div>{sale.customerName}</div>
+                        <div className="text-xs text-gray-500">{sale.country}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{sale.course}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {sale.salesPerson?.fullName || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {sale.totalCost} {sale.totalCostCurrency}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {sale.tokenAmount} {sale.tokenAmountCurrency}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className={`px-2 py-1 rounded-full text-xs ${sale.saleType === 'Lead Person Sale' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                          {sale.saleType || (sale.isLeadPersonSale ? 'Lead Person Sale' : 'Sales Person Sale')}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleEditSale(sale)}
+                            className="text-indigo-600 hover:text-indigo-900"
+                          >
+                            <FaEdit className="h-5 w-5" />
+                          </button>
+                          {/* Only allow deleting lead person sales */}
+                          {(!sale.saleType || sale.saleType === 'Lead Person Sale' || sale.isLeadPersonSale) && (
+                            <button
+                              onClick={() => handleDeleteSale(sale._id)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              <FaTrash className="h-5 w-5" />
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </Layout>
   );

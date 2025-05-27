@@ -17,6 +17,7 @@ const Footer = () => {
                 <li><a href="#" className="text-gray-400 hover:text-white transition">Documentation</a></li>
                 <li><a href="#" className="text-gray-400 hover:text-white transition">Help Center</a></li>
                 <li><a href="#tutorials" className="text-gray-400 hover:text-white transition">Tutorials</a></li>
+                <li><a href="#countries" className="text-gray-400 hover:text-white transition">Countries</a></li>
               </ul>
             </div>
             
@@ -25,7 +26,7 @@ const Footer = () => {
               <ul className="space-y-1">
                 <li><a href="#" className="text-gray-400 hover:text-white transition">About Us</a></li>
                 <li><a href="#" className="text-gray-400 hover:text-white transition">Careers</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition">Contact</a></li>
+                <li><a href="#management-contacts" className="text-gray-400 hover:text-white transition">Contact</a></li>
               </ul>
             </div>
           </div>

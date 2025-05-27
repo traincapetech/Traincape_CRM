@@ -7,6 +7,7 @@ import LeadForm from "../components/Leads/LeadForm";
 import Layout from "../components/Layout/Layout";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import { FaEdit, FaTrash, FaFilter, FaPlus } from 'react-icons/fa';
 
 const LeadsPage = () => {
   const { user } = useAuth();
@@ -75,8 +76,8 @@ const LeadsPage = () => {
       const filtered = leads.filter(lead => {
         const leadDate = new Date(lead.createdAt);
         return (
-          leadDate.getMonth() + 1 === filterMonth && 
-          leadDate.getFullYear() === filterYear
+          leadDate.getMonth() + 1 === parseInt(filterMonth) && 
+          leadDate.getFullYear() === parseInt(filterYear)
         );
       });
       
@@ -91,6 +92,16 @@ const LeadsPage = () => {
       console.log('Current user:', user);
       const response = await leadsAPI.getAll();
       console.log('API Response:', response.data);
+      
+      // Log the structure of the first lead to see available fields
+      if (response.data && response.data.data && response.data.data.length > 0) {
+        const firstLead = response.data.data[0];
+        console.log('First lead object structure:', firstLead);
+        console.log('All field names:', Object.keys(firstLead));
+        console.log('Name value:', firstLead.name);
+        console.log('NAME value:', firstLead.NAME);
+      }
+      
       setLeads(response.data.data);
       // Initially filter for current month
       filterLeadsByDate(response.data.data);
@@ -117,17 +128,24 @@ const LeadsPage = () => {
       setLeads(updatedLeads);
       setShowAddForm(false);
     }
+    
+    // Refresh leads after update to ensure we have the latest data
+    fetchLeads();
   };
   
   // Handle month change
   const handleMonthChange = (e) => {
-    setFilterMonth(parseInt(e.target.value));
+    const newMonth = parseInt(e.target.value);
+    console.log("Changing month to:", newMonth);
+    setFilterMonth(newMonth);
     setShowCurrentMonth(false);
   };
   
   // Handle year change
   const handleYearChange = (e) => {
-    setFilterYear(parseInt(e.target.value));
+    const newYear = parseInt(e.target.value);
+    console.log("Changing year to:", newYear);
+    setFilterYear(newYear);
     setShowCurrentMonth(false);
   };
   
@@ -153,6 +171,12 @@ const LeadsPage = () => {
     });
   }, []);
 
+  // Handle edit button click
+  const handleEditClick = (lead) => {
+    console.log("Edit clicked for lead:", lead);
+    setSelectedLead(lead);
+  };
+
   return (
     <Layout>
       <div className="bg-gray-50 min-h-screen pb-12">
@@ -163,21 +187,18 @@ const LeadsPage = () => {
               <div>
                 <h1 className="text-3xl font-bold text-white mb-2">Leads Management</h1>
                 <p className="text-blue-100 text-sm md:text-base">
-                  {filteredLeads.length} leads • {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  {filteredLeads.length} leads • {showCurrentMonth ? 'Current Month' : `${months.find(m => m.value === parseInt(filterMonth))?.label} ${filterYear}`}
                 </p>
               </div>
               
-              {!showAddForm && !selectedLead && (
-                <button
-                  onClick={() => setShowAddForm(true)}
-                  className="mt-4 md:mt-0 bg-white hover:bg-blue-50 text-blue-600 py-2 px-6 rounded-lg shadow-md transition duration-300 flex items-center font-medium"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-                  </svg>
-                  Add New Lead
-                </button>
-              )}
+              {/* Always show Add New Lead button */}
+              <button
+                onClick={() => setShowAddForm(true)}
+                className="mt-4 md:mt-0 bg-white hover:bg-blue-50 text-blue-600 py-2 px-6 rounded-lg shadow-md transition duration-300 flex items-center font-medium"
+              >
+                <FaPlus className="h-4 w-4 mr-2" />
+                Add New Lead
+              </button>
             </div>
           </div>
         </div>
@@ -230,19 +251,19 @@ const LeadsPage = () => {
             <>
               {/* Date Filter Controls */}
               <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8" data-aos="fade-up">
-                <div className="px-6 py-4 bg-gray-50 border-b border-gray-100">
+                <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
                   <h3 className="text-lg font-bold text-gray-800">Filter Leads</h3>
+                  <FaFilter className="text-gray-500" />
                 </div>
                 <div className="p-6">
-                  <div className="flex flex-wrap items-center gap-6">
-                    <div className="w-full md:w-auto">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
                       <label htmlFor="month" className="block text-sm font-medium text-gray-700 mb-1">Month</label>
                       <select
                         id="month"
                         value={filterMonth}
                         onChange={handleMonthChange}
-                        className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        disabled={showCurrentMonth}
+                        className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       >
                         {months.map(month => (
                           <option key={month.value} value={month.value}>
@@ -252,14 +273,13 @@ const LeadsPage = () => {
                       </select>
                     </div>
                     
-                    <div className="w-full md:w-auto">
+                    <div>
                       <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-1">Year</label>
                       <select
                         id="year"
                         value={filterYear}
                         onChange={handleYearChange}
-                        className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        disabled={showCurrentMonth}
+                        className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       >
                         {years.map(year => (
                           <option key={year} value={year}>
@@ -269,35 +289,21 @@ const LeadsPage = () => {
                       </select>
                     </div>
                     
-                    <div className="flex items-center ml-0 md:ml-4 mt-4 md:mt-0">
-                      <input
-                        id="currentMonth"
-                        type="checkbox"
-                        checked={showCurrentMonth}
-                        onChange={() => setShowCurrentMonth(!showCurrentMonth)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label htmlFor="currentMonth" className="ml-2 block text-sm text-gray-700">
-                        Show Current Month Only
-                      </label>
+                    <div className="flex items-end">
+                      <button
+                        onClick={handleResetToCurrentMonth}
+                        className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      >
+                        Show Current Month
+                      </button>
                     </div>
-                    
-                    <button
-                      onClick={handleResetToCurrentMonth}
-                      className="ml-auto mt-4 md:mt-0 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg transition duration-300 flex items-center"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-                      </svg>
-                      Reset Filters
-                    </button>
                   </div>
                   
-                  <div className="mt-4 text-sm text-gray-500 flex">
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-800 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                     </svg>
-                    <span>Showing {filteredLeads.length} leads for {showCurrentMonth ? 'current month' : `${months.find(m => m.value === filterMonth)?.label} ${filterYear}`}</span>
+                    <span>Showing {filteredLeads.length} leads for {showCurrentMonth ? 'current month' : `${months.find(m => m.value === parseInt(filterMonth))?.label} ${filterYear}`}</span>
                   </div>
                 </div>
               </div>
@@ -335,90 +341,73 @@ const LeadsPage = () => {
                       <thead className="bg-gray-50">
                         <tr>
                           <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Name
+                            Date
                           </th>
                           <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Contact
+                            Name
                           </th>
                           <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Course
                           </th>
                           <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Contact
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Country
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Status
                           </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Date
-                          </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {filteredLeads.map((lead) => (
-                          <tr key={lead._id} className="hover:bg-gray-50 transition">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                  <span className="text-blue-700 font-medium text-sm">
-                                    {lead.name?.charAt(0)}{lead.name?.split(' ')[1]?.charAt(0)}
-                                  </span>
-                                </div>
-                                <div className="ml-4">
-                                  <div className="text-sm font-medium text-gray-900">
-                                    {lead.name}
-                                    {lead.isRepeatCustomer && (
-                                      <span 
-                                        className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
-                                        title={`Repeat customer! Previous courses: ${lead.previousCourses?.join(', ') || 'None'}`}
-                                      >
-                                        Repeat
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div className="text-sm text-gray-500">{lead.assignedTo?.fullName || "Unassigned"}</div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">{lead.email}</div>
-                              <div className="text-sm text-gray-500">{lead.countryCode} {lead.phone}</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">{lead.course}</div>
-                              <div className="text-sm text-gray-500">{lead.country}</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                lead.status === "Introduction" ? "bg-green-100 text-green-800" :
-                                lead.status === "Acknowledgement" ? "bg-blue-100 text-blue-800" :
-                                lead.status === "Question" ? "bg-purple-100 text-purple-800" :
-                                lead.status === "Future Promise" ? "bg-red-100 text-red-800" :
-                                lead.status === "Payment" ? "bg-green-100 text-green-800" :
-                                lead.status === "Analysis" ? "bg-gray-100 text-gray-800" :
-                                "bg-gray-100 text-gray-800"
-                              }`}>
-                                {lead.status}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {formatDate(lead.createdAt)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <div className="flex items-center space-x-2">
+                        {filteredLeads.map((lead) => {
+                          // Log each lead to see its structure
+                          console.log(`Lead ${lead._id}:`, lead);
+                          return (
+                            <tr key={lead._id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {formatDate(lead.createdAt)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-medium text-gray-900">{lead.name || lead.NAME || ''}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {lead.course || lead.COURSE || ''}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900">{lead.phone || lead.NUMBER || ''}</div>
+                                <div className="text-sm text-gray-500">{lead.email || lead['E-MAIL'] || ''}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {lead.country || lead.COUNTRY || ''}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                  (lead.feedback || lead.FEEDBACK) === 'Converted' 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : (lead.feedback || lead.FEEDBACK) === 'Not Interested' 
+                                      ? 'bg-red-100 text-red-800'
+                                      : 'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                  {lead.feedback || lead.FEEDBACK || 'Pending'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <button
-                                  onClick={() => setSelectedLead(lead)}
-                                  className="text-blue-600 hover:text-blue-900 focus:outline-none"
+                                  onClick={() => handleEditClick(lead)}
+                                  className="text-indigo-600 hover:text-indigo-900 mr-4"
+                                  title="Edit Lead"
                                 >
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                  </svg>
+                                  <FaEdit className="h-5 w-5" />
                                 </button>
-                                {/* Add more actions if needed */}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

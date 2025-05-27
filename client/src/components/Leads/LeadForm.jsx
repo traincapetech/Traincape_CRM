@@ -74,26 +74,26 @@ const LeadForm = ({ lead = null, onSuccess }) => {
         : new Date().toISOString().split('T')[0];
       
       // Ensure country code doesn't have a plus sign to match server expectations
-      let countryCode = lead.countryCode || '';
+      let countryCode = lead.countryCode || lead.CODE || '';
       countryCode = countryCode.replace(/^\+/, '');
       
       const formValues = {
-        name: lead.name || '',
-        email: lead.email || '',
-        course: lead.course || '',
+        name: lead.name || lead.NAME || '',
+        email: lead.email || lead['E-MAIL'] || '',
+        course: lead.course || lead.COURSE || '',
         countryCode: countryCode,
-        phone: lead.phone || '',
-        country: lead.country || '',
-        pseudoId: lead.pseudoId || '',
-        company: lead.company || '',
-        client: lead.client || '',
+        phone: lead.phone || lead.NUMBER || '',
+        country: lead.country || lead.COUNTRY || '',
+        pseudoId: lead.pseudoId || lead['PSUDO ID'] || '',
+        company: lead.company || lead.COMPANY || '',
+        client: lead.client || lead['CLIENT REMARK'] || '',
         status: lead.status || 'Introduction',
-        source: lead.source || '',
-        sourceLink: lead.sourceLink || '',
-        assignedTo: lead.assignedTo?._id || '',
-        leadPerson: lead.leadPerson?._id || '',
+        source: lead.source || lead.SOURSE || '',
+        sourceLink: lead.sourceLink || lead['SOURCE LINK'] || '',
+        assignedTo: lead.assignedTo?._id || lead['SALE PERSON']?._id || lead['SALE PERSON'] || '',
+        leadPerson: lead.leadPerson?._id || lead['LEAD PERSON']?._id || lead['LEAD PERSON'] || '',
         remarks: lead.remarks || '',
-        feedback: lead.feedback || '',
+        feedback: lead.feedback || lead.FEEDBACK || '',
         customCreatedAt: createdDate
       };
       
@@ -174,27 +174,42 @@ const LeadForm = ({ lead = null, onSuccess }) => {
       let response;
       // Create the data to submit
       const dataToSubmit = {
+        // Support both formats for maximum compatibility
+        name: formData.name,
         NAME: formData.name,
+        email: formData.email,
         'E-MAIL': formData.email,
+        course: formData.course,
         COURSE: formData.course,
-        CODE: countryCode, // Use the country code without + since server accepts it that way
+        countryCode: countryCode,
+        CODE: countryCode,
+        phone: formData.phone,
         NUMBER: formData.phone,
+        country: formData.country,
         COUNTRY: formData.country,
+        pseudoId: formData.pseudoId || '',
         'PSUDO ID': formData.pseudoId || '',
+        client: formData.client || '',
         'CLIENT REMARK': formData.client || '',
-        status: formData.status || 'Introduction', // Ensure status has a default
-        SOURSE: formData.source || '', // Ensure source has a default
+        status: formData.status || 'Introduction',
+        source: formData.source || '',
+        SOURSE: formData.source || '',
+        sourceLink: formData.sourceLink || '',
         'SOURCE LINK': formData.sourceLink || '',
+        assignedTo: formData.assignedTo,
         'SALE PERSON': formData.assignedTo,
-        'LEAD PERSON': formData.leadPerson || '', // Ensure lead person has a default
+        leadPerson: formData.leadPerson || '',
+        'LEAD PERSON': formData.leadPerson || '',
+        feedback: formData.feedback || '',
         FEEDBACK: formData.feedback || '',
-        DATE: formData.customCreatedAt ? new Date(formData.customCreatedAt).toISOString() : new Date().toISOString()
+        DATE: formData.customCreatedAt ? new Date(formData.customCreatedAt).toISOString() : new Date().toISOString(),
+        createdAt: formData.customCreatedAt ? new Date(formData.customCreatedAt).toISOString() : new Date().toISOString()
       };
       
       // Double-check all required fields are present and valid
-      const requiredFields = ['NAME', 'COURSE', 'CODE', 'NUMBER', 'COUNTRY', 'SALE PERSON'];
+      const requiredFields = ['name', 'course', 'phone', 'country', 'assignedTo'];
       const missingFields = requiredFields.filter(field => 
-        !dataToSubmit[field] || dataToSubmit[field].trim() === ''
+        !formData[field] || formData[field].trim() === ''
       );
       
       if (missingFields.length > 0) {
@@ -205,37 +220,23 @@ const LeadForm = ({ lead = null, onSuccess }) => {
       }
       
       // Validate email only if provided and not empty (email is optional)
-      if (dataToSubmit['E-MAIL'] && dataToSubmit['E-MAIL'].trim() !== '') {
+      if (formData.email && formData.email.trim() !== '') {
         // Simple check for @ symbol - don't be too strict on format to allow international emails
-        if (!dataToSubmit['E-MAIL'].includes('@')) {
-          console.error('Invalid email format:', dataToSubmit['E-MAIL']);
+        if (!formData.email.includes('@')) {
+          console.error('Invalid email format:', formData.email);
           setError('Please enter a valid email address or leave it blank');
           setLoading(false);
           return;
         }
       } else {
         // Ensure empty email is properly handled by setting to empty string
+        dataToSubmit.email = '';
         dataToSubmit['E-MAIL'] = '';
         console.log('Email field is blank, setting to empty string');
       }
       
       // Log the final data being sent for debugging
       console.log('Final data being sent:', dataToSubmit);
-      console.log('Required fields check:', {
-        NAME: !!dataToSubmit.NAME && dataToSubmit.NAME.trim() !== '',
-        COURSE: !!dataToSubmit.COURSE && dataToSubmit.COURSE.trim() !== '',
-        CODE: !!dataToSubmit.CODE && dataToSubmit.CODE.trim() !== '',
-        NUMBER: !!dataToSubmit.NUMBER && dataToSubmit.NUMBER.trim() !== '',
-        COUNTRY: !!dataToSubmit.COUNTRY && dataToSubmit.COUNTRY.trim() !== '',
-        'SALE PERSON': !!dataToSubmit['SALE PERSON'] && dataToSubmit['SALE PERSON'].trim() !== ''
-      });
-      
-      // Check if we're in development mode (Vite exposes import.meta.env)
-      const isDevelopment = import.meta.env.DEV;
-      console.log('Environment check:', {
-        isDevelopment,
-        'import.meta.env.DEV': import.meta.env.DEV
-      });
       
       if (lead) {
         // Update existing lead
@@ -249,319 +250,301 @@ const LeadForm = ({ lead = null, onSuccess }) => {
       
       console.log('API response:', response.data);
       
-      if (response.data.success) {
-        console.log('Lead saved successfully with ID:', response.data.data._id);
-        
-        if (onSuccess) {
-          onSuccess(response.data.data);
-        } else {
-          navigate('/leads');
-        }
+      if (response.data && response.data.success) {
+        console.log('Lead saved successfully');
+        onSuccess(response.data.data);
       } else {
-        setError('Server returned an error: ' + (response.data.message || 'Unknown error'));
+        console.error('API returned success: false', response);
+        setError('Failed to save lead. Please check your input and try again.');
       }
     } catch (err) {
-      console.error('Error submitting form:', err);
-      
-      // More detailed error handling
-      if (err.response) {
-        console.error('API Error:', {
-          status: err.response.status,
-          data: err.response.data,
-          url: err.response.config?.url,
-          method: err.response.config?.method,
-          message: err.response.data?.message || err.message,
-          config: err.response.config
-        });
-        
-        // If we have detailed error data, log it
-        if (err.response.data?.missingFields) {
-          console.error('Missing fields reported by server:', err.response.data.missingFields);
-        }
-        
-        // Show more specific error message based on status code
-        if (err.response.status === 400) {
-          setError('Validation error: ' + (err.response.data?.message || 'Please check all required fields'));
-        } else if (err.response.status === 401) {
-          setError('Authentication error: Please log in again');
-        } else if (err.response.status === 403) {
-          setError('Permission error: You do not have permission to perform this action');
-        } else {
-          setError('Server error: ' + (err.response.data?.message || 'Failed to save lead'));
-        }
-      } else {
-        setError('Network error: Unable to connect to server');
-      }
+      console.error('Error saving lead:', err);
+      console.error('Error response:', err.response?.data);
+      setError(err.response?.data?.message || 'Failed to save lead. Please try again later.');
     } finally {
       setLoading(false);
-      console.log('===================================');
     }
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-semibold mb-6">
-        {lead ? 'Edit Lead' : 'Add New Lead'}
-      </h2>
-
+    <form onSubmit={handleSubmit} className="space-y-8">
       {error && (
-        <div className="mb-4 p-3 bg-red-50 text-red-700 border border-red-200 rounded-md">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
           {error}
         </div>
       )}
-
-      <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* DATE */}
+      
+      {/* Contact Information */}
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              DATE*
-            </label>
-            <input
-              type="date"
-              name="customCreatedAt"
-              value={formData.customCreatedAt}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          {/* NAME */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              NAME*
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              Full Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               name="name"
+              id="name"
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-
-          {/* COUNTRY */}
+          
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              COUNTRY*
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              id="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+              Phone <span className="text-red-500">*</span>
+            </label>
+            <div className="mt-1 flex rounded-md shadow-sm">
+              <div className="flex-shrink-0">
+                <input
+                  type="text"
+                  name="countryCode"
+                  id="countryCode"
+                  value={formData.countryCode}
+                  onChange={handleChange}
+                  placeholder="Code"
+                  className="block w-16 border border-gray-300 rounded-md rounded-r-none shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <input
+                type="text"
+                name="phone"
+                id="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                required
+                className="flex-1 block w-full border border-gray-300 rounded-md rounded-l-none shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+          
+          <div>
+            <label htmlFor="country" className="block text-sm font-medium text-gray-700">
+              Country <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               name="country"
+              id="country"
               value={formData.country}
               onChange={handleChange}
               required
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-
-          {/* COURSE */}
+        </div>
+      </div>
+      
+      {/* Course Information */}
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Course Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              COURSE*
+            <label htmlFor="course" className="block text-sm font-medium text-gray-700">
+              Course <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               name="course"
+              id="course"
               value={formData.course}
               onChange={handleChange}
               required
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-
-          {/* CODE */}
+          
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              CODE*
-            </label>
-            <input
-              type="text"
-              name="countryCode"
-              value={formData.countryCode}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          {/* NUMBER */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              NUMBER*
-            </label>
-            <input
-              type="text"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          {/* E-MAIL */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              E-MAIL
-              <span className="text-xs ml-1 text-gray-500 font-normal">(optional)</span>
-            </label>
-            <input
-              type="text"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="example@domain.com (optional)"
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          {/* PSUDO ID */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              PSUDO ID
-            </label>
-            <input
-              type="text"
-              name="pseudoId"
-              value={formData.pseudoId}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          {/* SALE PERSON */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              SALE PERSON*
-            </label>
-            <select
-              name="assignedTo"
-              value={formData.assignedTo}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Select Sales Person</option>
-              {salesPersons.map(person => (
-                <option key={person._id} value={person._id}>
-                  {person.fullName}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* LEAD PERSON */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              LEAD PERSON
-            </label>
-            <select
-              name="leadPerson"
-              value={formData.leadPerson}
-              onChange={handleChange}
-              disabled={user?.role !== 'Admin' && user?.role !== 'Manager'}
-              className={`w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
-                user?.role !== 'Admin' && user?.role !== 'Manager' ? 'bg-gray-100' : ''
-              }`}
-            >
-              <option value="">Select Lead Person</option>
-              {leadPersons.map(person => (
-                <option key={person._id} value={person._id}>
-                  {person.fullName}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* SOURSE */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              SOURSE
+            <label htmlFor="source" className="block text-sm font-medium text-gray-700">
+              Source
             </label>
             <input
               type="text"
               name="source"
+              id="source"
               value={formData.source}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-
-          {/* SOURCE LINK (LinkedIn URL) */}
+          
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              LinkedIn URL
-            </label>
-            <input
-              type="url"
-              name="sourceLink"
-              value={formData.sourceLink}
-              onChange={handleChange}
-              placeholder="https://www.linkedin.com/in/profile"
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          {/* CLIENT REMARK */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              CLIENT REMARK
+            <label htmlFor="sourceLink" className="block text-sm font-medium text-gray-700">
+              Source Link
             </label>
             <input
               type="text"
-              name="client"
-              value={formData.client}
+              name="sourceLink"
+              id="sourceLink"
+              value={formData.sourceLink}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-
-          {/* FEEDBACK */}
-          <div className="md:col-span-3">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              FEEDBACK
+          
+          <div>
+            <label htmlFor="pseudoId" className="block text-sm font-medium text-gray-700">
+              Pseudo ID
             </label>
-            <textarea
+            <input
+              type="text"
+              name="pseudoId"
+              id="pseudoId"
+              value={formData.pseudoId}
+              onChange={handleChange}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+        </div>
+      </div>
+      
+      {/* Assignment & Status */}
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Assignment & Status</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label htmlFor="assignedTo" className="block text-sm font-medium text-gray-700">
+              Assigned Sales Person <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="assignedTo"
+              name="assignedTo"
+              value={formData.assignedTo}
+              onChange={handleChange}
+              required
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Select Sales Person</option>
+              {salesPersons.map(person => (
+                <option key={person._id} value={person._id}>
+                  {person.fullName || person.email}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div>
+            <label htmlFor="leadPerson" className="block text-sm font-medium text-gray-700">
+              Lead Person
+            </label>
+            <select
+              id="leadPerson"
+              name="leadPerson"
+              value={formData.leadPerson}
+              onChange={handleChange}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Select Lead Person</option>
+              {leadPersons.map(person => (
+                <option key={person._id} value={person._id}>
+                  {person.fullName || person.email}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div>
+            <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+              Status
+            </label>
+            <select
+              id="status"
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="Introduction">Introduction</option>
+              <option value="Acknowledgement">Acknowledgement</option>
+              <option value="Question">Question</option>
+              <option value="Future Promise">Future Promise</option>
+              <option value="Payment">Payment</option>
+              <option value="Analysis">Analysis</option>
+            </select>
+          </div>
+          
+          <div>
+            <label htmlFor="feedback" className="block text-sm font-medium text-gray-700">
+              Feedback
+            </label>
+            <select
+              id="feedback"
               name="feedback"
               value={formData.feedback}
               onChange={handleChange}
-              rows="3"
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            ></textarea>
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Select Feedback</option>
+              <option value="Pending">Pending</option>
+              <option value="Converted">Converted</option>
+              <option value="Not Interested">Not Interested</option>
+              <option value="Follow Up">Follow Up</option>
+            </select>
           </div>
         </div>
-
-        <div className="mt-6 flex justify-end">
-          <button
-            type="button"
-            onClick={() => navigate('/leads')}
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded mr-2 hover:bg-gray-400"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            disabled={loading}
-          >
-            {loading ? (
-              <span className="flex items-center">
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Saving...
-              </span>
-            ) : (
-              'Save Lead'
-            )}
-          </button>
+      </div>
+      
+      {/* Additional Information */}
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Additional Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="md:col-span-2">
+            <label htmlFor="client" className="block text-sm font-medium text-gray-700">
+              Client Remarks
+            </label>
+            <textarea
+              id="client"
+              name="client"
+              rows="3"
+              value={formData.client}
+              onChange={handleChange}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            ></textarea>
+          </div>
+          
+          <div>
+            <label htmlFor="customCreatedAt" className="block text-sm font-medium text-gray-700">
+              Date Added
+            </label>
+            <input
+              type="date"
+              name="customCreatedAt"
+              id="customCreatedAt"
+              value={formData.customCreatedAt}
+              onChange={handleChange}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
         </div>
-      </form>
-    </div>
+      </div>
+      
+      <div className="pt-5 flex justify-end">
+        <button
+          type="submit"
+          disabled={loading}
+          className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          {loading ? 'Saving...' : lead ? 'Update Lead' : 'Add Lead'}
+        </button>
+      </div>
+    </form>
   );
 };
 

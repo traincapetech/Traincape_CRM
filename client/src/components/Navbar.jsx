@@ -35,6 +35,11 @@ const Navbar = () => {
           <li>
             <Link to="/" className="hover:text-blue-300">Home</Link>
           </li>
+          
+          {/* Management Contacts link accessible to all */}
+          {/* <li>
+            <Link to="/management-contacts" className="hover:text-blue-300">Contacts</Link>
+          </li> */}
 
           {/* Lead Person, Manager, and Admin can access Leads page */}
           {user && (user.role === "Lead Person" || user.role === "Manager" || user.role === "Admin") && (
@@ -49,9 +54,9 @@ const Navbar = () => {
               <li>
                 <Link to="/lead-sales-sheet" className="hover:text-blue-300">Lead Sales Sheet</Link>
               </li>
-              <li>
+              {/* <li>
                 <Link to="/update-sales" className="hover:text-blue-300">Update Sales</Link>
-              </li>
+              </li> */}
             </>
           )}
 

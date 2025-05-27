@@ -35,13 +35,22 @@ const initialRates = {
 
 /**
  * Currency selector component that allows users to change the currency format globally
+ * @param {Object} props - Component props
+ * @param {boolean} props.darkMode - Whether to use dark mode styling (white text)
  */
-const CurrencySelector = () => {
+const CurrencySelector = ({ darkMode = true }) => {
   const [currentCurrency, setCurrentCurrency] = useState(() => getCurrencySettings().currency);
   const [exchangeRates, setExchangeRates] = useState(initialRates);
   const [availableCurrencies, setAvailableCurrencies] = useState([]);
   const [fetchError, setFetchError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
+  
+  // Text colors based on mode
+  const textColor = darkMode ? 'text-white' : 'text-gray-700';
+  const subTextColor = darkMode ? 'text-blue-200' : 'text-gray-500';
+  const errorTextColor = darkMode ? 'text-yellow-200' : 'text-yellow-600';
+  const bgColor = darkMode ? 'bg-blue-700' : 'bg-white';
+  const borderColor = darkMode ? 'border-blue-600' : 'border-gray-300';
 
   // Fetch latest exchange rates from our backend API
   useEffect(() => {
@@ -232,9 +241,9 @@ const CurrencySelector = () => {
   // If we have no currencies yet, show a loading state
   if (availableCurrencies.length === 0) {
     return (
-      <div className="flex items-center text-white text-sm">
+      <div className={`flex items-center ${textColor} text-sm`}>
         <span className="mr-2">Loading currencies...</span>
-        <div className="animate-spin h-4 w-4 border-2 border-white rounded-full border-t-transparent"></div>
+        <div className={`animate-spin h-4 w-4 border-2 ${textColor} rounded-full border-t-transparent`}></div>
       </div>
     );
   }
@@ -242,14 +251,14 @@ const CurrencySelector = () => {
   return (
     <div className="flex flex-col items-end">
       <div className="flex items-center">
-        <label htmlFor="currency-selector" className="text-sm text-white mr-2">
+        <label htmlFor="currency-selector" className={`text-sm ${textColor} mr-2`}>
           Currency:
         </label>
         <select
           id="currency-selector"
           value={currentCurrency}
           onChange={handleCurrencyChange}
-          className="text-sm border border-gray-300 rounded p-1 focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-blue-700 text-white font-medium"
+          className={`text-sm border ${borderColor} rounded p-1 focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${bgColor} ${textColor} font-medium`}
           style={{ 
             WebkitAppearance: 'menulist', // For Safari
             MozAppearance: 'menulist',    // For Firefox
@@ -267,8 +276,8 @@ const CurrencySelector = () => {
           ))}
         </select>
       </div>
-      <div className="text-xs text-blue-200 mt-1">
-        {fetchError && <span className="text-yellow-200 mr-2">{fetchError}</span>}
+      <div className={`text-xs ${subTextColor} mt-1`}>
+        {fetchError && <span className={`${errorTextColor} mr-2`}>{fetchError}</span>}
         {lastUpdated && `Rates updated: ${formatLastUpdated(lastUpdated)}`}
       </div>
     </div>

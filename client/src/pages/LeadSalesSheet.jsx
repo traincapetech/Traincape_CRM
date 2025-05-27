@@ -2,37 +2,245 @@ import React, { useState, useEffect } from 'react';
 import { salesAPI, authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout/Layout';
-import { FaDownload, FaEdit, FaSave, FaTimesCircle } from 'react-icons/fa';
+import { FaDownload, FaEdit, FaSave, FaTimesCircle, FaFilter, FaCalendar, FaSync } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 
 const LeadSalesSheet = () => {
   const [sales, setSales] = useState([]);
+  const [filteredSales, setFilteredSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [salesPersons, setSalesPersons] = useState([]);
   const [editingSaleId, setEditingSaleId] = useState(null);
   const [editData, setEditData] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
   const { user } = useAuth();
+
+  // Date filtering state
+  const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1); // Current month (1-12)
+  const [filterYear, setFilterYear] = useState(new Date().getFullYear()); // Current year
+  const [showCurrentMonth, setShowCurrentMonth] = useState(true); // Flag to show current month by default
+  
+  // Generate month options
+  const months = [
+    { value: 1, label: "January" },
+    { value: 2, label: "February" },
+    { value: 3, label: "March" },
+    { value: 4, label: "April" },
+    { value: 5, label: "May" },
+    { value: 6, label: "June" },
+    { value: 7, label: "July" },
+    { value: 8, label: "August" },
+    { value: 9, label: "September" },
+    { value: 10, label: "October" },
+    { value: 11, label: "November" },
+    { value: 12, label: "December" }
+  ];
+  
+  // Generate year options (5 years back from current year)
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 6 }, (_, i) => currentYear - i);
 
   useEffect(() => {
     loadSalesData();
     loadUsers();
+    
+    // Set up automatic refresh every 2 minutes
+    const refreshInterval = setInterval(() => {
+      console.log("Auto-refreshing sales data...");
+      loadSalesData(true);
+    }, 120000); // 2 minutes
+    
+    return () => {
+      clearInterval(refreshInterval);
+    };
   }, []);
+  
+  // Apply date filters when sales data changes
+  useEffect(() => {
+    if (sales.length > 0) {
+      applyDateFilters();
+    }
+  }, [sales, filterMonth, filterYear, showCurrentMonth]);
 
-  const loadSalesData = async () => {
+  // Function to filter sales by selected date
+  const applyDateFilters = () => {
+    if (showCurrentMonth) {
+      // Show current month data
+      const currentMonth = new Date().getMonth() + 1; // 1-12
+      const currentYear = new Date().getFullYear();
+      
+      const filtered = sales.filter(sale => {
+        // Make sure we have a valid date to work with
+        if (!sale.date && !sale.createdAt) {
+          console.log('Sale has no date:', sale);
+          return false;
+        }
+        
+        const saleDate = new Date(sale.date || sale.createdAt);
+        const saleMonth = saleDate.getMonth() + 1; // Convert to 1-12 format
+        const saleYear = saleDate.getFullYear();
+        
+        return (
+          saleMonth === currentMonth && 
+          saleYear === currentYear
+        );
+      });
+      
+      console.log(`Filtered to current month: ${currentMonth}/${currentYear}. Found ${filtered.length} sales.`);
+      setFilteredSales(filtered);
+    } else {
+      // Show selected month/year data
+      const filtered = sales.filter(sale => {
+        // Make sure we have a valid date to work with
+        if (!sale.date && !sale.createdAt) {
+          console.log('Sale has no date:', sale);
+          return false;
+        }
+        
+        const saleDate = new Date(sale.date || sale.createdAt);
+        const saleMonth = saleDate.getMonth() + 1; // Convert to 1-12 format
+        const saleYear = saleDate.getFullYear();
+        
+        console.log(`Sale date: ${saleDate.toISOString()}, Month: ${saleMonth}, Year: ${saleYear}, Filter: ${filterMonth}/${filterYear}`);
+        
+        return (
+          saleMonth === filterMonth && 
+          saleYear === filterYear
+        );
+      });
+      
+      console.log(`Filtered to ${filterMonth}/${filterYear}. Found ${filtered.length} sales.`);
+      setFilteredSales(filtered);
+    }
+  };
+
+  const loadSalesData = async (isAutoRefresh = false) => {
     try {
-      setLoading(true);
+      if (!isAutoRefresh) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
       setError(null);
 
-      const res = await salesAPI.getLeadSheet();
-      setSales(res.data.data);
+      console.log('Fetching lead sales for user:', user?.fullName, user?.role, user?._id);
+      
+      // Try direct axios approach first for more reliable data
+      try {
+        const token = localStorage.getItem('token');
+        
+        // Direct API call to get sales data - with full=true parameter to get ALL sales
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/lead-sales?full=true`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log("Direct API response for lead sales:", response);
+        
+        // Check response format and extract data
+        let salesData = [];
+        if (response.data && response.data.success && response.data.data) {
+          salesData = response.data.data;
+        } else if (response.data && Array.isArray(response.data)) {
+          salesData = response.data;
+        }
+        
+        console.log(`Lead sales data loaded: ${salesData.length} sales`);
+        setSales(salesData);
+        
+        // Initialize filteredSales with all sales
+        if (!isAutoRefresh) {
+          setFilteredSales(salesData);
+        } else {
+          // When auto-refreshing, maintain filters but update underlying data
+          applyDateFilters();
+        }
+        
+        if (salesData.length === 0) {
+          console.log('No lead sales found. This could be because:');
+          console.log('1. No sales have been assigned to this lead person');
+          console.log('2. Sales were created without selecting this lead person');
+        } else {
+          // Log a sample sale for debugging
+          console.log('Sample sale data:', salesData[0]);
+        }
+        
+        if (isAutoRefresh) {
+          toast.info("Sales data refreshed automatically");
+        }
+      } catch (axiosError) {
+        console.error("Direct API call failed:", axiosError);
+        
+        // Fall back to using the API service with forced option to get ALL sales
+        try {
+          const res = await salesAPI.getAllForced();
+          
+          if (res.data && res.data.success) {
+            // Filter the sales to only show ones where this user is the lead person
+            const leadPersonSales = res.data.data.filter(sale => 
+              sale.leadPerson === user._id || 
+              (sale.leadPerson && sale.leadPerson._id === user._id)
+            );
+            
+            console.log(`Lead sales data loaded from API service: ${leadPersonSales.length} sales`);
+            setSales(leadPersonSales);
+            
+            // Initialize filteredSales with all sales
+            if (!isAutoRefresh) {
+              setFilteredSales(leadPersonSales);
+            } else {
+              // When auto-refreshing, maintain filters but update underlying data
+              applyDateFilters();
+            }
+            
+            if (isAutoRefresh) {
+              toast.info("Sales data refreshed automatically");
+            }
+          } else {
+            console.error('Failed to load lead sales data:', res.data);
+            setError('Failed to load sales data: ' + (res.data?.message || 'Unknown error'));
+          }
+        } catch (apiError) {
+          console.error('API service call failed:', apiError);
+          setError('Failed to load sales data. Please try again.');
+        }
+      }
     } catch (err) {
       console.error('Error loading sales data:', err);
+      if (err.response) {
+        console.error('Error details:', err.response.data);
+        console.error('Error status:', err.response.status);
+      }
       setError('Failed to load sales data. Please try again.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  // Handle month change
+  const handleMonthChange = (e) => {
+    setFilterMonth(parseInt(e.target.value));
+    setShowCurrentMonth(false);
+  };
+  
+  // Handle year change
+  const handleYearChange = (e) => {
+    setFilterYear(parseInt(e.target.value));
+    setShowCurrentMonth(false);
+  };
+  
+  // Handle reset to current month
+  const handleResetToCurrentMonth = () => {
+    const today = new Date();
+    setFilterMonth(today.getMonth() + 1);
+    setFilterYear(today.getFullYear());
+    setShowCurrentMonth(true);
   };
 
   const loadUsers = async () => {
@@ -126,8 +334,8 @@ const LeadSalesSheet = () => {
   const exportToExcel = () => {
     const fileName = `Lead-Sales-Sheet-${new Date().toISOString().split('T')[0]}.xlsx`;
     
-    // Format data for export
-    const exportData = sales.map(sale => ({
+    // Format data for export - use the currently filtered sales
+    const exportData = filteredSales.map(sale => ({
       'DATE': new Date(sale.date).toLocaleDateString(),
       'NAME': sale.customerName,
       'COUNTRY': sale.country,
@@ -160,14 +368,29 @@ const LeadSalesSheet = () => {
     <Layout>
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Lead Sales Sheet</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">My Sales Sheet</h1>
+            <p className="text-sm text-gray-600 mt-1">
+              This page shows all sales assigned to you as a Lead Person. 
+              Sales created by Sales Persons who select you as the Lead Person will appear here.
+            </p>
+          </div>
           
           <div className="flex space-x-2">
             <button
-              onClick={loadSalesData}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              onClick={() => loadSalesData(false)}
+              disabled={refreshing}
+              className={`px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center ${refreshing ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              Refresh
+              {refreshing ? (
+                <>
+                  <FaSync className="mr-2 animate-spin" /> Refreshing...
+                </>
+              ) : (
+                <>
+                  <FaSync className="mr-2" /> Refresh
+                </>
+              )}
             </button>
             <button
               onClick={exportToExcel}
@@ -175,6 +398,77 @@ const LeadSalesSheet = () => {
             >
               <FaDownload className="mr-2" /> Export
             </button>
+          </div>
+        </div>
+        
+        {/* Date Filter Controls */}
+        <div className="mb-6 p-4 bg-white rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold mb-3 flex items-center">
+            <FaFilter className="mr-2 text-blue-500" /> Filter Sales by Date
+          </h3>
+          <div className="flex flex-wrap items-center gap-4">
+            <div>
+              <label htmlFor="month" className="block text-sm font-medium text-gray-600 mb-1">Month</label>
+              <select
+                id="month"
+                value={filterMonth}
+                onChange={handleMonthChange}
+                className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                disabled={showCurrentMonth}
+              >
+                {months.map(month => (
+                  <option key={month.value} value={month.value}>
+                    {month.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label htmlFor="year" className="block text-sm font-medium text-gray-600 mb-1">Year</label>
+              <select
+                id="year"
+                value={filterYear}
+                onChange={handleYearChange}
+                className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                disabled={showCurrentMonth}
+              >
+                {years.map(year => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="flex items-center ml-4">
+              <input
+                id="currentMonth"
+                type="checkbox"
+                checked={showCurrentMonth}
+                onChange={() => setShowCurrentMonth(!showCurrentMonth)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="currentMonth" className="ml-2 block text-sm text-gray-700">
+                Show Current Month Only
+              </label>
+            </div>
+            
+            <button
+              onClick={handleResetToCurrentMonth}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-md ml-auto transition duration-300 flex items-center"
+            >
+              <FaCalendar className="mr-2" /> Reset to Current Month
+            </button>
+          </div>
+          
+          <div className="mt-3 text-sm text-gray-500">
+            {showCurrentMonth ? (
+              <p>Showing sales for current month: {months[new Date().getMonth()].label} {new Date().getFullYear()}</p>
+            ) : (
+              <p>Showing sales for: {months[filterMonth - 1].label} {filterYear}</p>
+            )}
+            <p>Total: {filteredSales.length} sales</p>
           </div>
         </div>
         
@@ -207,12 +501,21 @@ const LeadSalesSheet = () => {
                 </tr>
               </thead>
               <tbody>
-                {sales.length === 0 ? (
+                {filteredSales.length === 0 ? (
                   <tr>
-                    <td colSpan="11" className="border px-4 py-2 text-center">No sales data found</td>
+                    <td colSpan="11" className="border px-4 py-2 text-center">
+                      <div className="py-6">
+                        <p className="text-gray-600 mb-2">No sales data found for you as a Lead Person.</p>
+                        <p className="text-sm text-gray-500">
+                          When Sales Persons create sales and select you as the Lead Person, they will appear here.
+                          <br />
+                          Ask Sales Persons to make sure they select your name in the Lead Person dropdown when creating sales.
+                        </p>
+                      </div>
+                    </td>
                   </tr>
                 ) : (
-                  sales.map(sale => (
+                  filteredSales.map(sale => (
                     <tr key={sale._id} className="hover:bg-gray-50">
                       {editingSaleId === sale._id ? (
                         // Edit mode

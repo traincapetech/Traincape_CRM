@@ -56,7 +56,7 @@ const HomePage = () => {
                 <div className="text-center sm:text-left">
                   <h3 className="text-lg font-bold mb-1">Contact Management</h3>
                   <p className="text-gray-600 text-sm">Organize client data with powerful filters and segments.</p>
-                  <Link to="/leads" className="text-blue-700 font-medium text-sm mt-2 inline-block">Access Contacts →</Link>
+                  <Link to="/management-contacts" className="text-blue-700 font-medium text-sm mt-2 inline-block">Access Contacts →</Link>
                 </div>
               </div>
             </div>
@@ -90,6 +90,23 @@ const HomePage = () => {
                 </div>
               </div>
             </div>
+            
+            {user && (user.role === "Manager" || user.role === "Admin") && (
+              <div className="bg-white p-4 sm:p-5 rounded-lg shadow hover:shadow-md transition">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start">
+                  <div className="bg-indigo-100 text-indigo-700 p-3 rounded-lg mb-3 sm:mb-0 sm:mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                    </svg>
+                  </div>
+                  <div className="text-center sm:text-left">
+                    <h3 className="text-lg font-bold mb-1">Manager Dashboard</h3>
+                    <p className="text-gray-600 text-sm">Manage users, roles and system access.</p>
+                    <Link to="/manager" className="text-indigo-700 font-medium text-sm mt-2 inline-block">Access Dashboard →</Link>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -189,6 +206,13 @@ const HomePage = () => {
                   </svg>
                   <span>Manage team and generate reports</span>
                 </li>
+                {user && (user.role === "Manager" || user.role === "Admin") && (
+                  <li className="mt-4">
+                    <Link to="/manager" className="inline-block w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded text-center transition">
+                      Access Manager Dashboard
+                    </Link>
+                  </li>
+                )}
               </ul>
             </div>
           </div>

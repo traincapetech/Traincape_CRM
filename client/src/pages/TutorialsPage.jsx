@@ -35,6 +35,18 @@ const TutorialsPage = () => {
             "Use the quick stats cards to monitor performance"
           ],
           tip: "Customize your experience by updating your profile settings."
+        },
+        {
+          heading: "Setting Up Your Profile",
+          description: "Personalize your account and add a profile picture.",
+          steps: [
+            "Navigate to your profile by clicking your name in the top navigation",
+            "Upload a profile picture by clicking the camera icon",
+            "Use the crop tool to adjust and position your image",
+            "Click Apply Crop to confirm your selection",
+            "Save your profile changes"
+          ],
+          tip: "The new image cropping tool allows you to perfectly position your profile picture before uploading."
         }
       ]
     },
@@ -104,6 +116,18 @@ const TutorialsPage = () => {
             "Submit the form to create the reference sale"
           ],
           tip: "Reference sales customers will be available in all customer selection dropdowns throughout the system, including exam scheduling."
+        },
+        {
+          heading: "Lead Person Sales Management",
+          description: "Lead persons can now track their own sales separately from the main sales pipeline.",
+          steps: [
+            "As a Lead Person, navigate to the Lead Sales Update page",
+            "Click 'Add New Sale' to create a new lead person sale",
+            "Fill in all required customer and sales information",
+            "Select a Sales Person to associate with this sale",
+            "Submit the sale to save it to the lead person sales database"
+          ],
+          tip: "Lead Person sales are stored in a separate database and are only visible to Lead Persons, Managers, and Admins - not to regular Sales Persons."
         },
         {
           heading: "Managing Your Sales",

@@ -21,6 +21,9 @@ const TaskManagementPage = () => {
   const [leadsLoading, setLeadsLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentTask, setCurrentTask] = useState(null);
+  // New states for manual entry and search
+  const [manualCustomerMode, setManualCustomerMode] = useState(false);
+  const [leadSearchQuery, setLeadSearchQuery] = useState('');
 
   // Debug token information
   useEffect(() => {
@@ -40,7 +43,12 @@ const TaskManagementPage = () => {
     taskType: "Exam",
     customer: "",
     examDate: "",
-    examTime: ""
+    examTime: "",
+    // New fields for manual customer entry
+    manualCustomerName: "",
+    manualCustomerEmail: "",
+    manualCustomerPhone: "",
+    manualCustomerCourse: ""
   });
   
   const fetchTasks = async () => {
@@ -171,16 +179,52 @@ const TaskManagementPage = () => {
     e.preventDefault();
     
     try {
+      // Client-side validation
+      if (manualCustomerMode) {
+        // Validate required manual customer fields
+        if (!formData.manualCustomerName) {
+          toast.error("Please enter customer name");
+          return;
+        }
+        if (!formData.manualCustomerPhone) {
+          toast.error("Please enter customer phone number");
+          return;
+        }
+        if (!formData.manualCustomerCourse) {
+          toast.error("Please enter course/exam name");
+          return;
+        }
+      } else {
+        // Validate customer selection
+        if (!formData.customer) {
+          toast.error("Please select a customer");
+          return;
+        }
+      }
+      
       // Combine date and time
       const combinedDateTime = new Date(`${formData.examDate}T${formData.examTime}`);
       
-      const taskData = {
+      let taskData = {
         title: formData.title,
         description: formData.description,
         taskType: formData.taskType,
-        customer: formData.customer,
         examDate: combinedDateTime
       };
+      
+      // Handle manual customer entry vs. selecting existing customer
+      if (manualCustomerMode) {
+        // Create a custom customer object for the task
+        taskData.manualCustomer = {
+          name: formData.manualCustomerName,
+          email: formData.manualCustomerEmail,
+          contactNumber: formData.manualCustomerPhone,
+          course: formData.manualCustomerCourse
+        };
+      } else {
+        // Use selected customer from dropdown
+        taskData.customer = formData.customer;
+      }
       
       let response;
       if (currentTask) {
@@ -195,16 +239,7 @@ const TaskManagementPage = () => {
         toast.success(currentTask ? "Task updated successfully" : "Task created successfully");
         
         // Reset form and close modal
-        setFormData({
-          title: "",
-          description: "",
-          taskType: "Exam",
-          customer: "",
-          examDate: "",
-          examTime: ""
-        });
-        setModalOpen(false);
-        setCurrentTask(null);
+        resetForm();
         
         // Refresh tasks list
         fetchTasks();
@@ -231,15 +266,26 @@ const TaskManagementPage = () => {
     const examDate = format(new Date(task.examDate), "yyyy-MM-dd");
     const examTime = format(new Date(task.examDate), "HH:mm");
     
+    // Check if this is a manual customer entry
+    const isManualCustomer = task.customer?.isManualEntry || 
+                           (!task.customer && task.manualCustomer);
+    
     // Handle different customer data formats
     let customerId = '';
-    if (task.customer) {
+    if (!isManualCustomer && task.customer) {
       if (typeof task.customer === 'string') {
         customerId = task.customer;
-      } else if (task.customer._id) {
+      } else if (task.customer._id && task.customer._id !== 'manual') {
         customerId = task.customer._id;
       }
     }
+    
+    // Set manual mode based on the task type
+    setManualCustomerMode(isManualCustomer);
+    
+    // Get customer data for manual entry fields
+    const customerData = isManualCustomer ? 
+      (task.manualCustomer || task.customer) : null;
     
     setFormData({
       title: task.title,
@@ -247,14 +293,19 @@ const TaskManagementPage = () => {
       taskType: task.taskType || 'Exam',
       customer: customerId,
       examDate,
-      examTime
+      examTime,
+      // Populate manual customer fields if this is a manual entry
+      manualCustomerName: customerData?.name || '',
+      manualCustomerEmail: customerData?.email || '',
+      manualCustomerPhone: customerData?.contactNumber || '',
+      manualCustomerCourse: customerData?.course || ''
     });
     
     setCurrentTask(task);
     setModalOpen(true);
     
     // If customer ID is missing or invalid, show a message
-    if (!customerId) {
+    if (!isManualCustomer && !customerId) {
       toast.warning("Customer data may be incomplete. Please select a customer again.");
     }
   };
@@ -402,6 +453,25 @@ const TaskManagementPage = () => {
     return contact ? ` (${contact})` : '';
   };
   
+  // Function to reset the form state
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      description: "",
+      taskType: "Exam",
+      customer: "",
+      examDate: "",
+      examTime: "",
+      manualCustomerName: "",
+      manualCustomerEmail: "",
+      manualCustomerPhone: "",
+      manualCustomerCourse: ""
+    });
+    setCurrentTask(null);
+    setManualCustomerMode(false);
+    setLeadSearchQuery('');
+  };
+  
   return (
     <Layout>
       <div className="bg-gray-50 min-h-screen py-4 md:py-8">
@@ -412,15 +482,7 @@ const TaskManagementPage = () => {
             <div className="flex gap-2">
               <button
                 onClick={() => {
-                  setCurrentTask(null);
-                  setFormData({
-                    title: "",
-                    description: "",
-                    taskType: "Exam",
-                    customer: "",
-                    examDate: "",
-                    examTime: ""
-                  });
+                  resetForm();
                   setModalOpen(true);
                 }}
                 className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm sm:text-base"
@@ -572,53 +634,178 @@ const TaskManagementPage = () => {
                     ></textarea>
                   </div>
                   <div className="mb-4">
-                    <label className="block text-gray-700 text-xs sm:text-sm font-medium mb-2">
-                      Customer
-                    </label>
-                    <select
-                      name="customer"
-                      value={formData.customer}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                      required
-                    >
-                      <option value="">Select Customer</option>
-                      
-                      {/* Group: Actual Leads from CRM */}
-                      {leads.filter(lead => !lead.isReferenceSale).length > 0 && (
-                        <optgroup label="Leads">
-                          {leads
-                            .filter(lead => !lead.isReferenceSale)
-                            .map(lead => (
-                              <option key={lead._id} value={lead._id}>
-                                {lead.name || lead.NAME || "Unknown"} - {lead.course || lead.COURSE || "No course"} 
-                                {lead.status ? ` (${lead.status})` : ""}
-                              </option>
-                          ))}
-                        </optgroup>
-                      )}
-                      
-                      {/* Group: Reference Customers */}
-                      {leads.filter(lead => lead.isReferenceSale).length > 0 && (
-                        <optgroup label="Reference Customers">
-                          {leads
-                            .filter(lead => lead.isReferenceSale)
-                            .map(lead => (
-                              <option key={lead._id} value={lead._id}>
-                                {lead.name || "Unknown"} - {lead.course || "No course"} 
-                                {lead.status ? ` (${lead.status})` : ""} [Reference]
-                              </option>
-                          ))}
-                        </optgroup>
-                      )}
-                    </select>
-                    {leadsLoading ? (
-                      <p className="mt-1 text-xs text-gray-500">Loading customers...</p>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="block text-gray-700 text-xs sm:text-sm font-medium">
+                        Customer
+                      </label>
+                      <div className="flex items-center">
+                        <span className="text-xs text-gray-600 mr-2">Manual Entry</span>
+                        <button
+                          type="button"
+                          onClick={() => setManualCustomerMode(!manualCustomerMode)}
+                          className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none ${
+                            manualCustomerMode ? 'bg-blue-600' : 'bg-gray-200'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              manualCustomerMode ? 'translate-x-5' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {manualCustomerMode ? (
+                      // Manual Customer Entry Form
+                      <div className="space-y-3">
+                        <div>
+                          <input
+                            type="text"
+                            name="manualCustomerName"
+                            value={formData.manualCustomerName}
+                            onChange={handleChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                            placeholder="Customer Name *"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="email"
+                            name="manualCustomerEmail"
+                            value={formData.manualCustomerEmail}
+                            onChange={handleChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                            placeholder="Email Address"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="tel"
+                            name="manualCustomerPhone"
+                            value={formData.manualCustomerPhone}
+                            onChange={handleChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                            placeholder="Phone Number *"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            name="manualCustomerCourse"
+                            value={formData.manualCustomerCourse}
+                            onChange={handleChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                            placeholder="Course/Exam Name *"
+                            required
+                          />
+                        </div>
+                      </div>
                     ) : (
-                      <p className="mt-1 text-xs text-gray-500">
-                        {leads.filter(lead => !lead.isReferenceSale).length} leads + 
-                        {leads.filter(lead => lead.isReferenceSale).length} reference customers available
-                      </p>
+                      // Customer Selection from Leads
+                      <div>
+                        {/* Search input for leads */}
+                        <div className="mb-2">
+                          <div className="relative">
+                            <input
+                              type="text"
+                              placeholder="Search leads by name, email, or course..."
+                              value={leadSearchQuery}
+                              onChange={(e) => setLeadSearchQuery(e.target.value)}
+                              className="w-full px-3 py-2 pl-9 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                            />
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <select
+                          name="customer"
+                          value={formData.customer}
+                          onChange={handleChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                          required
+                        >
+                          <option value="">Select Customer</option>
+                          
+                          {/* Filter leads based on search query */}
+                          {(() => {
+                            const filteredLeads = leads.filter(lead => {
+                              if (!leadSearchQuery) return true;
+                              
+                              const searchLower = leadSearchQuery.toLowerCase();
+                              const name = (lead.name || lead.NAME || '').toLowerCase();
+                              const email = (lead.email || lead.EMAIL || lead['E-MAIL'] || '').toLowerCase();
+                              const course = (lead.course || lead.COURSE || '').toLowerCase();
+                              const phone = (lead.contactNumber || lead.phone || lead.MOBILE || lead.NUMBER || '').toLowerCase();
+                              
+                              return name.includes(searchLower) || 
+                                    email.includes(searchLower) || 
+                                    course.includes(searchLower) ||
+                                    phone.includes(searchLower);
+                            });
+                            
+                            // Count filtered leads for each category
+                            const regularLeads = filteredLeads.filter(lead => !lead.isReferenceSale);
+                            const referenceLeads = filteredLeads.filter(lead => lead.isReferenceSale);
+                            
+                            return (
+                              <>
+                                {/* Group: Actual Leads from CRM */}
+                                {regularLeads.length > 0 && (
+                                  <optgroup label={`Leads (${regularLeads.length})`}>
+                                    {regularLeads.map(lead => (
+                                      <option key={lead._id} value={lead._id}>
+                                        {lead.name || lead.NAME || "Unknown"} - {lead.course || lead.COURSE || "No course"} 
+                                        {lead.status ? ` (${lead.status})` : ""}
+                                      </option>
+                                    ))}
+                                  </optgroup>
+                                )}
+                                
+                                {/* Group: Reference Customers */}
+                                {referenceLeads.length > 0 && (
+                                  <optgroup label={`Reference Customers (${referenceLeads.length})`}>
+                                    {referenceLeads.map(lead => (
+                                      <option key={lead._id} value={lead._id}>
+                                        {lead.name || "Unknown"} - {lead.course || "No course"} 
+                                        {lead.status ? ` (${lead.status})` : ""} [Reference]
+                                      </option>
+                                    ))}
+                                  </optgroup>
+                                )}
+                                
+                                {filteredLeads.length === 0 && (
+                                  <option disabled value="">No leads match your search</option>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </select>
+                        
+                        {leadsLoading ? (
+                          <p className="mt-1 text-xs text-gray-500">Loading customers...</p>
+                        ) : (
+                          <p className="mt-1 text-xs text-gray-500">
+                            {leads.filter(lead => !lead.isReferenceSale).length} leads + 
+                            {leads.filter(lead => lead.isReferenceSale).length} reference customers available
+                            {leadSearchQuery && (
+                              <button 
+                                type="button" 
+                                onClick={() => setLeadSearchQuery('')}
+                                className="ml-2 text-blue-600 hover:text-blue-800"
+                              >
+                                Clear search
+                              </button>
+                            )}
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">

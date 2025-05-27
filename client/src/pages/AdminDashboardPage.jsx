@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import Layout from "../components/Layout/Layout";
 import { useAuth } from "../context/AuthContext";
 import { leadsAPI, salesAPI, authAPI } from "../services/api";
-import { formatCurrency } from "../utils/helpers";
+import { formatCurrency, getDirectSalesCount } from "../utils/helpers";
+import axios from "axios";
 
 const AdminDashboardPage = () => {
   const { user } = useAuth();
@@ -36,16 +37,35 @@ const AdminDashboardPage = () => {
       const leadsResponse = await leadsAPI.getAll();
       const leads = leadsResponse.data.success ? leadsResponse.data.data : [];
       
-      // Fetch sales data
-      const salesResponse = await salesAPI.getAll();
-      const sales = salesResponse.data.success ? salesResponse.data.data : [];
+      // Initialize variables
+      let salesCount = 0;
+      let sales = [];
+      
+      // NEW APPROACH: Use direct sales count utility
+      try {
+        salesCount = await getDirectSalesCount();
+        console.log("Got direct sales count:", salesCount);
+      } catch (directCountError) {
+        console.error("Error getting direct sales count:", directCountError);
+      }
+      
+      // Still need to fetch sales data for other info
+      try {
+        const salesResponse = await salesAPI.getAll();
+        if (salesResponse.data && salesResponse.data.success) {
+          sales = salesResponse.data.data;
+        }
+      } catch (salesError) {
+        console.error("Error fetching sales data:", salesError);
+      }
       
       // Fetch users data
       const usersResponse = await authAPI.getUsers();
       const users = usersResponse.data.success ? usersResponse.data.data : [];
       
-      // Calculate statistics
-      const totalRevenue = sales.reduce((sum, sale) => sum + (sale.amount || 0), 0);
+      // Calculate statistics - use totalCost if amount is not available
+      const totalRevenue = sales.reduce((sum, sale) => 
+        sum + parseFloat(sale.amount || sale.totalCost || 0), 0);
       
       // Get recent leads (last 5)
       const recentLeads = [...leads]
@@ -65,9 +85,10 @@ const AdminDashboardPage = () => {
         admin: users.filter(u => u.role === "Admin").length
       };
       
+      // Use our direct count instead of sales.length
       setStats({
         totalLeads: leads.length,
-        totalSales: sales.length,
+        totalSales: salesCount || sales.length,
         totalRevenue,
         totalUsers: users.length,
         recentLeads,

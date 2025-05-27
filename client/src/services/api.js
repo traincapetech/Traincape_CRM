@@ -133,9 +133,21 @@ export const leadsAPI = {
 // Sales API services
 export const salesAPI = {
   getAll: () => api.get('/api/sales'),
+  getAllForced: () => api.get(`/api/sales?nocache=${new Date().getTime()}&full=true`),
   getById: (id) => api.get(`/api/sales/${id}`),
-  create: (saleData) => api.post('/api/sales', saleData),
-  createReferenceSale: (saleData) => api.post('/api/sales', { ...saleData, source: 'Reference' }),
+  create: (saleData) => {
+    // Ensure isLeadPersonSale is set if a leadPerson is specified
+    if (saleData.leadPerson && !saleData.hasOwnProperty('isLeadPersonSale')) {
+      console.log('Setting isLeadPersonSale to true because leadPerson is specified');
+      saleData.isLeadPersonSale = true;
+    }
+    return api.post('/api/sales', saleData);
+  },
+  createReferenceSale: (saleData) => api.post('/api/sales', { 
+    ...saleData, 
+    source: 'Reference',
+    isLeadPersonSale: saleData.leadPerson ? true : false
+  }),
   createLeadPersonSale: (saleData) => api.post('/api/sales', { ...saleData, isLeadPersonSale: true }),
   update: (id, saleData) => api.put(`/api/sales/${id}`, saleData),
   delete: (id) => api.delete(`/api/sales/${id}`),
@@ -145,6 +157,15 @@ export const salesAPI = {
   getLeadSheet: (filters = {}) => {
     console.log('Using new lead-sales endpoint with filters:', filters);
     return api.get('/api/lead-sales', { params: filters });
+  },
+  // New method to create a sale assigned to a specific lead person
+  createSaleWithLeadPerson: (saleData, leadPersonId) => {
+    console.log(`Creating sale assigned to lead person: ${leadPersonId}`);
+    return api.post('/api/sales', { 
+      ...saleData, 
+      leadPerson: leadPersonId,
+      isLeadPersonSale: true // Always set to true to ensure it appears in lead person's dashboard
+    });
   }
 };
 
