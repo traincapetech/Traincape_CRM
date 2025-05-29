@@ -2,13 +2,14 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { FaHome, FaUser, FaUsers, FaChartLine, FaClipboardList, FaChartBar, FaCog, FaFileImport, FaCalendarCheck, FaUserCog } from 'react-icons/fa';
+import ThemeToggle from '../ThemeToggle';
 
 const Sidebar = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
 
   return (
-    <div className="h-screen bg-gray-800 text-white w-64 flex-shrink-0 hidden md:block">
+    <div className="h-screen bg-gray-800 dark:bg-gray-900 text-white w-64 flex-shrink-0 hidden md:block transition-colors duration-300">
       <div className="flex flex-col h-full">
         <div className="px-4 py-6">
           <h1 className="text-2xl font-bold">CRM Dashboard</h1>
@@ -289,7 +290,12 @@ const Sidebar = () => {
           </ul>
         </nav>
         
-        <div className="p-4 border-t border-gray-700">
+        <div className="p-4 border-t border-gray-700 space-y-3">
+          {/* Theme Toggle */}
+          <div className="flex justify-center">
+            <ThemeToggle className="w-full justify-center" />
+          </div>
+          
           <button
             onClick={logout}
             className="w-full flex items-center px-4 py-2 text-sm text-gray-300 rounded-md hover:bg-gray-700"

@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
-import { leadsAPI, taskAPI } from "../services/api";
+import { leadsAPI, tasksAPI } from "../services/api";
 
 // Get API URL for Vite (fixes "process is not defined" error)
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -65,8 +65,8 @@ const TaskManagementPage = () => {
         return;
       }
       
-      // Use taskAPI service instead of direct Axios
-      const response = await taskAPI.getAll();
+      // Use tasksAPI service instead of direct Axios
+      const response = await tasksAPI.getAll();
       
       if (response.data && response.data.data) {
         console.log('Tasks loaded:', response.data.data);
@@ -118,8 +118,8 @@ const TaskManagementPage = () => {
         return;
       }
       
-      // Use the API service to get all customers (both leads and reference sales)
-      const response = await leadsAPI.getAllCustomers();
+      // Use the API service to get all leads
+      const response = await leadsAPI.getAll();
       
       // Extract customers data from response
       let apiCustomers = [];
@@ -229,10 +229,10 @@ const TaskManagementPage = () => {
       let response;
       if (currentTask) {
         // Update existing task
-        response = await taskAPI.update(currentTask._id, taskData);
+        response = await tasksAPI.update(currentTask._id, taskData);
       } else {
         // Create new task
-        response = await taskAPI.create(taskData);
+        response = await tasksAPI.create(taskData);
       }
       
       if (response.data.success) {
@@ -313,7 +313,7 @@ const TaskManagementPage = () => {
   const handleDeleteTask = async (id) => {
     if (window.confirm("Are you sure you want to delete this task?")) {
       try {
-        const response = await taskAPI.delete(id);
+        const response = await tasksAPI.delete(id);
         
         if (response.data && response.data.success) {
           toast.success("Task deleted successfully");
@@ -334,7 +334,7 @@ const TaskManagementPage = () => {
   
   const handleMarkCompleted = async (id, completed) => {
     try {
-      const response = await taskAPI.updateStatus(id, completed);
+      const response = await tasksAPI.markCompleted(id, completed);
       
       if (response.data && response.data.success) {
         toast.success("Task status updated");

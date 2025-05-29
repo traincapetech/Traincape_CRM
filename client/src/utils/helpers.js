@@ -2,6 +2,8 @@
  * Currency formatting utility functions
  */
 
+import axios from 'axios';
+
 // Default currency settings
 let currencySettings = {
   currency: 'USD',  // Default currency code
@@ -120,80 +122,66 @@ export const setCurrencySettings = (settings) => {
  * @returns {Object} Current currency settings
  */
 export const getCurrencySettings = () => {
-  return { ...currencySettings };
+  const settings = localStorage.getItem('currencySettings');
+  return settings ? JSON.parse(settings) : { currency: 'USD', symbol: '$' };
 };
 
 // Add a new utility function to get a direct sales count
 export const getDirectSalesCount = async () => {
   try {
-    console.log("Trying to get direct sales count...");
     const token = localStorage.getItem('token');
     
-    // Try multiple approaches to get the correct count
-    let salesCount = 0;
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
     
-    // Try 1: Use new direct count endpoint
+    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+    
+    // Strategy 1: Try the dedicated count endpoint
     try {
-      console.log("Using direct count endpoint...");
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/sales/count?t=${new Date().getTime()}`, {
-        method: 'GET',
+      const response = await axios.get(`${baseURL}/api/sales/count`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
       
-      if (response.ok) {
-        const data = await response.json();
-        if (data && data.count) {
-          salesCount = data.count;
-          console.log("Sales count from direct count endpoint:", salesCount);
-          return salesCount;
-        }
+      if (response.data && response.data.success && typeof response.data.count === 'number') {
+        const salesCount = response.data.count;
+        return salesCount;
       } else {
-        console.log("Count endpoint failed with status:", response.status);
+        throw new Error('Invalid count response format');
       }
-    } catch (error) {
-      console.error("Error getting direct count:", error);
-    }
-    
-    // Try 2: Get all sales with full=true parameter
-    try {
-      console.log("Getting all sales with full=true...");
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/sales?full=true&nocache=true&t=${new Date().getTime()}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+    } catch (countError) {
+      // Strategy 2: Fallback to getting all sales and counting them
+      try {
+        const response = await axios.get(`${baseURL}/api/sales?full=true&nocache=${new Date().getTime()}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.data && response.data.success) {
+          let salesCount = 0;
+          
+          if (response.data.count && typeof response.data.count === 'number') {
+            salesCount = response.data.count;
+          } else if (response.data.data && Array.isArray(response.data.data)) {
+            salesCount = response.data.data.length;
+          } else if (Array.isArray(response.data)) {
+            salesCount = response.data.length;
+          }
+          
+          return salesCount;
+        } else {
+          throw new Error('Invalid sales response format');
         }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data && data.count) {
-          salesCount = data.count;
-          console.log("Sales count from full fetch count field:", salesCount);
-          return salesCount;
-        } else if (data && data.data && Array.isArray(data.data)) {
-          salesCount = data.data.length;
-          console.log("Sales count from full fetch array length:", salesCount);
-          return salesCount;
-        } else if (data && Array.isArray(data)) {
-          salesCount = data.length;
-          console.log("Sales count from full fetch (direct array):", salesCount);
-          return salesCount;
-        }
-      } else {
-        console.log("Full fetch failed with status:", response.status);
+      } catch (fullFetchError) {
+        throw new Error(`All strategies failed. Count error: ${countError.message}, Full fetch error: ${fullFetchError.message}`);
       }
-    } catch (error) {
-      console.error("Error getting full sales:", error);
     }
-    
-    // If we can't get a count, return a reasonable default
-    return 72; // Use the expected count as fallback
   } catch (error) {
-    console.error("Error in getDirectSalesCount:", error);
-    return 72; // Use the expected count as fallback
+    throw error;
   }
 };

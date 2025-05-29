@@ -155,7 +155,7 @@ const ManagerDashboard = () => {
         toast.success('User updated successfully');
       } else {
         // Create new user
-        response = await authAPI.register(formData);
+        response = await authAPI.createUser(formData);
         toast.success('User created successfully');
       }
       

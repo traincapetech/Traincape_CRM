@@ -99,7 +99,7 @@ const CurrencySelector = ({ darkMode = true }) => {
           lastUpdated: response.data.date || new Date().toISOString()
         });
         
-        console.log('Updated exchange rates:', rates);
+
         
         // Store in localStorage for additional persistence
         localStorage.setItem('exchange_rates', JSON.stringify(rates));
@@ -107,13 +107,12 @@ const CurrencySelector = ({ darkMode = true }) => {
         
         // Show notification if rates are fallback rates
         if (response.data.source === 'fallback') {
-          console.warn('Using fallback exchange rates - all APIs failed');
+          // Using fallback exchange rates - all APIs failed
         }
       } else {
         throw new Error('Invalid response format from currency API');
       }
     } catch (error) {
-      console.error('Failed to fetch exchange rates:', error);
       setFetchError('Using last known rates');
       
       // Try to load from localStorage as a fallback

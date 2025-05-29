@@ -2,11 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout/Layout';
 import { salesAPI, leadsAPI, authAPI, currencyAPI } from '../services/api';
-import { FaFilter, FaCalendar, FaChartBar, FaChartPie, FaChartLine, FaFileExport, FaTable, FaSortDown, FaSortUp, FaSort } from 'react-icons/fa';
+import { FaFilter, FaCalendar, FaChartBar, FaChartPie, FaChartLine, FaFileExport, FaTable, FaSortDown, FaSortUp, FaSort, FaDollarSign, FaGraduationCap, FaDownload, FaCalendarAlt } from 'react-icons/fa';
 import { formatCurrency, convertCurrency, getCurrencySettings, setCurrencySettings, BASE_CURRENCY } from '../utils/helpers';
 import * as XLSX from 'xlsx';
 import CurrencySelector from '../components/CurrencySelector';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 // Chart.js components
 import {
@@ -93,6 +94,22 @@ const AdminReportsPage = () => {
     { value: 4, label: 'Q4 (Oct-Dec)' }
   ], []);
   
+  // Course analysis filter options
+  const courseFilterOptions = [
+    { value: 'monthly', label: 'Month wise (Last 12 months)' },
+    { value: 'quarterly', label: '3 Months (Quarterly)' },
+    { value: 'half-yearly', label: 'Half Yearly (6 months)' },
+    { value: 'yearly', label: 'Yearly (Last 3 years)' }
+  ];
+
+  // Revenue analysis filter options
+  const revenueFilterOptions = [
+    { value: '1month', label: '1 Month' },
+    { value: '3month', label: '3 Months' },
+    { value: '6month', label: '6 Months' },
+    { value: '1year', label: '1 Year' }
+  ];
+
   // Listen for currency setting changes
   useEffect(() => {
     const settings = getCurrencySettings();
@@ -578,669 +595,569 @@ const AdminReportsPage = () => {
     XLSX.writeFile(workbook, filename);
   };
 
+  const [courseAnalysisData, setCourseAnalysisData] = useState(null);
+  const [revenueAnalysisData, setRevenueAnalysisData] = useState(null);
+  const [topCoursesData, setTopCoursesData] = useState(null);
+  const [statusAnalysisData, setStatusAnalysisData] = useState(null);
+  const [selectedCourseFilter, setSelectedCourseFilter] = useState('monthly');
+  const [selectedRevenueFilter, setSelectedRevenueFilter] = useState('1month');
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState('1month');
+  const [selectedStatus, setSelectedStatus] = useState(null);
+
+  useEffect(() => {
+    loadAllReports();
+    loadExchangeRates();
+  }, []);
+
+  useEffect(() => {
+    loadCourseAnalysis();
+  }, [selectedCourseFilter]);
+
+  useEffect(() => {
+    loadRevenueAnalysis();
+  }, [selectedRevenueFilter]);
+
+  useEffect(() => {
+    loadStatusAnalysis();
+  }, [selectedStatusFilter, selectedStatus]);
+
+  const loadExchangeRates = async () => {
+    try {
+      const response = await currencyAPI.getRates();
+      if (response.data && response.data.rates) {
+        setExchangeRates(response.data.rates);
+      }
+    } catch (error) {
+      console.error('Error loading exchange rates:', error);
+      // Use default rates as fallback
+      setExchangeRates({
+        'USD': 1,
+        'EUR': 0.85,
+        'GBP': 0.73,
+        'INR': 83.12,
+        'CAD': 1.36,
+        'AUD': 1.52,
+        'JPY': 149.50,
+        'CNY': 7.24
+      });
+    }
+  };
+
+  const loadCourseAnalysis = async () => {
+    try {
+      setLoading(true);
+      const response = await salesAPI.getCourseAnalysis(selectedCourseFilter);
+      if (response.data && response.data.success) {
+        setCourseAnalysisData(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error loading course analysis:', error);
+      toast.error('Failed to load course analysis');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadRevenueAnalysis = async () => {
+    try {
+      setLoading(true);
+      const response = await salesAPI.getRevenueAnalysis(selectedRevenueFilter);
+      if (response.data && response.data.success) {
+        setRevenueAnalysisData(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error loading revenue analysis:', error);
+      toast.error('Failed to load revenue analysis');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadTopCourses = async () => {
+    try {
+      const response = await salesAPI.getTopCourses('all', 10);
+      if (response.data && response.data.success) {
+        setTopCoursesData(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error loading top courses:', error);
+      toast.error('Failed to load top courses');
+    }
+  };
+
+  const loadStatusAnalysis = async () => {
+    try {
+      setLoading(true);
+      const response = await salesAPI.getStatusAnalysis(selectedStatusFilter, selectedStatus);
+      if (response.data && response.data.success) {
+        setStatusAnalysisData(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error loading status analysis:', error);
+      toast.error('Failed to load status analysis');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadAllReports = async () => {
+    await Promise.all([
+      loadCourseAnalysis(),
+      loadRevenueAnalysis(),
+      loadTopCourses(),
+      loadStatusAnalysis()
+    ]);
+  };
+
+  const renderCourseAnalysisTable = () => {
+    if (!courseAnalysisData || !courseAnalysisData.courseAnalysis) {
+      return <div className="text-center py-4">No course analysis data available</div>;
+    }
+
+    const courses = Object.keys(courseAnalysisData.courseAnalysis);
+    const periods = new Set();
+    
+    // Collect all periods
+    courses.forEach(course => {
+      Object.keys(courseAnalysisData.courseAnalysis[course]).forEach(period => {
+        periods.add(period);
+      });
+    });
+
+    const sortedPeriods = Array.from(periods).sort().reverse();
+
+    return (
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white border border-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Course
+              </th>
+              {sortedPeriods.map(period => (
+                <th key={period} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  {period}
+                </th>
+              ))}
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Total Sales
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {courses.map(course => {
+              const courseData = courseAnalysisData.courseAnalysis[course];
+              const totalSales = Object.values(courseData).reduce((sum, period) => sum + period.totalSales, 0);
+              
+              return (
+                <tr key={course} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {course}
+                  </td>
+                  {sortedPeriods.map(period => {
+                    const periodData = courseData[period];
+                    return (
+                      <td key={period} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {periodData ? (
+                          <div>
+                            <div className="font-semibold">{periodData.totalSales} sales</div>
+                            <div className="text-xs text-gray-400">
+                              ${periodData.totalRevenue?.toFixed(2) || '0.00'}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-gray-300">-</span>
+                        )}
+                      </td>
+                    );
+                  })}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600">
+                    {totalSales}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  const renderRevenueAnalysis = () => {
+    if (!revenueAnalysisData) {
+      return <div className="text-center py-4">No revenue analysis data available</div>;
+    }
+
+    const { summary, currencyBreakdown, dailyBreakdown } = revenueAnalysisData;
+
+    return (
+      <div className="space-y-6">
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
+            <div className="flex items-center">
+              <FaChartBar className="text-blue-600 text-2xl mr-3" />
+              <div>
+                <p className="text-sm font-medium text-blue-600">Total Sales</p>
+                <p className="text-2xl font-bold text-blue-900">{summary.totalSales}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-green-50 p-6 rounded-lg border border-green-200">
+            <div className="flex items-center">
+              <FaDollarSign className="text-green-600 text-2xl mr-3" />
+              <div>
+                <p className="text-sm font-medium text-green-600">Total Revenue (USD)</p>
+                <p className="text-2xl font-bold text-green-900">{formatCurrency(summary.totalRevenueUSD)}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-yellow-50 p-6 rounded-lg border border-yellow-200">
+            <div className="flex items-center">
+              <FaChartLine className="text-yellow-600 text-2xl mr-3" />
+              <div>
+                <p className="text-sm font-medium text-yellow-600">Tokens Received (USD)</p>
+                <p className="text-2xl font-bold text-yellow-900">{formatCurrency(summary.totalTokensUSD)}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-red-50 p-6 rounded-lg border border-red-200">
+            <div className="flex items-center">
+              <FaCalendarAlt className="text-red-600 text-2xl mr-3" />
+              <div>
+                <p className="text-sm font-medium text-red-600">Pending Amount (USD)</p>
+                <p className="text-2xl font-bold text-red-900">{formatCurrency(summary.pendingAmountUSD)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Currency Breakdown */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold mb-4">Revenue by Currency</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Currency</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sales</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Revenue (Original)</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Revenue (USD)</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tokens (USD)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {Object.entries(currencyBreakdown).map(([currency, data]) => (
+                  <tr key={currency}>
+                    <td className="px-4 py-2 font-medium">{currency}</td>
+                    <td className="px-4 py-2">{data.totalSales}</td>
+                    <td className="px-4 py-2">{formatCurrency(data.totalRevenue, currency)}</td>
+                    <td className="px-4 py-2">{formatCurrency(data.revenueUSD)}</td>
+                    <td className="px-4 py-2">{formatCurrency(data.tokensUSD)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Daily Breakdown Chart */}
+        {dailyBreakdown && dailyBreakdown.length > 0 && (
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold mb-4">Daily Sales Trend</h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sales</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tokens</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {dailyBreakdown.slice(-10).map(day => (
+                    <tr key={day.date}>
+                      <td className="px-4 py-2 font-medium">{day.date}</td>
+                      <td className="px-4 py-2">{day.sales}</td>
+                      <td className="px-4 py-2">${day.revenue?.toFixed(2) || '0.00'}</td>
+                      <td className="px-4 py-2">${day.tokens?.toFixed(2) || '0.00'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderTopCourses = () => {
+    if (!topCoursesData || !topCoursesData.topCourses) {
+      return <div className="text-center py-4">No top courses data available</div>;
+    }
+
+    return (
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white border border-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Rank
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Course
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Total Sales
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Total Revenue
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Average Price
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Completion Rate
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {topCoursesData.topCourses.map((course, index) => (
+              <tr key={course.course} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  #{index + 1}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                  {course.course}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {course.totalSales}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  ${course.totalRevenue}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  ${course.averagePrice}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <div className="flex items-center">
+                    <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                      <div 
+                        className="bg-green-600 h-2 rounded-full" 
+                        style={{ width: `${course.completionRate}%` }}
+                      ></div>
+                    </div>
+                    <span>{course.completionRate}%</span>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  const renderStatusAnalysis = () => {
+    if (!statusAnalysisData) {
+      return <div className="text-center py-4">No status analysis data available</div>;
+    }
+
+    const { statusSummary, detailedSales, selectedStatus: currentStatus } = statusAnalysisData;
+
+    return (
+      <div className="space-y-6">
+        {/* Status Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {statusSummary.map((statusData, index) => (
+            <div 
+              key={statusData.status} 
+              className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
+                selectedStatus === statusData.status 
+                  ? 'border-blue-500 bg-blue-50' 
+                  : 'border-gray-200 bg-white hover:border-gray-300'
+              }`}
+              onClick={() => setSelectedStatus(selectedStatus === statusData.status ? null : statusData.status)}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">{statusData.status}</p>
+                  <p className="text-2xl font-bold text-gray-900">{statusData.totalSales}</p>
+                  <p className="text-xs text-gray-500">sales</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-green-600">{formatCurrency(statusData.totalRevenueUSD)}</p>
+                  <p className="text-xs text-gray-500">revenue</p>
+                </div>
+              </div>
+              <div className="mt-2 pt-2 border-t border-gray-100">
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>Avg: {formatCurrency(statusData.averageOrderValueUSD)}</span>
+                  <span>Pending: {formatCurrency(statusData.pendingAmountUSD)}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Detailed Sales Table (shown when a status is selected) */}
+        {currentStatus && detailedSales && detailedSales.length > 0 && (
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold mb-4">
+              Detailed Sales for "{currentStatus}" Status ({detailedSales.length} sales)
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Course</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Country</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sales Person</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total Cost</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Token</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Pending</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {detailedSales.map(sale => (
+                    <tr key={sale._id} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 text-sm">{new Date(sale.date).toLocaleDateString()}</td>
+                      <td className="px-4 py-2 text-sm font-medium">{sale.customerName}</td>
+                      <td className="px-4 py-2 text-sm">{sale.course}</td>
+                      <td className="px-4 py-2 text-sm">{sale.country}</td>
+                      <td className="px-4 py-2 text-sm">{sale.salesPerson}</td>
+                      <td className="px-4 py-2 text-sm">${sale.totalCost?.toFixed(2) || '0.00'}</td>
+                      <td className="px-4 py-2 text-sm">${sale.tokenAmount?.toFixed(2) || '0.00'}</td>
+                      <td className="px-4 py-2 text-sm">${sale.pendingAmount?.toFixed(2) || '0.00'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Instructions */}
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <p className="text-sm text-blue-700">
+            <strong>💡 Tip:</strong> Click on any status card above to view detailed sales data for that status. 
+            The cards show total sales count, revenue, and pending amounts for each status.
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Layout>
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">Sales Reports</h1>
-            <p className="text-sm text-gray-600 mt-1">Comprehensive sales analytics and reporting</p>
-          </div>
-          <Link to="/admin" className="text-blue-600 hover:text-blue-800">
-            Back to Dashboard
-          </Link>
+          <h2 className="text-3xl font-bold text-gray-800">Sales Reports & Analytics</h2>
+          <button
+            onClick={loadAllReports}
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-300 flex items-center"
+          >
+            {loading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            ) : (
+              <FaDownload className="mr-2" />
+            )}
+            Refresh Reports
+          </button>
         </div>
-        
-        {/* Loading and error states */}
-        {loading && (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+
+        {/* Course Analysis Section */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-semibold text-gray-800 flex items-center">
+              <FaGraduationCap className="mr-2 text-blue-600" />
+              Course Sales Analysis
+            </h3>
+            <select
+              value={selectedCourseFilter}
+              onChange={(e) => setSelectedCourseFilter(e.target.value)}
+              className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {courseFilterOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
-        )}
-        
-        {error && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">
-            {error}
+          {renderCourseAnalysisTable()}
+        </div>
+
+        {/* Revenue Analysis Section */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-semibold text-gray-800 flex items-center">
+              <FaDollarSign className="mr-2 text-green-600" />
+              Revenue Analysis
+            </h3>
+            <select
+              value={selectedRevenueFilter}
+              onChange={(e) => setSelectedRevenueFilter(e.target.value)}
+              className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {revenueFilterOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
-        )}
-        
-        {!loading && !error && (
-          <>
-            {/* Filters Section */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-                <h2 className="text-xl font-semibold flex items-center mb-4 md:mb-0">
-                  <FaFilter className="mr-2 text-blue-500" /> Report Filters
-                </h2>
-                
-                <div className="flex items-center">
-                  <div className="mr-4">
-                    <CurrencySelector darkMode={false} />
-                  </div>
-                  
-                  <button 
-                    onClick={exportToExcel}
-                    className="flex items-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-                  >
-                    <FaFileExport className="mr-2" /> Export
-                  </button>
-                </div>
-              </div>
-              
-              {/* Time Frame Selection */}
-              <div className="mb-6">
-                <div className="flex space-x-4 mb-4">
-                  <button
-                    onClick={() => setTimeFrame('monthly')}
-                    className={`px-4 py-2 rounded-md ${timeFrame === 'monthly' ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}
-                  >
-                    Monthly
-                  </button>
-                  <button
-                    onClick={() => setTimeFrame('quarterly')}
-                    className={`px-4 py-2 rounded-md ${timeFrame === 'quarterly' ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}
-                  >
-                    Quarterly
-                  </button>
-                  <button
-                    onClick={() => setTimeFrame('yearly')}
-                    className={`px-4 py-2 rounded-md ${timeFrame === 'yearly' ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}
-                  >
-                    Yearly
-                  </button>
-                </div>
-                
-                <div className="flex flex-wrap items-center gap-4">
-                  {/* Month selector (visible when timeFrame is 'monthly') */}
-                  {timeFrame === 'monthly' && (
-                    <div>
-                      <label htmlFor="month" className="block text-sm font-medium text-gray-600 mb-1">Month</label>
-                      <select
-                        id="month"
-                        value={currentMonth}
-                        onChange={(e) => setCurrentMonth(parseInt(e.target.value))}
-                        className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        {months.map(month => (
-                          <option key={month.value} value={month.value}>{month.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-                  
-                  {/* Quarter selector (visible when timeFrame is 'quarterly') */}
-                  {timeFrame === 'quarterly' && (
-                    <div>
-                      <label htmlFor="quarter" className="block text-sm font-medium text-gray-600 mb-1">Quarter</label>
-                      <select
-                        id="quarter"
-                        value={currentQuarter}
-                        onChange={(e) => setCurrentQuarter(parseInt(e.target.value))}
-                        className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        {quarters.map(quarter => (
-                          <option key={quarter.value} value={quarter.value}>{quarter.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-                  
-                  {/* Year selector (always visible) */}
-                  <div>
-                    <label htmlFor="year" className="block text-sm font-medium text-gray-600 mb-1">Year</label>
-                    <select
-                      id="year"
-                      value={currentYear}
-                      onChange={(e) => setCurrentYear(parseInt(e.target.value))}
-                      className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      {years.map(year => (
-                        <option key={year} value={year}>{year}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
+          {renderRevenueAnalysis()}
+        </div>
+
+        {/* Top Courses Section */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+            <FaChartBar className="mr-2 text-purple-600" />
+            Top Performing Courses (All Time)
+          </h3>
+          {renderTopCourses()}
+        </div>
+
+        {/* Status Analysis Section */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-semibold text-gray-800 flex items-center">
+              <FaChartPie className="mr-2 text-pink-600" />
+              Status Analysis
+            </h3>
+            <div className="flex space-x-4">
+              <select
+                value={selectedStatusFilter}
+                onChange={(e) => setSelectedStatusFilter(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="1month">1 Month</option>
+                <option value="3month">3 Months</option>
+                <option value="6month">6 Months</option>
+                <option value="1year">1 Year</option>
+                <option value="all">All Time</option>
+              </select>
+              {selectedStatus && (
+                <button
+                  onClick={() => setSelectedStatus(null)}
+                  className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-md text-sm"
+                >
+                  Clear Selection
+                </button>
+              )}
             </div>
-            
-            {/* Tabs for different report views */}
-            <div className="mb-6">
-              <div className="border-b border-gray-200">
-                <nav className="flex space-x-8">
-                  <button
-                    onClick={() => setActiveTab('overview')}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                      activeTab === 'overview'
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    <FaChartLine className="inline mr-2" /> Overview
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('sales')}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                      activeTab === 'sales'
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    <FaChartBar className="inline mr-2" /> Sales Trends
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('courses')}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                      activeTab === 'courses'
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    <FaChartPie className="inline mr-2" /> Course Analysis
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('detailed')}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                      activeTab === 'detailed'
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    <FaTable className="inline mr-2" /> Detailed Data
-                  </button>
-                </nav>
-              </div>
-            </div>
-            
-            {/* Summary Statistics Cards */}
-            {activeTab === 'overview' && (
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-4">Summary Statistics</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {/* Total Sales Card */}
-                  <div className="bg-white rounded-lg shadow-md p-6">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-gray-500 text-sm font-medium">Total Sales</h3>
-                        <p className="text-3xl font-bold mt-1">{calculateSummaryStats().totalSales}</p>
-                      </div>
-                      <div className="bg-blue-100 p-3 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Total Revenue Card */}
-                  <div className="bg-white rounded-lg shadow-md p-6">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-gray-500 text-sm font-medium">Total Revenue</h3>
-                        <p className="text-3xl font-bold mt-1">{formatCurrency(calculateSummaryStats().totalRevenue)}</p>
-                      </div>
-                      <div className="bg-green-100 p-3 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Total Token Amount Card */}
-                  <div className="bg-white rounded-lg shadow-md p-6">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-gray-500 text-sm font-medium">Token Amount</h3>
-                        <p className="text-3xl font-bold mt-1">{formatCurrency(calculateSummaryStats().totalToken)}</p>
-                      </div>
-                      <div className="bg-purple-100 p-3 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Pending Amount Card */}
-                  <div className="bg-white rounded-lg shadow-md p-6">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-gray-500 text-sm font-medium">Pending Amount</h3>
-                        <p className="text-3xl font-bold mt-1">{formatCurrency(calculateSummaryStats().totalPending)}</p>
-                      </div>
-                      <div className="bg-yellow-100 p-3 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Overview Charts */}
-                <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Sales Trend Chart */}
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-4">Sales Trend</h3>
-                    <div className="h-80">
-                      {filteredSales.length > 0 ? (
-                        <Line 
-                          data={formatTrendDataForChart()} 
-                          options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            interaction: {
-                              mode: 'index',
-                              intersect: false,
-                            },
-                            scales: {
-                              y: {
-                                type: 'linear',
-                                display: true,
-                                position: 'left',
-                                title: {
-                                  display: true,
-                                  text: `Revenue (${selectedCurrency})`
-                                }
-                              },
-                              y1: {
-                                type: 'linear',
-                                display: true,
-                                position: 'right',
-                                grid: {
-                                  drawOnChartArea: false,
-                                },
-                                title: {
-                                  display: true,
-                                  text: 'Number of Sales'
-                                }
-                              },
-                            },
-                          }}
-                        />
-                      ) : (
-                        <div className="h-full flex items-center justify-center">
-                          <p className="text-gray-500">No data available for the selected period</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Top Courses Chart */}
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-4">Top Courses</h3>
-                    <div className="h-80">
-                      {calculateCourseMetrics().length > 0 ? (
-                        <Bar 
-                          data={{
-                            labels: formatCourseDataForChart().labels,
-                            datasets: [
-                              {
-                                label: 'Number of Sales',
-                                data: formatCourseDataForChart().countData,
-                                backgroundColor: 'rgba(53, 162, 235, 0.5)',
-                              }
-                            ]
-                          }}
-                          options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            indexAxis: 'y',
-                            plugins: {
-                              legend: {
-                                position: 'top',
-                              },
-                              title: {
-                                display: true,
-                                text: 'Top Courses by Number of Sales'
-                              }
-                            }
-                          }}
-                        />
-                      ) : (
-                        <div className="h-full flex items-center justify-center">
-                          <p className="text-gray-500">No data available for the selected period</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Sales Trends Tab */}
-            {activeTab === 'sales' && (
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-4">Sales Trends</h2>
-                
-                <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-                  <h3 className="text-lg font-semibold mb-4">Revenue and Sales Over Time</h3>
-                  <div className="h-96">
-                    {filteredSales.length > 0 ? (
-                      <Line 
-                        data={formatTrendDataForChart()} 
-                        options={{
-                          responsive: true,
-                          maintainAspectRatio: false,
-                          interaction: {
-                            mode: 'index',
-                            intersect: false,
-                          },
-                          scales: {
-                            y: {
-                              type: 'linear',
-                              display: true,
-                              position: 'left',
-                              title: {
-                                display: true,
-                                text: `Revenue (${selectedCurrency})`
-                              }
-                            },
-                            y1: {
-                              type: 'linear',
-                              display: true,
-                              position: 'right',
-                              grid: {
-                                drawOnChartArea: false,
-                              },
-                              title: {
-                                display: true,
-                                text: 'Number of Sales'
-                              }
-                            },
-                          },
-                        }}
-                      />
-                    ) : (
-                      <div className="h-full flex items-center justify-center">
-                        <p className="text-gray-500">No data available for the selected period</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Sales Summary Table */}
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h3 className="text-lg font-semibold mb-4">Sales Summary</h3>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Time Period
-                          </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Sales Count
-                          </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Revenue
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {calculateTimeTrends().map((period, index) => (
-                          <tr key={index}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {timeFrame === 'monthly' ? `Day ${period.timeKey}` : 
-                               timeFrame === 'quarterly' ? months.find(m => m.value === parseInt(period.timeKey))?.label : 
-                               months.find(m => m.value === parseInt(period.timeKey))?.label}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {period.count}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {formatCurrency(period.totalRevenue)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Course Analysis Tab */}
-            {activeTab === 'courses' && (
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-4">Course Analysis</h2>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                  {/* Course Sales Count Chart */}
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-4">Course Sales Count</h3>
-                    <div className="h-96">
-                      {calculateCourseMetrics().length > 0 ? (
-                        <Bar 
-                          data={{
-                            labels: formatCourseDataForChart().labels,
-                            datasets: [
-                              {
-                                label: 'Number of Sales',
-                                data: formatCourseDataForChart().countData,
-                                backgroundColor: 'rgba(53, 162, 235, 0.5)',
-                              }
-                            ]
-                          }}
-                          options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            indexAxis: 'y',
-                            plugins: {
-                              legend: {
-                                position: 'top',
-                              },
-                              title: {
-                                display: true,
-                                text: 'Top Courses by Number of Sales'
-                              }
-                            }
-                          }}
-                        />
-                      ) : (
-                        <div className="h-full flex items-center justify-center">
-                          <p className="text-gray-500">No data available for the selected period</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Course Revenue Chart */}
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-4">Course Revenue</h3>
-                    <div className="h-96">
-                      {calculateCourseMetrics().length > 0 ? (
-                        <Pie 
-                          data={{
-                            labels: formatCourseDataForChart().labels,
-                            datasets: [
-                              {
-                                label: `Revenue (${selectedCurrency})`,
-                                data: formatCourseDataForChart().revenueData,
-                                backgroundColor: [
-                                  'rgba(255, 99, 132, 0.5)',
-                                  'rgba(54, 162, 235, 0.5)',
-                                  'rgba(255, 206, 86, 0.5)',
-                                  'rgba(75, 192, 192, 0.5)',
-                                  'rgba(153, 102, 255, 0.5)',
-                                  'rgba(255, 159, 64, 0.5)',
-                                  'rgba(199, 199, 199, 0.5)',
-                                  'rgba(83, 102, 255, 0.5)',
-                                  'rgba(78, 252, 173, 0.5)',
-                                  'rgba(255, 99, 255, 0.5)'
-                                ],
-                                borderWidth: 1
-                              }
-                            ]
-                          }}
-                          options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                              legend: {
-                                position: 'right',
-                              },
-                              title: {
-                                display: true,
-                                text: 'Revenue by Course'
-                              }
-                            }
-                          }}
-                        />
-                      ) : (
-                        <div className="h-full flex items-center justify-center">
-                          <p className="text-gray-500">No data available for the selected period</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Course Details Table */}
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h3 className="text-lg font-semibold mb-4">Course Details</h3>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Course Name
-                          </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Sales Count
-                          </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Revenue
-                          </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Avg. Sale Value
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {calculateCourseMetrics().map((course, index) => (
-                          <tr key={index}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {course.name}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {course.count}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {formatCurrency(course.totalRevenue)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {formatCurrency(course.totalRevenue / course.count)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Detailed Data Tab */}
-            {activeTab === 'detailed' && (
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-4">Detailed Sales Data</h2>
-                
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('date')}>
-                            <div className="flex items-center">
-                              Date {getSortIcon('date')}
-                            </div>
-                          </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('customerName')}>
-                            <div className="flex items-center">
-                              Customer {getSortIcon('customerName')}
-                            </div>
-                          </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('course')}>
-                            <div className="flex items-center">
-                              Course {getSortIcon('course')}
-                            </div>
-                          </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('totalCost')}>
-                            <div className="flex items-center">
-                              Total Cost {getSortIcon('totalCost')}
-                            </div>
-                          </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('tokenAmount')}>
-                            <div className="flex items-center">
-                              Token Amount {getSortIcon('tokenAmount')}
-                            </div>
-                          </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('pendingAmount')}>
-                            <div className="flex items-center">
-                              Pending Amount {getSortIcon('pendingAmount')}
-                            </div>
-                          </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('status')}>
-                            <div className="flex items-center">
-                              Status {getSortIcon('status')}
-                            </div>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {filteredSales.length === 0 ? (
-                          <tr>
-                            <td colSpan="7" className="px-6 py-4 text-center text-sm text-gray-500">
-                              No sales data found for the selected period
-                            </td>
-                          </tr>
-                        ) : (
-                          filteredSales.map((sale, index) => (
-                            <tr key={index} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {new Date(sale.date).toLocaleDateString()}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {sale.customerName}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {sale.course}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {formatCurrency(convertAmountToSelectedCurrency(sale.totalCost, sale.currency))}
-                                {sale.currency !== selectedCurrency && (
-                                  <span className="text-xs text-gray-500 ml-1">
-                                    (orig: {sale.currency})
-                                  </span>
-                                )}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {formatCurrency(convertAmountToSelectedCurrency(sale.tokenAmount, sale.currency))}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {formatCurrency(convertAmountToSelectedCurrency(sale.pendingAmount, sale.currency))}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                  sale.status === 'Completed' ? 'bg-green-100 text-green-800' : 
-                                  sale.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 
-                                  'bg-red-100 text-red-800'
-                                }`}>
-                                  {sale.status}
-                                </span>
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            )}
-          </>
-        )}
+          </div>
+          {renderStatusAnalysis()}
+        </div>
       </div>
     </Layout>
   );

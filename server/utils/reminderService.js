@@ -3,9 +3,9 @@ const nodemailer = require('nodemailer');
 
 // Configure nodemailer with environment variables
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: process.env.EMAIL_PORT || 587,
-  secure: process.env.EMAIL_SECURE === 'true',
+  host: "smtp.hostinger.com",
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
@@ -19,20 +19,64 @@ const transporter = nodemailer.createTransport({
  */
 const sendEmailNotification = async (task, reminderType = 'exam-time') => {
   try {
+    // Check if email configuration is available
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.error('Email configuration missing for exam reminders');
+      return;
+    }
+
+    // Verify transporter configuration
+    try {
+      await transporter.verify();
+      console.log('Email transporter verified for exam reminders');
+    } catch (error) {
+      console.error('Email transporter verification failed for exam reminders:', error);
+      return;
+    }
+
     // Get customer and sales person details
     await task.populate([
       { path: 'customer', select: 'name NAME email E-MAIL contactNumber phone MOBILE' },
       { path: 'salesPerson', select: 'fullName email' }
     ]);
 
+    // Check if salesPerson is properly populated
+    if (!task.salesPerson) {
+      console.log('Sales person not found for task:', task._id);
+      return;
+    }
+
+    // Handle both customer (Lead reference) and manualCustomer (embedded object)
+    let customerData = null;
+    if (task.customer) {
+      // Customer is a Lead reference
+      customerData = task.customer;
+    } else if (task.manualCustomer && task.manualCustomer.name) {
+      // Customer is manually entered data
+      customerData = task.manualCustomer;
+    }
+
+    if (!customerData) {
+      console.log('No customer data found for task:', task._id);
+      console.log('Task customer field:', task.customer);
+      console.log('Task manualCustomer field:', task.manualCustomer);
+      return;
+    }
+
+    console.log(`Processing reminder for task ${task._id}:`);
+    console.log(`- Customer type: ${task.customer ? 'Lead reference' : 'Manual customer'}`);
+    console.log(`- Customer name: ${customerData?.name || customerData?.NAME}`);
+    console.log(`- Customer email: ${customerData?.email || customerData?.["E-MAIL"] || 'No email'}`);
+    console.log(`- Sales person: ${task.salesPerson?.fullName} (${task.salesPerson?.email})`);
+
     // Get emails for notification
-    const salesPersonEmail = task.salesPerson.email;
-    const customerEmail = task.customer.email || task.customer["E-MAIL"];
-    const customerName = task.customer.name || task.customer.NAME || 'Customer';
-    const customerPhone = task.customer.contactNumber || task.customer.phone || task.customer.MOBILE || 'No contact number';
+    const salesPersonEmail = task.salesPerson?.email;
+    const customerEmail = customerData?.email || customerData?.["E-MAIL"];
+    const customerName = customerData?.name || customerData?.NAME || 'Customer';
+    const customerPhone = customerData?.contactNumber || customerData?.phone || customerData?.MOBILE || 'No contact number';
     
     if (!salesPersonEmail) {
-      console.log('Sales person email not available, cannot send notifications');
+      console.log('Sales person email not available, cannot send notifications. Sales person:', task.salesPerson);
       return;
     }
 
@@ -202,6 +246,8 @@ exports.processExamReminders = async () => {
     
     // For each exam, check if a reminder should be sent based on specific time triggers
     for (const task of upcomingExams) {
+      console.log(`Processing task ${task._id}, salesPerson: ${task.salesPerson}, customer: ${task.customer}`);
+      
       const examTime = new Date(task.examDate);
       const minutesDifference = Math.round((examTime - now) / (1000 * 60));
       

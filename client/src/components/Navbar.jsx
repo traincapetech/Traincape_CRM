@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import CurrencySelector from "./CurrencySelector";
+import ThemeToggle from "./ThemeToggle";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -19,7 +20,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className="bg-blue-600 text-white py-4 shadow-md">
+    <header className="bg-blue-600 dark:bg-gray-800 text-white py-4 shadow-md transition-colors duration-300">
       <nav className="container mx-auto flex justify-between items-center">
         <a href="/"> <h1 className="text-xl font-bold">My CRM</h1></a>
         <button 
@@ -95,6 +96,11 @@ const Navbar = () => {
           {/* Currency Selector */}
           <li className="ml-4">
             <CurrencySelector />
+          </li>
+
+          {/* Theme Toggle */}
+          <li className="ml-4">
+            <ThemeToggle />
           </li>
 
           {/* Profile and Logout buttons for authenticated users */}

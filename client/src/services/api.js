@@ -1,196 +1,170 @@
 import axios from 'axios';
 
-// Determine if we're in development mode (Vite exposes import.meta.env)
+// Determine if we're in development mode
 const isDevelopment = import.meta.env.DEV;
 
-// Get the API URL from environment if available, otherwise use default
-const envApiUrl = import.meta.env.VITE_API_URL;
+// API URL configuration - use localhost for development, Render for production
+const API_URL = isDevelopment ? 'http://localhost:8080' : (import.meta.env.VITE_API_URL || 'https://crm-backend-o36v.onrender.com');
 
-// Use localhost in development and production URL in production
-const API_URL = isDevelopment 
-  ? 'http://localhost:8080' 
-  : (envApiUrl || 'https://crm-backend-o36v.onrender.com');
-
-console.log('API Service Configuration:');
-console.log(`- Environment: ${isDevelopment ? 'Development' : 'Production'}`);
-console.log(`- API URL: ${API_URL}`);
-console.log(`- import.meta.env.DEV: ${import.meta.env.DEV}`);
-
+// Create axios instance
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: `${API_URL}/api`,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 });
 
-// Add request interceptor to add auth token to requests
+// Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-      console.log('Setting auth header:', `Bearer ${token.substring(0, 15)}...`);
-    } else {
-      console.log('No token found in localStorage');
-    }
-    
-    // Log API request details for debugging
-    const url = config.baseURL + config.url;
-    console.log(`API Request: ${config.method.toUpperCase()} ${url}`);
-    if (config.data) {
-      console.log('Request payload:', config.data);
+      config.headers.Authorization = `Bearer ${token}`;
     }
     
     return config;
   },
   (error) => {
-    console.error('Request interceptor error:', error);
     return Promise.reject(error);
   }
 );
 
-// Add response interceptor for debugging
+// Response interceptor to handle errors
 api.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
-    if (error.response) {
-      console.error('API Error:', {
-        status: error.response.status,
-        data: error.response.data,
-        url: error.config.url,
-        method: error.config.method
-      });
-
-      // If unauthorized, clear token (possibly expired)
-      if (error.response.status === 401) {
-        console.log('Unauthorized response detected - checking token');
-        const token = localStorage.getItem('token');
-        if (token) {
-          // Token exists but server rejected it - might be expired or invalid
-          console.log('Token exists but rejected - might be expired or invalid');
-        }
+    if (error.response?.status === 401) {
+      // Token might be expired or invalid
+      const token = localStorage.getItem('token');
+      if (token) {
+        // Clear invalid token
+        localStorage.removeItem('token');
+        // Optionally redirect to login
+        window.location.href = '/login';
       }
     }
     return Promise.reject(error);
   }
 );
 
-// Auth API services
+// Auth API
 export const authAPI = {
-  register: (userData) => api.post('/api/auth/register', userData),
-  login: (credentials) => api.post('/api/auth/login', credentials),
-  getCurrentUser: () => api.get('/api/auth/me'),
-  getUsers: (role) => api.get(`/api/auth/users${role ? `?role=${role}` : ''}`),
-  updateUser: (id, userData) => api.put(`/api/auth/users/${id}`, userData),
-  deleteUser: (id) => api.delete(`/api/auth/users/${id}`),
-  updateProfilePicture: (profilePicture) => api.put('/api/auth/profile-picture', { profilePicture }),
-  sendOTP: (email) => api.post('/api/auth/sendOTPToEmail', { email }),
-  verifyOTP: (data) => api.post('/api/auth/verifyOtp', data),
-  resetPassword: (data) => api.post('/api/auth/reset_password', data)
+  login: (credentials) => api.post('/auth/login', credentials),
+  register: (userData) => api.post('/auth/register', userData),
+  getProfile: () => api.get('/auth/me'),
+  updateProfile: (userData) => api.put('/auth/me', userData),
+  uploadProfilePicture: (formData) => api.post('/auth/profile-picture', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
+  // Forgot Password Functions
+  sendOTP: (email) => api.post('/auth/sendOTPToEmail', { email }),
+  verifyOTP: (data) => api.post('/auth/verifyOtp', data),
+  resetPassword: (data) => api.post('/auth/reset_password', data),
+  getUsers: (role = null) => {
+    const url = role ? `/auth/users?role=${role}` : '/auth/users';
+    return api.get(url);
+  },
+  createUser: (userData) => api.post('/auth/users', userData),
+  updateUser: (id, userData) => api.put(`/auth/users/${id}`, userData),
+  deleteUser: (id) => api.delete(`/auth/users/${id}`),
 };
 
-// Leads API services with additional debugging
+// Leads API
 export const leadsAPI = {
-  getAll: () => {
-    console.log('Calling leadsAPI.getAll()');
-    return api.get('/api/leads');
-  },
-  getById: (id) => {
-    console.log(`Calling leadsAPI.getById(${id})`);
-    return api.get(`/api/leads/${id}`);
-  },
-  create: (leadData) => {
-    console.log('Calling leadsAPI.create() with data:', leadData);
-    // Ensure all required fields are present
-    const requiredFields = ['NAME', 'COURSE', 'CODE', 'NUMBER', 'COUNTRY', 'SALE PERSON'];
-    const missingFields = requiredFields.filter(field => !leadData[field]);
-    
-    if (missingFields.length > 0) {
-      console.error('API Service - Missing required fields:', missingFields);
-      console.error('Lead data received:', leadData);
-      // Continue anyway, let the server handle the error
-    }
-    
-    return api.post('/api/leads', leadData);
-  },
-  update: (id, leadData) => {
-    console.log(`Calling leadsAPI.update(${id}) with data:`, leadData);
-    return api.put(`/api/leads/${id}`, leadData);
-  },
-  delete: (id) => api.delete(`/api/leads/${id}`),
-  getAssigned: () => api.get('/api/leads/assigned'),
-  getAllCustomers: () => api.get('/api/leads/customers'),
-  updateFeedback: (id, feedback) => api.put(`/api/leads/${id}/feedback`, { feedback }),
-  importLeads: (data) => api.post('/api/leads/import', data),
-  getRepeatCustomers: () => {
-    console.log('Calling leadsAPI.getRepeatCustomers()');
-    return api.get('/api/leads/repeat-customers');
-  }
+  getAll: () => api.get('/leads'),
+  getById: (id) => api.get(`/leads/${id}`),
+  create: (leadData) => api.post('/leads', leadData),
+  update: (id, leadData) => api.put(`/leads/${id}`, leadData),
+  updateFeedback: (id, feedback) => api.put(`/leads/${id}/feedback`, { feedback }),
+  delete: (id) => api.delete(`/leads/${id}`),
+  getAssigned: () => api.get('/leads/assigned'),
+  getRepeatCustomers: () => api.get('/leads/repeat-customers'),
+  import: (leadsData) => api.post('/leads/import', { leads: leadsData }),
 };
 
-// Sales API services
+// Sales API
 export const salesAPI = {
-  getAll: () => api.get('/api/sales'),
-  getAllForced: () => api.get(`/api/sales?nocache=${new Date().getTime()}&full=true`),
-  getById: (id) => api.get(`/api/sales/${id}`),
+  getAll: () => api.get('/sales'),
+  getAllForced: () => api.get('/sales?full=true'),
+  getById: (id) => api.get(`/sales/${id}`),
   create: (saleData) => {
-    // Ensure isLeadPersonSale is set if a leadPerson is specified
-    if (saleData.leadPerson && !saleData.hasOwnProperty('isLeadPersonSale')) {
-      console.log('Setting isLeadPersonSale to true because leadPerson is specified');
+    // Set isLeadPersonSale to true if leadPerson is specified
+    if (saleData.leadPerson) {
       saleData.isLeadPersonSale = true;
     }
-    return api.post('/api/sales', saleData);
+    return api.post('/sales', saleData);
   },
-  createReferenceSale: (saleData) => api.post('/api/sales', { 
-    ...saleData, 
-    source: 'Reference',
-    isLeadPersonSale: saleData.leadPerson ? true : false
-  }),
-  createLeadPersonSale: (saleData) => api.post('/api/sales', { ...saleData, isLeadPersonSale: true }),
-  update: (id, saleData) => api.put(`/api/sales/${id}`, saleData),
-  delete: (id) => api.delete(`/api/sales/${id}`),
-  updateToken: (id, token) => api.put(`/api/sales/${id}/token`, { token }),
-  updatePending: (id, pending) => api.put(`/api/sales/${id}/pending`, { pending }),
-  importSales: (data) => api.post('/api/sales/import', data),
-  getLeadSheet: (filters = {}) => {
-    console.log('Using new lead-sales endpoint with filters:', filters);
-    return api.get('/api/lead-sales', { params: filters });
+  update: (id, saleData) => api.put(`/sales/${id}`, saleData),
+  delete: (id) => api.delete(`/sales/${id}`),
+  getCount: () => api.get('/sales/count'),
+  
+  // Reports API
+  getCourseAnalysis: (period = 'monthly') => api.get(`/sales/reports/course-analysis?period=${period}`),
+  getRevenueAnalysis: (period = '1month') => api.get(`/sales/reports/revenue-analysis?period=${period}`),
+  getTopCourses: (period = 'all', limit = 10) => api.get(`/sales/reports/top-courses?period=${period}&limit=${limit}`),
+  getStatusAnalysis: (period = '1month', status = null) => {
+    const url = status 
+      ? `/sales/reports/status-analysis?period=${period}&status=${status}`
+      : `/sales/reports/status-analysis?period=${period}`;
+    return api.get(url);
   },
-  // New method to create a sale assigned to a specific lead person
-  createSaleWithLeadPerson: (saleData, leadPersonId) => {
-    console.log(`Creating sale assigned to lead person: ${leadPersonId}`);
-    return api.post('/api/sales', { 
-      ...saleData, 
-      leadPerson: leadPersonId,
-      isLeadPersonSale: true // Always set to true to ensure it appears in lead person's dashboard
+  
+  // Lead sales specific endpoints
+  getLeadSales: (filters = {}) => {
+    const params = new URLSearchParams();
+    
+    // Add filters to params
+    Object.keys(filters).forEach(key => {
+      if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
+        params.append(key, filters[key]);
+      }
     });
+    
+    const queryString = params.toString();
+    const url = queryString ? `/lead-sales?${queryString}` : '/lead-sales';
+    
+    return api.get(url);
+  },
+  
+  createLeadSale: (saleData, leadPersonId) => {
+    return api.post('/lead-sales', { ...saleData, leadPerson: leadPersonId });
   }
 };
 
-// Lead Person Sales API services
+// Lead Person Sales API
 export const leadPersonSalesAPI = {
-  getAll: () => api.get('/api/lead-person-sales'),
-  getById: (id) => api.get(`/api/lead-person-sales/${id}`),
-  create: (saleData) => api.post('/api/lead-person-sales', saleData),
-  update: (id, saleData) => api.put(`/api/lead-person-sales/${id}`, saleData),
-  delete: (id) => api.delete(`/api/lead-person-sales/${id}`)
+  getAll: () => api.get('/lead-person-sales'),
+  getById: (id) => api.get(`/lead-person-sales/${id}`),
+  create: (saleData) => api.post('/lead-person-sales', saleData),
+  update: (id, saleData) => api.put(`/lead-person-sales/${id}`, saleData),
+  delete: (id) => api.delete(`/lead-person-sales/${id}`),
 };
 
-// Currency API services
+// Tasks API
+export const tasksAPI = {
+  getAll: () => api.get('/tasks'),
+  getById: (id) => api.get(`/tasks/${id}`),
+  create: (taskData) => api.post('/tasks', taskData),
+  update: (id, taskData) => api.put(`/tasks/${id}`, taskData),
+  delete: (id) => api.delete(`/tasks/${id}`),
+  markCompleted: (id, completed) => api.put(`/tasks/${id}`, { completed }),
+};
+
+// Currency API
 export const currencyAPI = {
-  getRates: () => api.get('/api/currency/rates'),
+  getRates: () => api.get('/currency/rates'),
+  getRate: (from, to) => api.get(`/currency/rate?from=${from}&to=${to}`),
 };
 
-// Tasks API services
-export const taskAPI = {
-  getAll: () => api.get('/api/tasks'),
-  getById: (id) => api.get(`/api/tasks/${id}`),
-  create: (taskData) => api.post('/api/tasks', taskData),
-  update: (id, taskData) => api.put(`/api/tasks/${id}`, taskData),
-  delete: (id) => api.delete(`/api/tasks/${id}`),
-  updateStatus: (id, completed) => api.put(`/api/tasks/${id}`, { completed })
+// Gemini API
+export const geminiAPI = {
+  generateContent: (prompt) => api.post('/gemini/generate', { prompt }),
+  generateContentWithImage: (prompt, imageData) => api.post('/gemini/generate-with-image', { prompt, imageData }),
+  chatWithGemini: (messages) => api.post('/gemini/chat', { messages }),
 };
 
 export default api;

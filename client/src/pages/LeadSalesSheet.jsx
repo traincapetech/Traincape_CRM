@@ -21,7 +21,8 @@ const LeadSalesSheet = () => {
   // Date filtering state
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1); // Current month (1-12)
   const [filterYear, setFilterYear] = useState(new Date().getFullYear()); // Current year
-  const [showCurrentMonth, setShowCurrentMonth] = useState(true); // Flag to show current month by default
+  const [showCurrentMonth, setShowCurrentMonth] = useState(false); // Changed to false - don't filter by default
+  const [showAllSales, setShowAllSales] = useState(true); // Add showAllSales state - default to true
   
   // Generate month options
   const months = [
@@ -63,10 +64,16 @@ const LeadSalesSheet = () => {
     if (sales.length > 0) {
       applyDateFilters();
     }
-  }, [sales, filterMonth, filterYear, showCurrentMonth]);
+  }, [sales, filterMonth, filterYear, showCurrentMonth, showAllSales]);
 
   // Function to filter sales by selected date
   const applyDateFilters = () => {
+    // If showAllSales is true, show all sales without filtering
+    if (showAllSales) {
+      setFilteredSales(sales);
+      return;
+    }
+    
     if (showCurrentMonth) {
       // Show current month data
       const currentMonth = new Date().getMonth() + 1; // 1-12
@@ -227,12 +234,14 @@ const LeadSalesSheet = () => {
   const handleMonthChange = (e) => {
     setFilterMonth(parseInt(e.target.value));
     setShowCurrentMonth(false);
+    setShowAllSales(false); // Disable show all when selecting specific month
   };
   
   // Handle year change
   const handleYearChange = (e) => {
     setFilterYear(parseInt(e.target.value));
     setShowCurrentMonth(false);
+    setShowAllSales(false); // Disable show all when selecting specific year
   };
   
   // Handle reset to current month
@@ -241,6 +250,7 @@ const LeadSalesSheet = () => {
     setFilterMonth(today.getMonth() + 1);
     setFilterYear(today.getFullYear());
     setShowCurrentMonth(true);
+    setShowAllSales(false); // Disable show all when resetting to current month
   };
 
   const loadUsers = async () => {
@@ -313,17 +323,42 @@ const LeadSalesSheet = () => {
       const response = await salesAPI.update(editingSaleId, saleData);
       if (response.data && response.data.success) {
         console.log('Sale updated successfully:', response.data);
+        console.log('Updated sale data from server:', response.data.data);
         toast.success("Sale updated successfully");
+        
+        // Update the local sales state with the updated sale
+        setSales(prevSales => prevSales.map(sale => {
+          if (sale._id === editingSaleId) {
+            console.log('Updating sale in local state:', response.data.data);
+            return response.data.data;
+          }
+          return sale;
+        }));
+        
+        // Temporarily disable date filtering to show all sales so user can see their changes
+        const wasShowingAllSales = showAllSales;
+        if (!wasShowingAllSales) {
+          setShowAllSales(true);
+          toast.info("Showing all sales to display your changes. Use filters to narrow down if needed.");
+        }
+        
       } else {
         console.error('Failed to update sale:', response.data);
         setError("Failed to update sale: " + (response.data?.message || "Unknown error"));
       }
       
       setEditingSaleId(null);
-      loadSalesData();
+      
+      // Only reload data if the update failed, otherwise we've already updated the local state
+      if (!response.data || !response.data.success) {
+        loadSalesData();
+      }
     } catch (err) {
       console.error('Error updating sale:', err);
       setError('Failed to update sale. Please try again.');
+      setEditingSaleId(null);
+      // Reload data on error to ensure consistency
+      loadSalesData();
     }
   };
 
@@ -446,11 +481,35 @@ const LeadSalesSheet = () => {
                 id="currentMonth"
                 type="checkbox"
                 checked={showCurrentMonth}
-                onChange={() => setShowCurrentMonth(!showCurrentMonth)}
+                onChange={() => {
+                  setShowCurrentMonth(!showCurrentMonth);
+                  if (!showCurrentMonth) {
+                    setShowAllSales(false); // Disable show all when showing current month
+                  }
+                }}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
               <label htmlFor="currentMonth" className="ml-2 block text-sm text-gray-700">
                 Show Current Month Only
+              </label>
+            </div>
+            
+            <div className="flex items-center ml-4">
+              <input
+                id="showAllSales"
+                type="checkbox"
+                checked={showAllSales}
+                onChange={() => {
+                  setShowAllSales(!showAllSales);
+                  if (!showAllSales) {
+                    // When enabling show all, disable other filters
+                    setShowCurrentMonth(false);
+                  }
+                }}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="showAllSales" className="ml-2 block text-sm text-gray-700 font-semibold text-blue-600">
+                Show All Sales (No Date Filter)
               </label>
             </div>
             
@@ -463,7 +522,9 @@ const LeadSalesSheet = () => {
           </div>
           
           <div className="mt-3 text-sm text-gray-500">
-            {showCurrentMonth ? (
+            {showAllSales ? (
+              <p>Showing all sales regardless of date: {sales.length} total sales</p>
+            ) : showCurrentMonth ? (
               <p>Showing sales for current month: {months[new Date().getMonth()].label} {new Date().getFullYear()}</p>
             ) : (
               <p>Showing sales for: {months[filterMonth - 1].label} {filterYear}</p>

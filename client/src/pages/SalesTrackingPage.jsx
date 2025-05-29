@@ -70,8 +70,8 @@ const SalesTrackingPage = () => {
   // Date filtering state
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1); // Current month (1-12)
   const [filterYear, setFilterYear] = useState(new Date().getFullYear()); // Current year
-  const [showCurrentMonth, setShowCurrentMonth] = useState(true); // Flag to show current month by default
-  const [showAllSales, setShowAllSales] = useState(false); // New flag to show all sales regardless of date
+  const [showCurrentMonth, setShowCurrentMonth] = useState(false); // Changed to false - don't filter by default
+  const [showAllSales, setShowAllSales] = useState(true); // Changed to true - show all sales by default
   
   // Currency options
   const currencyOptions = [
@@ -123,14 +123,6 @@ const SalesTrackingPage = () => {
   
   // Apply date filters when leads, month, or year changes
   useEffect(() => {
-    console.log('useEffect for applyDateFilters triggered:', {
-      salesLength: sales.length,
-      showAllSales,
-      showCurrentMonth,
-      filterMonth,
-      filterYear
-    });
-    
     if (sales.length > 0) {
       applyDateFilters();
     } else {
@@ -148,18 +140,8 @@ const SalesTrackingPage = () => {
   
   // Function to filter sales by selected date
   const applyDateFilters = () => {
-    console.log('applyDateFilters called with:', {
-      showAllSales,
-      showCurrentMonth,
-      filterMonth,
-      filterYear,
-      userRole: user?.role,
-      totalSales: sales.length
-    });
-
     // Special case for Managers and Admins - option to see all sales regardless of date
     if ((user?.role === 'Manager' || user?.role === 'Admin') && showAllSales) {
-      console.log('Showing all sales for Manager/Admin regardless of date:', sales.length);
       setFilteredSales(sales);
       return;
     }
@@ -174,7 +156,6 @@ const SalesTrackingPage = () => {
       filtered = sales.filter(sale => {
         // Make sure we have a valid date to work with
         if (!sale.date && !sale.createdAt) {
-          console.log('Sale has no date:', sale);
           return false;
         }
         
@@ -187,14 +168,11 @@ const SalesTrackingPage = () => {
           saleYear === currentYear
         );
       });
-      
-      console.log(`Filtered to current month: ${currentMonth}/${currentYear}. Found ${filtered.length} sales.`);
     } else {
       // Show selected month/year data
       filtered = sales.filter(sale => {
         // Make sure we have a valid date to work with
         if (!sale.date && !sale.createdAt) {
-          console.log('Sale has no date:', sale);
           return false;
         }
         
@@ -202,16 +180,11 @@ const SalesTrackingPage = () => {
         const saleMonth = saleDate.getMonth() + 1; // Convert to 1-12 format
         const saleYear = saleDate.getFullYear();
         
-        // Debug logging
-        console.log(`Sale date: ${saleDate.toISOString()}, Month: ${saleMonth}, Year: ${saleYear}, Filter: ${filterMonth}/${filterYear}`);
-        
         return (
           saleMonth === filterMonth && 
           saleYear === filterYear
         );
       });
-      
-      console.log(`Filtered to ${filterMonth}/${filterYear}. Found ${filtered.length} sales.`);
     }
     
     setFilteredSales(filtered);
@@ -221,12 +194,10 @@ const SalesTrackingPage = () => {
   const fetchSales = async () => {
     try {
       setLoading(true);
-      console.log("Fetching sales for user:", user?.fullName, user?.role);
       
       // For debugging purposes - log token
       const token = localStorage.getItem('token');
       if (!token) {
-        console.warn("No token found when fetching sales");
         setError("Authentication token not found. Please log in again.");
         return;
       }
@@ -240,11 +211,7 @@ const SalesTrackingPage = () => {
           }
         });
         
-        console.log("Direct API response:", response);
-        
         if (response.data && response.data.success) {
-          console.log("Sales data fetched:", response.data.data.length, "sales");
-          
           // Initialize sales with additional fields we want to track
           const processedSales = response.data.data.map(sale => {
             // Create a properly formatted sale object with consistent fields
@@ -278,22 +245,15 @@ const SalesTrackingPage = () => {
           
           // Set sales data
           setSales(processedSales);
-          
-          // Don't call applyDateFilters here - let the useEffect handle it
         } else {
-          console.error("Failed to load sales data:", response.data?.message || "Unknown error");
           setError("Failed to load sales data: " + (response.data?.message || "Unknown error"));
         }
       } catch (axiosError) {
-        console.error("Direct API call failed:", axiosError);
-        
         // Fall back to using the API service
         try {
           const fallbackResponse = await salesAPI.getAllForced();
           
           if (fallbackResponse.data && fallbackResponse.data.success) {
-            console.log("Sales data fetched from fallback:", fallbackResponse.data.data.length, "sales");
-            
             // Process sales data
             const processedSales = fallbackResponse.data.data.map(sale => ({
               ...sale,
@@ -314,24 +274,19 @@ const SalesTrackingPage = () => {
             }));
             
             setSales(processedSales);
-            
-            // Don't call applyDateFilters here - let the useEffect handle it
           } else {
-            console.error("Fallback API call failed:", fallbackResponse.data?.message || "Unknown error");
             setError("Failed to load sales data. Please try again.");
           }
         } catch (fallbackError) {
-          console.error("Fallback API call failed:", fallbackError);
           setError("Failed to load sales data. Please try again.");
         }
       }
     } catch (err) {
-      console.error("Error fetching sales:", err);
       if (err.response) {
-        console.error("Error details:", err.response.data);
-        console.error("Error status:", err.response.status);
+        setError("Failed to load sales data. Please try again.");
+      } else {
+        setError("Failed to load sales data. Please try again.");
       }
-      setError("Failed to load sales data. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -429,8 +384,6 @@ const SalesTrackingPage = () => {
     const selectedLead = availableLeads.find(lead => lead._id === selectedLeadId);
     
     if (selectedLead) {
-      console.log('Selected lead:', selectedLead);
-      
       setNewSale(prev => ({
         ...prev,
         leadId: selectedLeadId,
@@ -527,9 +480,6 @@ const SalesTrackingPage = () => {
           setError("Please enter country");
           return;
         }
-        
-        // For reference sales, lead person is optional
-        // No validation for leadPerson
       }
       
       // Get fresh token
@@ -550,8 +500,6 @@ const SalesTrackingPage = () => {
           setError("Lead information not found. Please select a lead again.");
           return;
         }
-        
-        console.log('Using lead data for sale:', selectedLead);
         
         // Extract lead details for the sale using the required schema fields
         saleData = {
@@ -635,14 +583,10 @@ const SalesTrackingPage = () => {
         };
       }
       
-      console.log("Submitting new sale with matching schema:", saleData);
-      
       // Use the API service - explicitly set isLeadPersonSale flag to true for both types
       const response = await salesAPI.create({ ...saleData, isLeadPersonSale: true });
       
       if (response.data && response.data.success) {
-        console.log("Sale created successfully:", response.data.data);
-        
         // Add new sale to the list
         setSales(prev => [response.data.data, ...prev]);
         
@@ -678,12 +622,8 @@ const SalesTrackingPage = () => {
         setError(response.data?.message || "Failed to add sale");
       }
     } catch (err) {
-      console.error("Error adding sale:", err);
-      
       // Detailed error handling
       if (err.response) {
-        console.error("Sale creation error details:", err.response.data);
-        
         if (err.response.status === 400) {
           // Better handling for validation errors
           const errorMsg = err.response.data?.message || "Invalid data";
@@ -706,9 +646,6 @@ const SalesTrackingPage = () => {
   // Improved helper function to safely extract IDs from possibly nested or string IDs
   const extractId = (obj, field) => {
     if (!obj) return null;
-    
-    // For debugging
-    console.log(`Extracting ID for field ${field}:`, obj[field]);
     
     // If field is direct property and is a string already, return it
     if (typeof obj[field] === 'string') return obj[field];
@@ -738,7 +675,6 @@ const SalesTrackingPage = () => {
   const handleEdit = (sale) => {
     // Check if sale object exists
     if (!sale) {
-      console.error("Attempted to edit undefined sale");
       return;
     }
     
@@ -761,15 +697,6 @@ const SalesTrackingPage = () => {
       password: sale.password || '',
       leadBy: sale.leadBy || '',
       currency: sale.currency || 'USD' // Default to USD if not specified
-    });
-    
-    console.log("Edit values initialized:", {
-      amount,
-      token,
-      pending,
-      status: sale.status || 'Pending',
-      saleDate: sale.date || new Date(),
-      currency: sale.currency || 'USD'
     });
   };
 
@@ -799,8 +726,6 @@ const SalesTrackingPage = () => {
         
         // If it's their own sale, they can edit everything
         if (isOwnSale) {
-          console.log('Sales Person updating their own sale');
-          
           // Extract IDs properly handling both object and string formats
           const salesPersonId = extractId(originalSale, 'salesPerson') || user._id;
           const leadPersonId = extractId(originalSale, 'leadPerson');
@@ -810,7 +735,7 @@ const SalesTrackingPage = () => {
             // Keep original customer info
             customerName: originalSale.customerName,
             country: originalSale.country,
-            course: originalSale.course || editValues.product || 'Unknown Course',
+            course: editValues.product || originalSale.course || 'Unknown Course', // Use edited product first
             countryCode: originalSale.countryCode,
             contactNumber: originalSale.contactNumber,
             email: originalSale.email,
@@ -852,20 +777,39 @@ const SalesTrackingPage = () => {
             updatedAt: new Date()
           };
           
-          console.log('Updating sale with full data:', updateData);
-          
           // Use the API service
           const response = await salesAPI.update(saleId, updateData);
           
           if (response.data && response.data.success) {
-            setSales(sales.map(sale => 
-              sale._id === saleId ? response.data.data : sale
-            ));
+            console.log('Sale update response:', response.data.data);
+            
+            // Update the sales state with the new data, ensuring we preserve the display fields
+            setSales(sales.map(sale => {
+              if (sale._id === saleId) {
+                const updatedSale = {
+                  ...response.data.data,
+                  // Ensure display fields are properly set
+                  product: response.data.data.course || response.data.data.product || editValues.product,
+                  amount: response.data.data.totalCost || editValues.amount,
+                  token: response.data.data.tokenAmount || editValues.token,
+                  pending: response.data.data.status === 'Completed' ? 0 : 
+                          (response.data.data.totalCost || 0) - (response.data.data.tokenAmount || 0),
+                  currency: response.data.data.currency || editValues.currency || 'USD'
+                };
+                console.log('Updated sale object:', updatedSale);
+                return updatedSale;
+              }
+              return sale;
+            }));
             toast.success("Sale updated successfully");
             setEditingSale(null);
             
-            // Refresh data to ensure we have the latest
-            refreshData();
+            // Temporarily show all sales to ensure user can see their changes
+            const wasShowingAllSales = showAllSales;
+            if (!wasShowingAllSales) {
+              setShowAllSales(true);
+              toast.info("Showing all sales to display your changes. Use filters to narrow down if needed.");
+            }
           } else {
             setError("Failed to update sale: " + (response.data?.message || "Server error"));
           }
@@ -892,7 +836,7 @@ const SalesTrackingPage = () => {
         // Keep original customer info
         customerName: originalSale.customerName,
         country: originalSale.country,
-        course: originalSale.course || editValues.product || 'Unknown Course',
+        course: editValues.product || originalSale.course || 'Unknown Course', // Use edited product first
         countryCode: originalSale.countryCode,
         contactNumber: originalSale.contactNumber,
         email: originalSale.email,
@@ -934,32 +878,45 @@ const SalesTrackingPage = () => {
         updatedAt: new Date()
       };
       
-      console.log('Updating sale with schema data:', updateData);
-      
       // Use the API service
       const response = await salesAPI.update(saleId, updateData);
       
-      console.log('Update response:', response);
-      
       if (response.data && response.data.success) {
-        setSales(sales.map(sale => 
-          sale._id === saleId ? response.data.data : sale
-        ));
+        console.log('Sale update response:', response.data.data);
+        
+        // Update the sales state with the new data, ensuring we preserve the display fields
+        setSales(sales.map(sale => {
+          if (sale._id === saleId) {
+            const updatedSale = {
+              ...response.data.data,
+              // Ensure display fields are properly set
+              product: response.data.data.course || response.data.data.product || editValues.product,
+              amount: response.data.data.totalCost || editValues.amount,
+              token: response.data.data.tokenAmount || editValues.token,
+              pending: response.data.data.status === 'Completed' ? 0 : 
+                      (response.data.data.totalCost || 0) - (response.data.data.tokenAmount || 0),
+              currency: response.data.data.currency || editValues.currency || 'USD'
+            };
+            console.log('Updated sale object:', updatedSale);
+            return updatedSale;
+          }
+          return sale;
+        }));
         toast.success("Sale updated successfully");
         setEditingSale(null);
         
-        // Refresh data to ensure we have the latest
-        refreshData();
+        // Temporarily show all sales to ensure user can see their changes
+        const wasShowingAllSales = showAllSales;
+        if (!wasShowingAllSales) {
+          setShowAllSales(true);
+          toast.info("Showing all sales to display your changes. Use filters to narrow down if needed.");
+        }
       } else {
         setError("Failed to update sale: " + (response.data?.message || "Server error"));
       }
     } catch (err) {
-      console.error("Error updating sale:", err);
-      
       // Detailed error handling
       if (err.response) {
-        console.error("Error details:", err.response.data);
-        
         if (err.response.status === 403) {
           if (user.role === 'Sales Person' && err.response.data?.message?.includes('can only update the status field')) {
             setError("As a Sales Person, you can only update the status field");
@@ -1008,20 +965,11 @@ const SalesTrackingPage = () => {
 
   // Fixed function to determine if user can edit a sale
   const canEditSale = (sale) => {
-    if (!sale || !user) return false;
+    if (!sale || !user || !user._id || !user.role) return false;
     
     // Get sales person ID handling both object and string formats
     const salesPersonId = extractId(sale, 'salesPerson');
     const userId = user._id;
-    
-    console.log("Checking edit permission:", {
-      salesPersonId,
-      userId,
-      role: user.role,
-      userIdType: typeof userId,
-      salesPersonIdType: typeof salesPersonId,
-      compareResult: salesPersonId && userId && salesPersonId.toString() === userId.toString()
-    });
     
     // Sales person can edit their own sales
     if (user.role === 'Sales Person') {
@@ -1041,20 +989,11 @@ const SalesTrackingPage = () => {
   
   // Fixed function to determine if user can delete a sale
   const canDeleteSale = (sale) => {
-    if (!sale || !user) return false;
+    if (!sale || !user || !user._id || !user.role) return false;
     
     // Get sales person ID handling both object and string formats
     const salesPersonId = extractId(sale, 'salesPerson');
     const userId = user._id;
-    
-    console.log("Checking delete permission:", {
-      salesPersonId,
-      userId,
-      role: user.role,
-      userIdType: typeof userId,
-      salesPersonIdType: typeof salesPersonId,
-      compareResult: salesPersonId && userId && salesPersonId.toString() === userId.toString()
-    });
     
     // Sales person can delete their own sales
     if (user.role === 'Sales Person') {
@@ -1078,13 +1017,8 @@ const SalesTrackingPage = () => {
         return;
       }
       
-      // Debug the sale object we're trying to delete
-      console.log('Sale being deleted:', saleToDelete);
-      
       // Use the API service instead of direct Axios call
       const response = await salesAPI.delete(saleId);
-      
-      console.log('Delete response:', response);
       
       if (response.data && response.data.success) {
         // Remove the deleted sale from state
@@ -1097,12 +1031,8 @@ const SalesTrackingPage = () => {
         toast.error(response.data?.message || "Failed to delete sale");
       }
     } catch (err) {
-      console.error("Error deleting sale:", err);
-      
       // Detailed error handling
       if (err.response) {
-        console.error("Delete error details:", err.response.data);
-        
         if (err.response.status === 403) {
           toast.error("You don't have permission to delete this sale. Only the creator or an admin can delete it.");
         } else if (err.response.status === 401) {
@@ -1150,20 +1080,10 @@ const SalesTrackingPage = () => {
   
   // Handle show all sales toggle for Managers and Admins
   const handleShowAllSales = () => {
-    console.log('handleShowAllSales called, current state:', {
-      showAllSales,
-      showCurrentMonth,
-      salesLength: sales.length,
-      filteredSalesLength: filteredSales.length
-    });
-    
     setShowAllSales(!showAllSales);
     if (!showAllSales) {
       // When enabling show all, disable other filters
       setShowCurrentMonth(false);
-      console.log('Enabling show all sales, disabling current month filter');
-    } else {
-      console.log('Disabling show all sales');
     }
   };
 
@@ -1173,15 +1093,6 @@ const SalesTrackingPage = () => {
       // Only proceed if user can edit this sale
       const targetSale = sales.find(sale => sale._id === saleId);
       if (!targetSale) return;
-      
-      // For debugging
-      console.log("Trying to update status:", {
-        saleId,
-        newStatus,
-        userRole: user.role,
-        userId: user._id,
-        canEdit: canEditSale(targetSale)
-      });
       
       if (!canEditSale(targetSale)) {
         toast.error("You don't have permission to update this sale");
@@ -1200,8 +1111,6 @@ const SalesTrackingPage = () => {
         // Set pending to false (zero) if status is Completed
         pending: newStatus === 'Completed' ? false : targetSale.pending
       };
-      
-      console.log('Updating status to:', newStatus);
       
       // Update using the API service instead of direct Axios call
       const response = await salesAPI.update(saleId, updatedSale);
@@ -1232,11 +1141,7 @@ const SalesTrackingPage = () => {
         toast.error(response.data?.message || "Failed to update sale status");
       }
     } catch (err) {
-      console.error("Error updating sale status:", err);
-      
       if (err.response) {
-        console.error("Error details:", err.response.data);
-        
         if (err.response.status === 403) {
           if (user.role === 'Sales Person' && err.response.data?.message?.includes('can only update the status field')) {
             setError("As a Sales Person, you can only update the status field");
@@ -1280,12 +1185,9 @@ const SalesTrackingPage = () => {
       // WhatsApp API doesn't use the + symbol
       const whatsappUrl = `https://wa.me/${dialCode}${cleanPhone}`;
       
-      console.log('Opening WhatsApp URL:', whatsappUrl);
-      
       // Open WhatsApp in a new tab
       window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
     } catch (error) {
-      console.error('Error opening WhatsApp:', error);
       toast.error('Could not open WhatsApp. Please try again.');
     }
   };
@@ -1299,8 +1201,6 @@ const SalesTrackingPage = () => {
   // Add function to refresh data after operations
   const refreshData = async () => {
     try {
-      console.log("Refreshing sales data...");
-      
       // Clear the state first to ensure update
       setSales([]);
       setFilteredSales([]);
@@ -1313,8 +1213,6 @@ const SalesTrackingPage = () => {
       const response = await salesAPI.getAll();
       
       if (response.data && response.data.success) {
-        console.log("Refreshed sales data:", response.data.data);
-        
         // Initialize sales with additional fields we want to track
         const processedSales = response.data.data.map(sale => {
           // Create a properly formatted sale object with consistent fields
@@ -1348,19 +1246,10 @@ const SalesTrackingPage = () => {
         
         // Update the sales state
         setSales(processedSales);
-        
-        // Don't call applyDateFilters here - let the useEffect handle it
-        
-        console.log("Sales data refreshed successfully", {
-          total: processedSales.length,
-          filtered: filteredSales.length
-        });
       } else {
-        console.error("Failed to refresh sales data:", response.data?.message || "Unknown error");
         toast.error("Failed to refresh sales data. Please try again.");
       }
     } catch (err) {
-      console.error("Error refreshing data:", err);
       toast.error("Failed to refresh data. Please reload the page.");
     } finally {
       setLoading(false);
@@ -1372,25 +1261,7 @@ const SalesTrackingPage = () => {
     }
   };
 
-  // Debug effect for editValues
-  useEffect(() => {
-    if (editingSale) {
-      console.log("Current editValues:", editValues);
-    }
-  }, [editValues, editingSale]);
-  
-  // Set up a useEffect to log the current permissions state for each sale
-  useEffect(() => {
-    if (sales.length > 0 && user) {
-      console.log("Current user permissions summary:", {
-        userId: user._id,
-        role: user.role,
-        canEditCount: sales.filter(sale => canEditSale(sale)).length,
-        canDeleteCount: sales.filter(sale => canDeleteSale(sale)).length,
-        totalSales: sales.length
-      });
-    }
-  }, [sales, user]);
+
 
   // Safely get a value from a possibly undefined property
   const safeGet = (obj, path, defaultValue = 'N/A') => {
@@ -1802,9 +1673,6 @@ const SalesTrackingPage = () => {
 
   // Format currency for display
   const formatCurrency = (value, currencyCode = 'USD') => {
-    // Add debugging for currency formatting
-    console.log(`Formatting currency: value=${value}, currencyCode=${currencyCode}`);
-    
     // Get the currency symbol
     const currency = currencyOptions.find(c => c.value === currencyCode) || currencyOptions[0];
     const symbol = currency.symbol;
@@ -1848,8 +1716,8 @@ const SalesTrackingPage = () => {
         ) : (
           <>
             {/* Date Filter Controls */}
-            <div className="mb-6 p-4 bg-white rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold mb-3">Filter Sales by Date</h3>
+            <div className="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md transition-colors duration-300">
+                              <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">Filter Sales by Date</h3>
               <div className="flex flex-wrap items-center gap-4">
                 <div>
                   <label htmlFor="month" className="block text-sm font-medium text-gray-600 mb-1">Month</label>
@@ -1939,9 +1807,9 @@ const SalesTrackingPage = () => {
               </div>
             </div>
             
-            <div className="overflow-x-auto bg-white rounded-lg shadow-md">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+            <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-md transition-colors duration-300">
+                              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lead</th>
@@ -1967,69 +1835,6 @@ const SalesTrackingPage = () => {
                 </tbody>
               </table>
             </div>
-            
-            {/* Debug Panel - shown for Admin and Manager users */}
-            {user && (user.role === 'Admin' || user.role === 'Manager') && (
-              <div className="mt-8 p-4 bg-gray-800 text-white rounded-lg shadow-md">
-                <h3 className="text-lg font-semibold mb-3 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-                  </svg>
-                  Debug Panel
-                </h3>
-                <div className="space-y-2 text-sm font-mono">
-                  <div>
-                    <span className="text-gray-400">User ID:</span> {user._id}
-                  </div>
-                  <div>
-                    <span className="text-gray-400">User Role:</span> {user.role}
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Auth Token:</span> {localStorage.getItem('token') ? 'Present' : 'Missing'}
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Token Length:</span> {localStorage.getItem('token')?.length || 0} characters
-                  </div>
-                  <div>
-                    <span className="text-gray-400">API URL:</span> {api.defaults.baseURL || 'Not set (using default)'}
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Total Sales:</span> {sales.length}
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Filtered Sales:</span> {filteredSales.length}
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Show All Sales:</span> {showAllSales ? 'Yes' : 'No'}
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Show Current Month:</span> {showCurrentMonth ? 'Yes' : 'No'}
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Filter Month:</span> {filterMonth}
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Filter Year:</span> {filterYear}
-                  </div>
-                  <div>
-                    <details>
-                      <summary className="cursor-pointer text-blue-400 hover:text-blue-300">Show First Sale Data</summary>
-                      <pre className="mt-2 p-2 bg-gray-900 rounded text-xs overflow-auto max-h-40">
-                        {sales.length > 0 ? JSON.stringify(sales[0], null, 2) : 'No sales data'}
-                      </pre>
-                    </details>
-                  </div>
-                  <div className="pt-2">
-                    <button 
-                      onClick={refreshData}
-                      className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-white text-xs"
-                    >
-                      Refresh Data
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </>
         )}
         

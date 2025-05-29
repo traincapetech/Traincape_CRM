@@ -25,17 +25,11 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      console.log('Loading user data with token:', token ? 'Present' : 'Not present');
       
-      const res = await authAPI.getCurrentUser();
-      console.log('User data loaded from API:', res.data);
-      console.log('User object structure:', res.data.data);
-      
+      const res = await authAPI.getProfile();
       setUser(res.data.data);
-      console.log('User set in state:', res.data.data);
       setError(null);
     } catch (err) {
-      console.error('Failed to load user', err);
       localStorage.removeItem('token');
       setUser(null);
       setError('Authentication failed. Please login again.');
@@ -48,20 +42,10 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       setLoading(true);
-      console.log('Attempting registration with data:', { ...userData, password: '[REDACTED]' });
-      
       const res = await authAPI.register(userData);
-      console.log('Registration successful:', res.data);
-      
       setError(null);
       return res.data;
     } catch (err) {
-      console.error('Registration failed:', {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status
-      });
-      
       const errorMessage = err.response?.data?.message || 'Registration failed. Please try again.';
       setError(errorMessage);
       throw new Error(errorMessage);
@@ -77,8 +61,6 @@ export const AuthProvider = ({ children }) => {
       const res = await authAPI.login(credentials);
       
       // Save token to localStorage
-      console.log('Login response:', res.data);
-      console.log('Login user object:', res.data.user);
       localStorage.setItem('token', res.data.token);
       
       // Set user data
@@ -90,7 +72,6 @@ export const AuthProvider = ({ children }) => {
         tokenStatus: res.data.token ? 'Valid' : 'Missing'
       };
     } catch (err) {
-      console.error('Login failed', err);
       setError(err.response?.data?.message || 'Invalid credentials');
       throw err;
     } finally {
