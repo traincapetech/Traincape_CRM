@@ -131,7 +131,7 @@ const AdminImportPage = () => {
       }
 
       // Send the parsed data to the server
-      const response = await leadsAPI.importLeads({ leads });
+      const response = await leadsAPI.importLeads(leads);
       
       setUploadProgress(100);
       setImportSummary({
@@ -172,7 +172,7 @@ const AdminImportPage = () => {
       }
 
       // Send the parsed data to the server
-      const response = await salesAPI.importSales({ sales });
+      const response = await salesAPI.importSales(sales);
       
       setUploadProgress(100);
       setImportSummary({
@@ -227,7 +227,7 @@ const AdminImportPage = () => {
       }));
 
       // Send the parsed data to the server
-      const response = await leadsAPI.importLeads({ leads: mappedLeads });
+      const response = await leadsAPI.importLeads(mappedLeads);
       
       setUploadProgress(100);
       setImportSummary({

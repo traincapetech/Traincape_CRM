@@ -84,6 +84,12 @@ export const leadsAPI = {
   getAssigned: () => api.get('/leads/assigned'),
   getRepeatCustomers: () => api.get('/leads/repeat-customers'),
   import: (leadsData) => api.post('/leads/import', { leads: leadsData }),
+  importLeads: (leadsData) => api.post('/leads/import', { leads: leadsData }),
+  importCSV: (formData) => api.post('/leads/import-csv', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
 };
 
 // Sales API
@@ -101,6 +107,8 @@ export const salesAPI = {
   update: (id, saleData) => api.put(`/sales/${id}`, saleData),
   delete: (id) => api.delete(`/sales/${id}`),
   getCount: () => api.get('/sales/count'),
+  import: (salesData) => api.post('/sales/import', { sales: salesData }),
+  importSales: (salesData) => api.post('/sales/import', { sales: salesData }),
   
   // Reports API
   getCourseAnalysis: (period = 'monthly') => api.get(`/sales/reports/course-analysis?period=${period}`),

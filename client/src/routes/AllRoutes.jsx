@@ -114,11 +114,11 @@ const AllRoutes = () => {
         }
       />
       
-      {/* Admin Routes */}
+      {/* Admin Routes - Allow Lead Person to access dashboard for lead stage analytics */}
       <Route
         path="/admin"
         element={
-          <ProtectedRoute allowedRoles={["Admin"]}>
+          <ProtectedRoute allowedRoles={["Admin", "Lead Person"]}>
             <AdminDashboardPage />
           </ProtectedRoute>
         }
