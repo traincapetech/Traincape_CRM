@@ -209,7 +209,11 @@ const TaskManagementPage = () => {
         title: formData.title,
         description: formData.description,
         taskType: formData.taskType,
-        examDate: combinedDateTime
+        examDate: combinedDateTime,
+        examDateTime: combinedDateTime,
+        assignedTo: user._id,
+        salesPerson: user._id,
+        course: manualCustomerMode ? formData.manualCustomerCourse : (formData.customer ? 'Selected Customer Course' : 'General Course')
       };
       
       // Handle manual customer entry vs. selecting existing customer

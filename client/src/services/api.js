@@ -75,13 +75,39 @@ export const authAPI = {
 
 // Leads API
 export const leadsAPI = {
-  getAll: () => api.get('/leads'),
+  getAll: (filters = {}) => {
+    const params = new URLSearchParams();
+    
+    // Add date filters to params
+    if (filters.month) params.append('month', filters.month);
+    if (filters.year) params.append('year', filters.year);
+    if (filters.startDate) params.append('startDate', filters.startDate);
+    if (filters.endDate) params.append('endDate', filters.endDate);
+    
+    const queryString = params.toString();
+    const url = queryString ? `/leads?${queryString}` : '/leads';
+    
+    return api.get(url);
+  },
   getById: (id) => api.get(`/leads/${id}`),
   create: (leadData) => api.post('/leads', leadData),
   update: (id, leadData) => api.put(`/leads/${id}`, leadData),
   updateFeedback: (id, feedback) => api.put(`/leads/${id}/feedback`, { feedback }),
   delete: (id) => api.delete(`/leads/${id}`),
-  getAssigned: () => api.get('/leads/assigned'),
+  getAssigned: (filters = {}) => {
+    const params = new URLSearchParams();
+    
+    // Add date filters to params
+    if (filters.month) params.append('month', filters.month);
+    if (filters.year) params.append('year', filters.year);
+    if (filters.startDate) params.append('startDate', filters.startDate);
+    if (filters.endDate) params.append('endDate', filters.endDate);
+    
+    const queryString = params.toString();
+    const url = queryString ? `/leads/assigned?${queryString}` : '/leads/assigned';
+    
+    return api.get(url);
+  },
   getRepeatCustomers: () => api.get('/leads/repeat-customers'),
   import: (leadsData) => api.post('/leads/import', { leads: leadsData }),
   importLeads: (leadsData) => api.post('/leads/import', { leads: leadsData }),

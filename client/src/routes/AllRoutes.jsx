@@ -26,6 +26,7 @@ import CountriesPage from '../pages/Countries';
 import ManagementContactsPage from '../pages/ManagementContactsPage';
 import GeminiAIPage from '../pages/GeminiAIPage';
 import ManagerDashboard from '../pages/ManagerDashboard';
+import TestNotificationsPage from '../pages/TestNotificationsPage';
 
 // Removed Router wrapper so it can be used at a higher level
 const AllRoutes = () => {
@@ -43,6 +44,16 @@ const AllRoutes = () => {
       
       {/* Gemini AI Assistant - available to all users */}
       <Route path="/ai-assistant" element={<GeminiAIPage />} />
+
+      {/* Test Notifications - for testing exam notifications */}
+      <Route
+        path="/test-notifications"
+        element={
+          <ProtectedRoute allowedRoles={["Sales Person", "Lead Person", "Manager", "Admin"]}>
+            <TestNotificationsPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Manager Dashboard */}
       <Route

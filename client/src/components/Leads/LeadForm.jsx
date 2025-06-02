@@ -152,58 +152,41 @@ const LeadForm = ({ lead = null, onSuccess }) => {
     setLoading(true);
     setError(null);
     
-    console.log('========= FORM SUBMISSION =========');
-    console.log('Form data being submitted:', formData);
-    console.log('assignedTo value:', formData.assignedTo);
-    console.log('Custom creation date:', formData.customCreatedAt);
-    
-    // Validate that assignedTo is set
-    if (!formData.assignedTo) {
-      console.error('assignedTo is required but not set');
-      setError('Please select a sales person to assign this lead to');
-      setLoading(false);
-      return;
-    }
-    
-    // Validate country code format - ensure it starts with +
-    let countryCode = formData.countryCode || '';
-    // Remove any plus sign that might already be there, then conditionally add it back
-    countryCode = countryCode.replace(/^\+/, '');
-    
+    console.log('============= LEAD FORM SUBMIT =============');
+    console.log('Form submission started');
+    console.log('Is updating existing lead:', !!lead);
+    console.log('Lead ID:', lead?._id);
+    console.log('Form data:', formData);
+
     try {
       let response;
-      // Create the data to submit
+      
+      // Prepare data for submission with proper field mapping
       const dataToSubmit = {
-        // Support both formats for maximum compatibility
-        name: formData.name,
         NAME: formData.name,
-        email: formData.email,
-        'E-MAIL': formData.email,
-        course: formData.course,
+        'E-MAIL': formData.email || '',
         COURSE: formData.course,
-        countryCode: countryCode,
-        CODE: countryCode,
-        phone: formData.phone,
+        CODE: formData.countryCode,
         NUMBER: formData.phone,
-        country: formData.country,
         COUNTRY: formData.country,
-        pseudoId: formData.pseudoId || '',
         'PSUDO ID': formData.pseudoId || '',
-        client: formData.client || '',
         'CLIENT REMARK': formData.client || '',
         status: formData.status || 'Introduction',
-        source: formData.source || '',
         SOURSE: formData.source || '',
-        sourceLink: formData.sourceLink || '',
         'SOURCE LINK': formData.sourceLink || '',
-        assignedTo: formData.assignedTo,
         'SALE PERSON': formData.assignedTo,
         leadPerson: formData.leadPerson || '',
         'LEAD PERSON': formData.leadPerson || '',
         feedback: formData.feedback || '',
         FEEDBACK: formData.feedback || '',
-        DATE: formData.customCreatedAt ? new Date(formData.customCreatedAt).toISOString() : new Date().toISOString(),
-        createdAt: formData.customCreatedAt ? new Date(formData.customCreatedAt).toISOString() : new Date().toISOString()
+        ...(lead ? {
+          // For existing leads, preserve the original createdAt date
+          // Don't send DATE or createdAt fields to avoid changing the lead's month/year
+        } : {
+          // For new leads, use the custom date or current date
+          DATE: formData.customCreatedAt ? new Date(formData.customCreatedAt).toISOString() : new Date().toISOString(),
+          createdAt: formData.customCreatedAt ? new Date(formData.customCreatedAt).toISOString() : new Date().toISOString()
+        })
       };
       
       // Double-check all required fields are present and valid
@@ -236,23 +219,29 @@ const LeadForm = ({ lead = null, onSuccess }) => {
       }
       
       // Log the final data being sent for debugging
-      console.log('Final data being sent:', dataToSubmit);
+      console.log('Final data being sent to API:', dataToSubmit);
       
       if (lead) {
         // Update existing lead
-        console.log('Updating existing lead:', lead._id);
+        console.log('Calling API to update existing lead:', lead._id);
         response = await leadsAPI.update(lead._id, dataToSubmit);
+        console.log('Update API response received:', response);
       } else {
         // Create new lead
-        console.log('Creating new lead');
+        console.log('Calling API to create new lead');
         response = await leadsAPI.create(dataToSubmit);
+        console.log('Create API response received:', response);
       }
       
-      console.log('API response:', response.data);
+      console.log('Full API response data:', response.data);
+      console.log('API response success:', response.data?.success);
+      console.log('API response lead data:', response.data?.data);
       
       if (response.data && response.data.success) {
-        console.log('Lead saved successfully');
+        console.log('Lead saved successfully, calling onSuccess callback');
+        console.log('Lead data being passed to onSuccess:', response.data.data);
         onSuccess(response.data.data);
+        console.log('onSuccess callback completed');
       } else {
         console.error('API returned success: false', response);
         setError('Failed to save lead. Please check your input and try again.');
@@ -263,6 +252,7 @@ const LeadForm = ({ lead = null, onSuccess }) => {
       setError(err.response?.data?.message || 'Failed to save lead. Please try again later.');
     } finally {
       setLoading(false);
+      console.log('============= LEAD FORM SUBMIT END =============');
     }
   };
 

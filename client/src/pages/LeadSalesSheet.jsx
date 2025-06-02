@@ -135,87 +135,46 @@ const LeadSalesSheet = () => {
 
       console.log('Fetching lead sales for user:', user?.fullName, user?.role, user?._id);
       
-      // Try direct axios approach first for more reliable data
       try {
-        const token = localStorage.getItem('token');
+        const res = await salesAPI.getAllForced();
         
-        // Direct API call to get sales data - with full=true parameter to get ALL sales
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/lead-sales?full=true`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        console.log("Direct API response for lead sales:", response);
-        
-        // Check response format and extract data
-        let salesData = [];
-        if (response.data && response.data.success && response.data.data) {
-          salesData = response.data.data;
-        } else if (response.data && Array.isArray(response.data)) {
-          salesData = response.data;
-        }
-        
-        console.log(`Lead sales data loaded: ${salesData.length} sales`);
-        setSales(salesData);
-        
-        // Initialize filteredSales with all sales
-        if (!isAutoRefresh) {
-          setFilteredSales(salesData);
-        } else {
-          // When auto-refreshing, maintain filters but update underlying data
-          applyDateFilters();
-        }
-        
-        if (salesData.length === 0) {
-          console.log('No lead sales found. This could be because:');
-          console.log('1. No sales have been assigned to this lead person');
-          console.log('2. Sales were created without selecting this lead person');
-        } else {
-          // Log a sample sale for debugging
-          console.log('Sample sale data:', salesData[0]);
-        }
-        
-        if (isAutoRefresh) {
-          toast.info("Sales data refreshed automatically");
-        }
-      } catch (axiosError) {
-        console.error("Direct API call failed:", axiosError);
-        
-        // Fall back to using the API service with forced option to get ALL sales
-        try {
-          const res = await salesAPI.getAllForced();
+        if (res.data && res.data.success) {
+          // Filter the sales to only show ones where this user is the lead person
+          const leadPersonSales = res.data.data.filter(sale => 
+            sale.leadPerson === user._id || 
+            (sale.leadPerson && sale.leadPerson._id === user._id)
+          );
           
-          if (res.data && res.data.success) {
-            // Filter the sales to only show ones where this user is the lead person
-            const leadPersonSales = res.data.data.filter(sale => 
-              sale.leadPerson === user._id || 
-              (sale.leadPerson && sale.leadPerson._id === user._id)
-            );
-            
-            console.log(`Lead sales data loaded from API service: ${leadPersonSales.length} sales`);
-            setSales(leadPersonSales);
-            
-            // Initialize filteredSales with all sales
-            if (!isAutoRefresh) {
-              setFilteredSales(leadPersonSales);
-            } else {
-              // When auto-refreshing, maintain filters but update underlying data
-              applyDateFilters();
-            }
-            
-            if (isAutoRefresh) {
-              toast.info("Sales data refreshed automatically");
-            }
+          console.log(`Lead sales data loaded: ${leadPersonSales.length} sales`);
+          setSales(leadPersonSales);
+          
+          // Initialize filteredSales with all sales
+          if (!isAutoRefresh) {
+            setFilteredSales(leadPersonSales);
           } else {
-            console.error('Failed to load lead sales data:', res.data);
-            setError('Failed to load sales data: ' + (res.data?.message || 'Unknown error'));
+            // When auto-refreshing, maintain filters but update underlying data
+            applyDateFilters();
           }
-        } catch (apiError) {
-          console.error('API service call failed:', apiError);
-          setError('Failed to load sales data. Please try again.');
+          
+          if (leadPersonSales.length === 0) {
+            console.log('No sales found. This could be because:');
+            console.log('1. No sales have been assigned to this lead person');
+            console.log('2. Sales were created without selecting this lead person');
+          } else {
+            // Log a sample record for debugging
+            console.log('Sample sales data:', leadPersonSales[0]);
+          }
+          
+          if (isAutoRefresh) {
+            toast.info("Sales data refreshed automatically");
+          }
+        } else {
+          console.error('Failed to load lead sales data:', res.data);
+          setError('Failed to load sales data: ' + (res.data?.message || 'Unknown error'));
         }
+      } catch (apiError) {
+        console.error('API service call failed:', apiError);
+        setError('Failed to load sales data. Please try again.');
       }
     } catch (err) {
       console.error('Error loading sales data:', err);
@@ -404,9 +363,9 @@ const LeadSalesSheet = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">My Sales Sheet</h1>
+            <h1 className="text-2xl font-bold text-gray-800">Lead Sales Sheet</h1>
             <p className="text-sm text-gray-600 mt-1">
-              This page shows all sales assigned to you as a Lead Person. 
+              This page shows sales where you are the Lead Person. 
               Sales created by Sales Persons who select you as the Lead Person will appear here.
             </p>
           </div>
@@ -523,13 +482,13 @@ const LeadSalesSheet = () => {
           
           <div className="mt-3 text-sm text-gray-500">
             {showAllSales ? (
-              <p>Showing all sales regardless of date: {sales.length} total sales</p>
+              <p>Showing all sales regardless of date: {sales.length} total records</p>
             ) : showCurrentMonth ? (
               <p>Showing sales for current month: {months[new Date().getMonth()].label} {new Date().getFullYear()}</p>
             ) : (
               <p>Showing sales for: {months[filterMonth - 1].label} {filterYear}</p>
             )}
-            <p>Total: {filteredSales.length} sales</p>
+            <p>Total: {filteredSales.length} records</p>
           </div>
         </div>
         
