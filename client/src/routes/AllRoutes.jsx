@@ -4,6 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import HomePage from "../pages/HomePage";
 import Login from "../components/Auth/Login";
 import SignUp from "../components/Auth/SignUp";
+import CustomerSignUp from "../components/Auth/CustomerSignUp";
 import LeadsPage from "../pages/LeadsPage";
 import SalesPage from "../pages/SalesPage";
 import SalesTrackingPage from "../pages/SalesTrackingPage";
@@ -27,6 +28,8 @@ import ManagementContactsPage from '../pages/ManagementContactsPage';
 import GeminiAIPage from '../pages/GeminiAIPage';
 import ManagerDashboard from '../pages/ManagerDashboard';
 import TestNotificationsPage from '../pages/TestNotificationsPage';
+import CustomerDashboard from "../pages/CustomerDashboard";
+import ProspectsPage from '../pages/ProspectsPage';
 
 // Removed Router wrapper so it can be used at a higher level
 const AllRoutes = () => {
@@ -36,13 +39,24 @@ const AllRoutes = () => {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
+      <Route path="/customer-signup" element={<CustomerSignUp />} />
       <Route path="/debug" element={<TokenDebugPage />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/tutorials" element={<TutorialsPage />} />
       <Route path="/management-contacts" element={<ManagementContactsPage />} />
       <Route path="/countries" element={<CountriesPage />} />
       
-      {/* Gemini AI Assistant - available to all users */}
+      {/* Customer Dashboard */}
+      <Route
+        path="/customer"
+        element={
+          <ProtectedRoute allowedRoles={["Customer"]}>
+            <CustomerDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Gemini AI Assistant - available to all users including customers */}
       <Route path="/ai-assistant" element={<GeminiAIPage />} />
 
       {/* Test Notifications - for testing exam notifications */}
@@ -115,11 +129,11 @@ const AllRoutes = () => {
         }
       />
       
-      {/* Profile Route - accessible to all authenticated users */}
+      {/* Profile Route - accessible to all authenticated users including customers */}
       <Route
         path="/profile"
         element={
-          <ProtectedRoute allowedRoles={["Sales Person", "Lead Person", "Manager", "Admin"]}>
+          <ProtectedRoute allowedRoles={["Sales Person", "Lead Person", "Manager", "Admin", "Customer"]}>
             <ProfilePage />
           </ProtectedRoute>
         }
@@ -212,6 +226,16 @@ const AllRoutes = () => {
         }
       />
       */}
+      
+      {/* Prospects - Sales Person, Manager, Admin only */}
+      <Route 
+        path="/prospects" 
+        element={
+          <ProtectedRoute allowedRoles={['Sales Person', 'Manager', 'Admin']}>
+            <ProspectsPage />
+          </ProtectedRoute>
+        } 
+      />
       
       {/* Catch-all route for 404 errors */}
       <Route path="*" element={<HomePage />} />

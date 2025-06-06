@@ -5,6 +5,7 @@ import axios from "axios";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
 import { leadsAPI, tasksAPI } from "../services/api";
+import notificationService from "../services/notificationService";
 
 // Get API URL for Vite (fixes "process is not defined" error)
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -484,6 +485,17 @@ const TaskManagementPage = () => {
           <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-3">
             <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Task Management</h1>
             <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  console.log('🔊 Testing notification sound...');
+                  notificationService.playNotificationSound();
+                  toast.success('🔊 Test sound played! (You need to interact with the page first for sound to work)');
+                }}
+                className="w-full sm:w-auto px-3 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 text-sm sm:text-base flex items-center gap-2"
+                title="Test the exam reminder sound"
+              >
+                🔊 Test Sound
+              </button>
               <button
                 onClick={() => {
                   resetForm();

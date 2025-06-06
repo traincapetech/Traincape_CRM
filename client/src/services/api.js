@@ -194,6 +194,31 @@ export const currencyAPI = {
   getRate: (from, to) => api.get(`/currency/rate?from=${from}&to=${to}`),
 };
 
+// Prospects API
+export const prospectsAPI = {
+  getAll: (filters = {}) => {
+    const params = new URLSearchParams();
+    
+    // Add filters to params
+    Object.keys(filters).forEach(key => {
+      if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
+        params.append(key, filters[key]);
+      }
+    });
+    
+    const queryString = params.toString();
+    const url = queryString ? `/prospects?${queryString}` : '/prospects';
+    
+    return api.get(url);
+  },
+  getById: (id) => api.get(`/prospects/${id}`),
+  create: (prospectData) => api.post('/prospects', prospectData),
+  update: (id, prospectData) => api.put(`/prospects/${id}`, prospectData),
+  delete: (id) => api.delete(`/prospects/${id}`),
+  getStats: () => api.get('/prospects/stats'),
+  convertToLead: (id) => api.post(`/prospects/${id}/convert`),
+};
+
 // Gemini API
 export const geminiAPI = {
   generateContent: (prompt) => api.post('/gemini/generate', { prompt }),

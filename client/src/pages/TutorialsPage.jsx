@@ -78,6 +78,20 @@ const TutorialsPage = () => {
           tip: "Regular updates to lead information ensures everyone has the most current data."
         },
         {
+          heading: "Month-wise Lead Filtering",
+          description: "The new filtering system allows you to view leads by specific months and years for better organization.",
+          steps: [
+            "Navigate to the Leads page to see the filtering controls",
+            "Use the Month dropdown to select any month (January through December)",
+            "Use the Year dropdown to select the desired year",
+            "Click 'Show Current Month' to quickly view leads from the current month",
+            "Click 'March 2025 (Imported Leads)' to view previously imported lead data",
+            "The system shows a count of leads for each selected time period",
+            "Lead assignments are preserved when filtering - assigned leads stay with their sales persons"
+          ],
+          tip: "When importing new leads each month, they will be automatically organized by their creation date. This makes it easy to track monthly lead generation and assign new leads to sales persons without affecting previous assignments."
+        },
+        {
           heading: "Assigning Leads to Sales Persons",
           description: "Proper lead assignment ensures timely follow-up.",
           steps: [
@@ -86,6 +100,20 @@ const TutorialsPage = () => {
             "Save the changes to notify the sales person of the new assignment"
           ],
           tip: "Consider workload balance when assigning leads to ensure timely follow-up."
+        },
+        {
+          heading: "Importing Leads from CSV",
+          description: "Bulk import leads from CSV files with automatic Lead Person and Sales Person assignment.",
+          steps: [
+            "Navigate to the Admin Import page (Admin/Manager access required)",
+            "Select the 'Import Leads' tab",
+            "Prepare your CSV file with columns: Name, Email, Phone, Country, Course, Date",
+            "Optional columns: Lead Person, Sales Person (for automatic assignment)",
+            "For dates, use either YYYY-MM-DD (e.g., 2025-04-15) or DD-MM-YYYY (e.g., 15-04-2025) format",
+            "Upload your CSV file and click 'Import Leads'",
+            "Review the import summary for successful and failed records"
+          ],
+          tip: "Include 'Lead Person' and 'Sales Person' columns in your CSV to automatically assign leads during import. The system will match names and assign leads to the correct people, regardless of who performs the import."
         }
       ]
     },
@@ -204,6 +232,21 @@ const TutorialsPage = () => {
             "Update the lead status based on exam performance"
           ],
           tip: "Regular communication after exams builds trust and increases the likelihood of enrollment."
+        },
+        {
+          heading: "Exam Reminder Notifications & Sound Alerts",
+          description: "The system includes automatic exam reminder notifications with sound alerts to ensure you never miss an exam.",
+          steps: [
+            "When you schedule an exam, the system automatically sets up reminder notifications",
+            "10 minutes before the exam time, you'll receive multiple notifications:",
+            "• Browser notification (if permissions are granted)",
+            "• Toast notification with exam details",
+            "• Sound alert with triple beep pattern",
+            "• Modal popup with exam information and direct link",
+            "Click the '🔊 Test Sound' button on the Task Management page to test the notification sound",
+            "Make sure to interact with the page (click anywhere) first to enable sound in your browser"
+          ],
+          tip: "Browser sound policies require user interaction before playing audio. The first time you visit the page, click anywhere to enable sound notifications. The sound will play three beeps: 800Hz, 1000Hz, then 800Hz again for maximum attention."
         }
       ]
     },

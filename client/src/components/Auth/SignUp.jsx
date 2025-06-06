@@ -11,7 +11,7 @@ const SignUp = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "Sales Person" // Default role
+    role: "Customer" // Default role for public registration
   });
   const [formError, setFormError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -172,6 +172,7 @@ const SignUp = () => {
                   <option value="Sales Person">Sales Person</option>
                   <option value="Manager">Manager</option>
                   <option value="Admin">Admin</option>
+                  <option value="Customer">Customer</option>
                 </select>
                 <p className="text-xs text-gray-500 mt-1">For initial setup, you can create an Admin account. This option will be removed in production.</p>
               </div>

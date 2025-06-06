@@ -4,8 +4,11 @@ import { HashRouter as Router } from "react-router-dom";
 import AllRoutes from "./routes/AllRoutes";
 import "./App.css";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ChatProvider } from "./context/ChatContext";
 import { Toaster } from 'react-hot-toast';
 import FloatingAIButton from "./components/AI/FloatingAIButton";
+import ChatWindow from "./components/Chat/ChatWindow";
+import ChatDebug from "./components/Chat/ChatDebug";
 import notificationService from "./services/notificationService";
 
 // Component to handle notification service initialization
@@ -36,35 +39,39 @@ const App = () => {
   return (
     <Router>
       <AuthProvider>
-        <div className="min-h-screen bg-white text-black dark:bg-gray-900 dark:text-white transition-colors duration-300">
-          <NotificationHandler />
-          <AllRoutes />
-          <FloatingAIButton />
-          <Toaster 
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#363636',
-                color: '#fff',
-              },
-              success: {
-                duration: 3000,
-                iconTheme: {
-                  primary: '#4ade80',
-                  secondary: '#fff',
+        <ChatProvider>
+          <div className="min-h-screen bg-white text-black dark:bg-gray-900 dark:text-white transition-colors duration-300">
+            <NotificationHandler />
+            <AllRoutes />
+            <FloatingAIButton />
+            <ChatWindow />
+            <ChatDebug />
+            <Toaster 
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#363636',
+                  color: '#fff',
                 },
-              },
-              error: {
-                duration: 5000,
-                iconTheme: {
-                  primary: '#ef4444',
-                  secondary: '#fff',
+                success: {
+                  duration: 3000,
+                  iconTheme: {
+                    primary: '#4ade80',
+                    secondary: '#fff',
+                  },
                 },
-              },
-            }}
-          />
-        </div>
+                error: {
+                  duration: 5000,
+                  iconTheme: {
+                    primary: '#ef4444',
+                    secondary: '#fff',
+                  },
+                },
+              }}
+            />
+          </div>
+        </ChatProvider>
       </AuthProvider>
     </Router>
   );

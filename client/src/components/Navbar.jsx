@@ -42,6 +42,20 @@ const Navbar = () => {
             <Link to="/management-contacts" className="hover:text-blue-300">Contacts</Link>
           </li> */}
 
+          {/* Customer Dashboard Link */}
+          {user && user.role === "Customer" && (
+            <li>
+              <Link to="/customer" className="hover:text-blue-300">Dashboard</Link>
+            </li>
+          )}
+
+          {/* Sales Person, Manager, and Admin can access Prospects page */}
+          {user && (user.role === "Sales Person" || user.role === "Manager" || user.role === "Admin") && (
+            <li>
+              <Link to="/prospects" className="hover:text-blue-300">Prospects</Link>
+            </li>
+          )}
+
           {/* Lead Person, Manager, and Admin can access Leads page */}
           {user && (user.role === "Lead Person" || user.role === "Manager" || user.role === "Admin") && (
             <li>

@@ -295,7 +295,8 @@ const AdminImportPage = () => {
                 <p className="mb-4 text-gray-600">
                   Upload a CSV file exported from Google Sheets containing lead information.
                   Make sure your file has headers for: Name, Email, Phone, Country, Course,
-                  and other lead properties.
+                  and other lead properties. For dates, you can use either YYYY-MM-DD (e.g., 2025-04-15) 
+                  or DD-MM-YYYY (e.g., 15-04-2025) format.
                 </p>
 
                 <div className="mb-6">
@@ -377,6 +378,7 @@ const AdminImportPage = () => {
                 <p className="mb-4 text-gray-600">
                   Upload a CSV file exported from Google Forms containing lead information.
                   The system will try to map common Google Forms fields to the appropriate lead properties.
+                  For dates, you can use either YYYY-MM-DD (e.g., 2025-04-15) or DD-MM-YYYY (e.g., 15-04-2025) format.
                 </p>
 
                 <div className="mb-6">

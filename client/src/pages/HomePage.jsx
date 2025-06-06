@@ -3,6 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import Layout from "../components/Layout/Layout";
 import { useAuth } from "../context/AuthContext";
+import GuestChat from "../components/Chat/GuestChat";
 
 const HomePage = () => {
   const { user } = useAuth();
@@ -19,6 +20,9 @@ const HomePage = () => {
               <div className="flex flex-wrap gap-4 justify-center sm:justify-start">
                 <Link to="/login" className="w-full sm:w-auto px-6 py-3 bg-white text-blue-700 font-semibold rounded-lg shadow-md hover:bg-gray-100 transition text-center">
                   Sign In
+                </Link>
+                <Link to="/customer-signup" className="w-full sm:w-auto px-6 py-3 bg-blue-800 text-white font-semibold rounded-lg shadow-md hover:bg-blue-900 transition text-center">
+                  Customer Sign Up
                 </Link>
               </div>
             ) : (
@@ -225,21 +229,35 @@ const HomePage = () => {
           {!user ? (
             <div>
               <h2 className="text-xl sm:text-2xl font-bold mb-4">Sign in to access your dashboard</h2>
-              <Link to="/login" className="px-6 py-3 bg-white text-blue-700 font-semibold rounded-lg shadow hover:bg-gray-100 transition inline-block w-full sm:w-auto">
-                Login
-              </Link>
+              <div className="flex flex-wrap gap-4 justify-center">
+                <Link to="/login" className="px-6 py-3 bg-white text-blue-700 font-semibold rounded-lg shadow hover:bg-gray-100 transition inline-block">
+                  Login
+                </Link>
+                <Link to="/customer-signup" className="px-6 py-3 bg-blue-800 text-white font-semibold rounded-lg shadow hover:bg-blue-900 transition inline-block">
+                  Customer Sign Up
+                </Link>
+              </div>
             </div>
           ) : (
             <div>
               <h2 className="text-xl sm:text-2xl font-bold mb-3">Welcome, {user.fullName}</h2>
               <p className="mb-4 text-sm sm:text-base">Access your dashboard to manage your tasks.</p>
-              <Link to={user.role === "Sales Person" ? "/sales" : "/leads"} className="px-6 py-3 bg-white text-blue-700 font-semibold rounded-lg shadow hover:bg-gray-100 transition inline-block w-full sm:w-auto">
+              <Link 
+                to={
+                  user.role === "Customer" ? "/customer" :
+                  user.role === "Sales Person" ? "/sales" : "/leads"
+                } 
+                className="px-6 py-3 bg-white text-blue-700 font-semibold rounded-lg shadow hover:bg-gray-100 transition inline-block w-full sm:w-auto"
+              >
                 Go to Dashboard
               </Link>
             </div>
           )}
         </div>
       </div>
+      
+      {/* Guest Chat for non-registered users */}
+      {!user && <GuestChat />}
     </Layout>
   );
 };

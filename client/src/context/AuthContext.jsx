@@ -6,14 +6,16 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Initialize auth state
   useEffect(() => {
     // Check if user is already logged in (token exists)
-    const token = localStorage.getItem('token');
-    if (token) {
+    const storedToken = localStorage.getItem('token');
+    if (storedToken) {
+      setToken(storedToken);
       loadUser();
     } else {
       setLoading(false);
@@ -24,13 +26,22 @@ export const AuthProvider = ({ children }) => {
   const loadUser = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const storedToken = localStorage.getItem('token');
       
+      if (!storedToken) {
+        setToken(null);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+      
+      setToken(storedToken);
       const res = await authAPI.getProfile();
       setUser(res.data.data);
       setError(null);
     } catch (err) {
       localStorage.removeItem('token');
+      setToken(null);
       setUser(null);
       setError('Authentication failed. Please login again.');
     } finally {
@@ -60,12 +71,15 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       const res = await authAPI.login(credentials);
       
-      // Save token to localStorage
+      // Save token to localStorage and state
       localStorage.setItem('token', res.data.token);
+      setToken(res.data.token);
       
       // Set user data
       setUser(res.data.user);
       setError(null);
+      
+      console.log('✅ Login successful, token set:', !!res.data.token);
       
       return {
         ...res.data,
@@ -82,6 +96,7 @@ export const AuthProvider = ({ children }) => {
   // Logout user
   const logout = () => {
     localStorage.removeItem('token');
+    setToken(null);
     setUser(null);
   };
 
@@ -89,6 +104,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
+        token,
         loading,
         error,
         register,

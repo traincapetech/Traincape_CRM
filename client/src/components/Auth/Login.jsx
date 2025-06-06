@@ -76,6 +76,9 @@ const Login = () => {
         case "Sales Person":
           navigate("/sales");
           break;
+        case "Customer":
+          navigate("/customer");
+          break;
         default:
           navigate("/");
       }
