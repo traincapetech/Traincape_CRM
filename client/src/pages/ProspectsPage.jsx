@@ -10,8 +10,45 @@ import {
   FiArrowRight,
   FiPhone,
   FiMail,
-  FiUser
+  FiUser,
+  FiEye,
+  FiX
 } from 'react-icons/fi';
+
+// Status badge component
+const StatusBadge = ({ status }) => {
+  const statusColors = {
+    'New': 'bg-blue-100 text-blue-800',
+    'Contacted': 'bg-yellow-100 text-yellow-800',
+    'Interested': 'bg-green-100 text-green-800',
+    'Not Interested': 'bg-red-100 text-red-800',
+    'Follow Up': 'bg-purple-100 text-purple-800',
+    'Qualified': 'bg-indigo-100 text-indigo-800',
+    'Converted to Lead': 'bg-emerald-100 text-emerald-800',
+    'Lost': 'bg-gray-100 text-gray-800'
+  };
+
+  return (
+    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[status] || 'bg-gray-100 text-gray-800'}`}>
+      {status}
+    </span>
+  );
+};
+
+// Priority badge component
+const PriorityBadge = ({ priority }) => {
+  const priorityColors = {
+    'High': 'bg-red-100 text-red-800',
+    'Medium': 'bg-yellow-100 text-yellow-800',
+    'Low': 'bg-green-100 text-green-800'
+  };
+
+  return (
+    <span className={`px-2 py-1 rounded-full text-xs font-medium ${priorityColors[priority] || 'bg-gray-100 text-gray-800'}`}>
+      {priority}
+    </span>
+  );
+};
 
 const ProspectsPage = () => {
   const { user, token } = useAuth();
@@ -19,6 +56,7 @@ const ProspectsPage = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
   const [selectedProspect, setSelectedProspect] = useState(null);
   const [stats, setStats] = useState({});
   
@@ -114,41 +152,6 @@ const ProspectsPage = () => {
       console.error('Error converting prospect:', error);
       toast.error(error.response?.data?.message || 'Failed to convert prospect');
     }
-  };
-
-  // Status badge component
-  const StatusBadge = ({ status }) => {
-    const statusColors = {
-      'New': 'bg-blue-100 text-blue-800',
-      'Contacted': 'bg-yellow-100 text-yellow-800',
-      'Interested': 'bg-green-100 text-green-800',
-      'Not Interested': 'bg-red-100 text-red-800',
-      'Follow Up': 'bg-purple-100 text-purple-800',
-      'Qualified': 'bg-indigo-100 text-indigo-800',
-      'Converted to Lead': 'bg-emerald-100 text-emerald-800',
-      'Lost': 'bg-gray-100 text-gray-800'
-    };
-
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[status] || 'bg-gray-100 text-gray-800'}`}>
-        {status}
-      </span>
-    );
-  };
-
-  // Priority badge component
-  const PriorityBadge = ({ priority }) => {
-    const priorityColors = {
-      'High': 'bg-red-100 text-red-800',
-      'Medium': 'bg-yellow-100 text-yellow-800',
-      'Low': 'bg-green-100 text-green-800'
-    };
-
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${priorityColors[priority] || 'bg-gray-100 text-gray-800'}`}>
-        {priority}
-      </span>
-    );
   };
 
   return (
@@ -287,32 +290,33 @@ const ProspectsPage = () => {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            {/* Desktop Table */}
+            <div className="hidden lg:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Contact
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Contact Info
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Company
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Source
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Priority
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Assigned To
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Created
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -320,78 +324,91 @@ const ProspectsPage = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {prospects.map((prospect) => (
                     <tr key={prospect._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
+                      <td className="px-4 py-3">
+                        <div className="max-w-xs">
+                          <div className="text-sm font-medium text-gray-900 truncate">
                             {prospect.name || 'No Name'}
                           </div>
-                          <div className="text-sm text-gray-500 flex items-center gap-2">
+                          <div className="text-xs text-gray-500">
                             {prospect.email && (
-                              <span className="flex items-center gap-1">
-                                <FiMail className="w-3 h-3" />
-                                {prospect.email}
-                              </span>
+                              <div className="flex items-center gap-1 truncate">
+                                <FiMail className="w-3 h-3 flex-shrink-0" />
+                                <span className="truncate">{prospect.email}</span>
+                              </div>
                             )}
                             {prospect.phone && (
-                              <span className="flex items-center gap-1">
-                                <FiPhone className="w-3 h-3" />
-                                {prospect.phone}
-                              </span>
+                              <div className="flex items-center gap-1 truncate">
+                                <FiPhone className="w-3 h-3 flex-shrink-0" />
+                                <span className="truncate">{prospect.phone}</span>
+                              </div>
                             )}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{prospect.company || '-'}</div>
-                        <div className="text-sm text-gray-500">{prospect.designation || '-'}</div>
+                      <td className="px-4 py-3">
+                        <div className="max-w-xs">
+                          <div className="text-sm text-gray-900 truncate">{prospect.company || '-'}</div>
+                          <div className="text-xs text-gray-500 truncate">{prospect.designation || '-'}</div>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3">
                         <div className="text-sm text-gray-900">{prospect.source}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3">
                         <StatusBadge status={prospect.status} />
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3">
                         <PriorityBadge priority={prospect.priority} />
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
+                      <td className="px-4 py-3">
+                        <div className="text-sm text-gray-900 max-w-xs truncate">
                           {prospect.assignedTo?.fullName || 'Unassigned'}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-4 py-3 text-sm text-gray-500">
                         {new Date(prospect.createdAt).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => {
+                              setSelectedProspect(prospect);
+                              setShowViewModal(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                            title="View Details"
+                          >
+                            <FiEye className="w-4 h-4" />
+                          </button>
+                          
                           <button
                             onClick={() => {
                               setSelectedProspect(prospect);
                               setShowEditModal(true);
                             }}
-                            className="text-blue-600 hover:text-blue-900"
+                            className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50"
                             title="Edit"
                           >
-                            <FiEdit />
+                            <FiEdit className="w-4 h-4" />
                           </button>
                           
                           {prospect.status !== 'Converted to Lead' && (
                             <button
                               onClick={() => handleConvertToLead(prospect._id)}
-                              className="text-green-600 hover:text-green-900"
+                              className="text-purple-600 hover:text-purple-900 p-1 rounded hover:bg-purple-50"
                               title="Convert to Lead"
                             >
-                              <FiArrowRight />
+                              <FiArrowRight className="w-4 h-4" />
                             </button>
                           )}
                           
                           {['Admin', 'Manager'].includes(user?.role) && (
                             <button
                               onClick={() => handleDelete(prospect._id)}
-                              className="text-red-600 hover:text-red-900"
+                              className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
                               title="Delete"
                             >
-                              <FiTrash2 />
+                              <FiTrash2 className="w-4 h-4" />
                             </button>
                           )}
                         </div>
@@ -400,6 +417,87 @@ const ProspectsPage = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="lg:hidden">
+              {prospects.map((prospect) => (
+                <div key={prospect._id} className="border-b border-gray-200 p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <h3 className="text-sm font-medium text-gray-900">
+                        {prospect.name || 'No Name'}
+                      </h3>
+                      <p className="text-xs text-gray-500">{prospect.company || 'No Company'}</p>
+                    </div>
+                    <div className="flex gap-2 ml-4">
+                      <button
+                        onClick={() => {
+                          setSelectedProspect(prospect);
+                          setShowViewModal(true);
+                        }}
+                        className="text-blue-600 hover:text-blue-900 p-2 rounded hover:bg-blue-50"
+                        title="View Details"
+                      >
+                        <FiEye className="w-4 h-4" />
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          setSelectedProspect(prospect);
+                          setShowEditModal(true);
+                        }}
+                        className="text-green-600 hover:text-green-900 p-2 rounded hover:bg-green-50"
+                        title="Edit"
+                      >
+                        <FiEdit className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <span className="text-gray-500">Status:</span>
+                      <div className="mt-1">
+                        <StatusBadge status={prospect.status} />
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Priority:</span>
+                      <div className="mt-1">
+                        <PriorityBadge priority={prospect.priority} />
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Source:</span>
+                      <div className="mt-1 text-gray-900">{prospect.source}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Assigned:</span>
+                      <div className="mt-1 text-gray-900 truncate">
+                        {prospect.assignedTo?.fullName || 'Unassigned'}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {(prospect.email || prospect.phone) && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      {prospect.email && (
+                        <div className="flex items-center gap-2 text-xs text-gray-600 mb-1">
+                          <FiMail className="w-3 h-3" />
+                          <span className="truncate">{prospect.email}</span>
+                        </div>
+                      )}
+                      {prospect.phone && (
+                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                          <FiPhone className="w-3 h-3" />
+                          <span>{prospect.phone}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
 
             {/* Pagination */}
@@ -472,6 +570,31 @@ const ProspectsPage = () => {
             setShowEditModal(false);
             setSelectedProspect(null);
           }}
+        />
+      )}
+
+      {/* View Details Modal */}
+      {showViewModal && selectedProspect && (
+        <ViewProspectModal
+          isOpen={showViewModal}
+          onClose={() => {
+            setShowViewModal(false);
+            setSelectedProspect(null);
+          }}
+          prospect={selectedProspect}
+          onEdit={() => {
+            setShowViewModal(false);
+            setShowEditModal(true);
+          }}
+          onConvert={() => {
+            setShowViewModal(false);
+            handleConvertToLead(selectedProspect._id);
+          }}
+          onDelete={() => {
+            setShowViewModal(false);
+            handleDelete(selectedProspect._id);
+          }}
+          userRole={user?.role}
         />
       )}
     </div>
@@ -1047,6 +1170,264 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
               </button>
             </div>
           </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// View Prospect Modal Component
+const ViewProspectModal = ({ isOpen, onClose, prospect, onEdit, onConvert, onDelete, userRole }) => {
+  // Local badge components for this modal
+  const StatusBadge = ({ status }) => {
+    const statusColors = {
+      'New': 'bg-blue-100 text-blue-800',
+      'Contacted': 'bg-yellow-100 text-yellow-800',
+      'Interested': 'bg-green-100 text-green-800',
+      'Not Interested': 'bg-red-100 text-red-800',
+      'Follow Up': 'bg-purple-100 text-purple-800',
+      'Qualified': 'bg-indigo-100 text-indigo-800',
+      'Converted to Lead': 'bg-emerald-100 text-emerald-800',
+      'Lost': 'bg-gray-100 text-gray-800'
+    };
+
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[status] || 'bg-gray-100 text-gray-800'}`}>
+        {status}
+      </span>
+    );
+  };
+
+  const PriorityBadge = ({ priority }) => {
+    const priorityColors = {
+      'High': 'bg-red-100 text-red-800',
+      'Medium': 'bg-yellow-100 text-yellow-800',
+      'Low': 'bg-green-100 text-green-800'
+    };
+
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${priorityColors[priority] || 'bg-gray-100 text-gray-800'}`}>
+        {priority}
+      </span>
+    );
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold text-gray-900">
+              View Prospect Details
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            {/* Prospect Details */}
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Prospect Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.name || 'No Name'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.email || 'No Email'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.phone || 'No Phone'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Company
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.company || 'No Company'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Designation
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.designation || 'No Designation'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Industry
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.industry || 'No Industry'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Source
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.source || 'No Source'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Status
+                  </label>
+                  <div className="text-sm text-gray-900">
+                    <StatusBadge status={prospect.status} />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Priority
+                  </label>
+                  <div className="text-sm text-gray-900">
+                    <PriorityBadge priority={prospect.priority} />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Assigned To
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.assignedTo?.fullName || 'Unassigned'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Created
+                  </label>
+                  <div className="text-sm text-gray-900">{new Date(prospect.createdAt).toLocaleDateString()}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Additional Details */}
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Additional Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Source Details
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.sourceDetails || 'No source details'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Company Size
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.companySize || 'Unknown'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Budget
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.budget ? `${prospect.budget} ${prospect.budgetCurrency}` : 'No budget'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Service Interest
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.serviceInterest || 'No service interest'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Timeline
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.timeline || 'Not specified'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Requirements
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.requirements || 'No requirements'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Last Contact Date
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.lastContactDate ? new Date(prospect.lastContactDate).toLocaleDateString() : 'No last contact date'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Next Follow-up Date
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.nextFollowUpDate ? new Date(prospect.nextFollowUpDate).toLocaleDateString() : 'No next follow-up date'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Contact Method
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.contactMethod || 'No contact method'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    LinkedIn Profile
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.linkedinProfile || 'No LinkedIn profile'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Website URL
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.websiteUrl || 'No website URL'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tags
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.tags?.join(', ') || 'No tags'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Notes
+                  </label>
+                  <div className="text-sm text-gray-900">{prospect.notes || 'No notes'}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-4 pt-6 border-t">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+              >
+                Close
+              </button>
+              
+              <button
+                onClick={onEdit}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Edit
+              </button>
+              
+              {prospect.status !== 'Converted to Lead' && (
+                <button
+                  onClick={onConvert}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                >
+                  Convert to Lead
+                </button>
+              )}
+              
+              {['Admin', 'Manager'].includes(userRole) && (
+                <button
+                  onClick={onDelete}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

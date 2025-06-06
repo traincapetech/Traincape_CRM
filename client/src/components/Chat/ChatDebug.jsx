@@ -15,17 +15,17 @@ const ChatDebug = () => {
           position: 'fixed',
           top: '10px',
           right: '10px',
-          background: '#f59e0b',
-          color: 'white',
-          border: 'none',
-          padding: '8px 12px',
-          borderRadius: '4px',
-          fontSize: '12px',
-          cursor: 'pointer',
-          zIndex: 9999
+          // background: '#f59e0b',
+          // color: 'white',
+          // border: 'none',
+          // padding: '8px 12px',
+          // borderRadius: '4px',
+          // fontSize: '12px',
+          // cursor: 'pointer',
+          // zIndex: 9999
         }}
       >
-        🐛 Debug Chat
+        {/* 🐛 Debug Chat */}
       </button>
     );
   }

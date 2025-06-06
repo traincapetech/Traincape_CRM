@@ -13,6 +13,10 @@ exports.getLeads = async (req, res) => {
       name: req.user.fullName,
       email: req.user.email
     });
+    console.log('Query parameters:', req.query);
+    
+    // Extract date filtering parameters from query
+    const { month, year, startDate, endDate } = req.query;
     
     // Instead of using complex filtering, let's use direct MongoDB queries
     let query;
@@ -45,6 +49,33 @@ exports.getLeads = async (req, res) => {
       query = Lead.find({ assignedTo: userId });
     }
     
+    // Add date filtering if provided
+    if (month && year) {
+      console.log(`Filtering by month: ${month}, year: ${year}`);
+      const startOfMonth = new Date(parseInt(year), parseInt(month) - 1, 1);
+      const endOfMonth = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59, 999);
+      
+      query = query.where('createdAt').gte(startOfMonth).lte(endOfMonth);
+      console.log(`Date range: ${startOfMonth.toISOString()} to ${endOfMonth.toISOString()}`);
+    } else if (startDate && endDate) {
+      console.log(`Filtering by date range: ${startDate} to ${endDate}`);
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999); // Include the entire end date
+      
+      query = query.where('createdAt').gte(start).lte(end);
+      console.log(`Date range: ${start.toISOString()} to ${end.toISOString()}`);
+    } else if (startDate) {
+      console.log(`Filtering from date: ${startDate}`);
+      const start = new Date(startDate);
+      query = query.where('createdAt').gte(start);
+    } else if (endDate) {
+      console.log(`Filtering until date: ${endDate}`);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      query = query.where('createdAt').lte(end);
+    }
+    
     // Sort by created date, newest first
     query = query.sort({ createdAt: -1 });
     
@@ -57,27 +88,19 @@ exports.getLeads = async (req, res) => {
     
     console.log(`Found ${leads.length} leads for this user`);
     
-    // Log lead details for debugging
+    // Log lead details for debugging (limit to first 5 for readability)
     if (leads.length > 0) {
-      console.log('Lead details:');
-      leads.forEach(lead => {
+      console.log('Lead details (first 5):');
+      leads.slice(0, 5).forEach(lead => {
         console.log(`- Lead ID: ${lead._id}, Name: ${lead.name}, Date: ${lead.createdAt}`);
         console.log(`  Assigned to: ${lead.assignedTo ? lead.assignedTo.fullName + ' (ID: ' + lead.assignedTo._id + ')' : 'None'}`);
       });
-    } else {
-      // If no leads were found, check ALL leads in the database to see why
-      console.log('No leads found for this user. Checking all leads:');
-      const allLeads = await Lead.find({}).populate('assignedTo', 'fullName email role');
       
-      console.log(`Total leads in database: ${allLeads.length}`);
-      allLeads.forEach(lead => {
-        const assignedUserId = lead.assignedTo ? lead.assignedTo._id.toString() : 'None';
-        const currentUserId = req.user._id.toString();
-        const isMatch = assignedUserId === currentUserId;
-        
-        console.log(`- Lead "${lead.name}" is assigned to: ${lead.assignedTo ? lead.assignedTo.fullName : 'None'} (ID: ${assignedUserId})`);
-        console.log(`  Current user ID: ${currentUserId}, Match: ${isMatch}`);
-      });
+      if (leads.length > 5) {
+        console.log(`... and ${leads.length - 5} more leads`);
+      }
+    } else {
+      console.log('No leads found for this user with the given filters');
     }
     
     console.log('==============================================');
@@ -85,7 +108,13 @@ exports.getLeads = async (req, res) => {
     res.status(200).json({
       success: true,
       count: leads.length,
-      data: leads
+      data: leads,
+      filters: {
+        month: month || null,
+        year: year || null,
+        startDate: startDate || null,
+        endDate: endDate || null
+      }
     });
   } catch (err) {
     console.error('Error in getLeads:', err);
@@ -454,7 +483,6 @@ exports.updateLead = async (req, res) => {
       assignedTo: req.body['SALE PERSON'],
       leadPerson: req.body['LEAD PERSON'],
       feedback: req.body.FEEDBACK,
-      createdAt: req.body.DATE ? new Date(req.body.DATE) : lead.createdAt,
       updatedAt: Date.now()
     };
     
@@ -533,18 +561,82 @@ exports.getAssignedLeads = async (req, res) => {
       });
     }
 
-    const leads = await Lead.find({ 
+    console.log('============= GET ASSIGNED LEADS REQUEST =============');
+    console.log('Sales Person:', req.user.fullName);
+    console.log('Query parameters:', req.query);
+    
+    // Extract date filtering parameters from query
+    const { month, year, startDate, endDate } = req.query;
+    
+    let query = Lead.find({ 
       assignedTo: req.user._id 
-    })
-    .populate('leadPerson', 'fullName email')
-    .populate('createdBy', 'fullName email')
-    .populate('assignedTo', 'fullName email')
-    .sort({ createdAt: -1 });
+    });
+    
+    // Add date filtering if provided
+    if (month && year) {
+      console.log(`Filtering by month: ${month}, year: ${year}`);
+      const startOfMonth = new Date(parseInt(year), parseInt(month) - 1, 1);
+      const endOfMonth = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59, 999);
+      
+      query = query.where('createdAt').gte(startOfMonth).lte(endOfMonth);
+      console.log(`Date range: ${startOfMonth.toISOString()} to ${endOfMonth.toISOString()}`);
+    } else if (startDate && endDate) {
+      console.log(`Filtering by date range: ${startDate} to ${endDate}`);
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999); // Include the entire end date
+      
+      query = query.where('createdAt').gte(start).lte(end);
+      console.log(`Date range: ${start.toISOString()} to ${end.toISOString()}`);
+    } else if (startDate) {
+      console.log(`Filtering from date: ${startDate}`);
+      const start = new Date(startDate);
+      query = query.where('createdAt').gte(start);
+    } else if (endDate) {
+      console.log(`Filtering until date: ${endDate}`);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      query = query.where('createdAt').lte(end);
+    }
+
+    const leads = await query
+      .populate('leadPerson', 'fullName email')
+      .populate('createdBy', 'fullName email')
+      .populate('assignedTo', 'fullName email')
+      .sort({ createdAt: -1 });
+
+    console.log(`Found ${leads.length} assigned leads for ${req.user.fullName}`);
+    
+    // Group leads by month/year for better organization
+    const leadsByMonth = {};
+    leads.forEach(lead => {
+      const date = new Date(lead.createdAt);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      
+      if (!leadsByMonth[monthKey]) {
+        leadsByMonth[monthKey] = [];
+      }
+      leadsByMonth[monthKey].push(lead);
+    });
+    
+    console.log('Leads grouped by month:');
+    Object.keys(leadsByMonth).sort().forEach(month => {
+      console.log(`- ${month}: ${leadsByMonth[month].length} leads`);
+    });
+    
+    console.log('==============================================');
 
     res.status(200).json({
       success: true,
       count: leads.length,
-      data: leads
+      data: leads,
+      groupedByMonth: leadsByMonth,
+      filters: {
+        month: month || null,
+        year: year || null,
+        startDate: startDate || null,
+        endDate: endDate || null
+      }
     });
   } catch (err) {
     console.error('Error fetching assigned leads:', err);
@@ -681,31 +773,92 @@ exports.importLeads = async (req, res) => {
         sourceLink: lead.SourceLink || lead['Source Link'] || lead.sourceLink || lead.SOURCELINK || '',
         remarks: lead.Remarks || lead.remarks || lead.REMARKS || '',
         feedback: lead.Feedback || lead.feedback || lead.FEEDBACK || '',
-        createdBy: req.user.id
+        createdBy: req.user.id,
+        // Set the createdAt date from CSV DATE field if available
+        createdAt: (() => {
+          if (lead.DATE || lead.Date || lead.date) {
+            const dateStr = lead.DATE || lead.Date || lead.date;
+            console.log(`Processing date: "${dateStr}"`);
+            
+            // Function to parse DD-MM-YYYY format
+            const parseDDMMYYYY = (str) => {
+              const ddmmyyyyPattern = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/;
+              const match = str.match(ddmmyyyyPattern);
+              if (match) {
+                const [, day, month, year] = match;
+                // Create date in YYYY-MM-DD format for proper parsing
+                const isoFormat = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                console.log(`Detected DD-MM-YYYY format: "${str}" -> "${isoFormat}"`);
+                return new Date(isoFormat);
+              }
+              return null;
+            };
+            
+            // Try DD-MM-YYYY format first
+            let parsedDate = parseDDMMYYYY(dateStr);
+            
+            if (parsedDate && !isNaN(parsedDate.getTime())) {
+              console.log(`Successfully parsed DD-MM-YYYY format: ${parsedDate.toISOString()}`);
+              return parsedDate;
+            }
+            
+            // Try to parse the date directly (for YYYY-MM-DD and other standard formats)
+            parsedDate = new Date(dateStr);
+            
+            // If the date is invalid, try different formats
+            if (isNaN(parsedDate.getTime())) {
+              console.log(`Invalid date format: "${dateStr}", trying alternative formats`);
+              
+              // Try common date formats
+              const formats = [
+                dateStr.replace(/\//g, '-'), // Convert slashes to dashes
+                dateStr.replace(/-/g, '/'), // Convert dashes to slashes
+              ];
+              
+              for (const format of formats) {
+                parsedDate = new Date(format);
+                if (!isNaN(parsedDate.getTime())) {
+                  console.log(`Successfully parsed with format: ${format}`);
+                  break;
+                }
+              }
+              
+              // If still invalid, use current date
+              if (isNaN(parsedDate.getTime())) {
+                console.log(`All date formats failed for "${dateStr}", using current date`);
+                parsedDate = new Date();
+              }
+            }
+            
+            console.log(`Final parsed date: ${parsedDate.toISOString()} (${parsedDate.toString()})`);
+            return parsedDate;
+          } else {
+            console.log('No date field found, using current date');
+            return new Date();
+          }
+        })(),
+        updatedAt: new Date()
       };
       
-      // Role-based assignment logic
-      if (req.user.role === 'Lead Person') {
-        // If a Lead Person is importing, set them as the leadPerson
-        leadData.leadPerson = req.user.id;
-        console.log(`Setting leadPerson to current user: ${req.user.id}`);
-        
-        // If there's a specific sales person mentioned in the CSV, use it, otherwise leave unassigned
-        if (lead.SalesPerson || lead['Sales Person'] || lead.salesPerson || lead.assignedTo) {
-          // Try to find the sales person by name (this would require a lookup, for now just store the name)
-          leadData.assignedToName = lead.SalesPerson || lead['Sales Person'] || lead.salesPerson || lead.assignedTo;
-          console.log(`Found sales person name: ${leadData.assignedToName}`);
+      // FIXED: Look for Lead Person in CSV data FIRST, regardless of who is importing
+      if (lead.LeadPerson || lead['Lead Person'] || lead.leadPerson || lead.LEADPERSON || lead['LEAD PERSON']) {
+        const leadPersonName = lead.LeadPerson || lead['Lead Person'] || lead.leadPerson || lead.LEADPERSON || lead['LEAD PERSON'];
+        leadData.leadPersonName = leadPersonName;
+        console.log(`Found Lead Person in CSV: "${leadPersonName}"`);
+      } else {
+        // If no Lead Person specified in CSV, default to the importing user (only if they are a Lead Person)
+        if (req.user.role === 'Lead Person') {
+          leadData.leadPerson = req.user._id;
+          leadData.assignedTo = req.user._id; // Default assignment to Lead Person
+          console.log(`No Lead Person in CSV, defaulting to importing user: ${req.user.fullName}`);
         }
-      } else if (req.user.role === 'Admin' || req.user.role === 'Manager') {
-        // Admin/Manager can specify both leadPerson and assignedTo from CSV
-        if (lead.LeadPerson || lead['Lead Person'] || lead.leadPerson) {
-          leadData.leadPersonName = lead.LeadPerson || lead['Lead Person'] || lead.leadPerson;
-          console.log(`Found lead person name: ${leadData.leadPersonName}`);
-        }
-        if (lead.SalesPerson || lead['Sales Person'] || lead.salesPerson || lead.assignedTo) {
-          leadData.assignedToName = lead.SalesPerson || lead['Sales Person'] || lead.salesPerson || lead.assignedTo;
-          console.log(`Found sales person name: ${leadData.assignedToName}`);
-        }
+      }
+      
+      // Look for Sales Person assignment
+      if (lead.SalesPerson || lead['Sales Person'] || lead.salesPerson || lead.assignedTo || lead.SALESPERSON || lead['SALES PERSON']) {
+        const salesPersonName = lead.SalesPerson || lead['Sales Person'] || lead.salesPerson || lead.assignedTo || lead.SALESPERSON || lead['SALES PERSON'];
+        leadData.assignedToName = salesPersonName;
+        console.log(`Found Sales Person in CSV: "${salesPersonName}"`);
       }
       
       console.log(`Mapped lead data:`, leadData);
@@ -713,6 +866,110 @@ exports.importLeads = async (req, res) => {
     });
     
     console.log(`Mapped ${mappedLeads.length} leads`);
+    
+    // FIXED: Look up and assign Lead Persons and Sales Persons by name for ALL imports
+    console.log('Looking up users for automatic assignment...');
+    
+    // Get all users who could be Lead Persons or Sales Persons
+    const User = require('../models/User');
+    const allUsers = await User.find({ 
+      role: { $in: ['Lead Person', 'Sales Person', 'Admin', 'Manager'] } 
+    }).select('_id fullName email role');
+    
+    console.log(`Found ${allUsers.length} potential assignees:`, allUsers.map(u => `${u.fullName} (${u.role})`));
+    
+    // Process each mapped lead to assign Lead Persons and Sales Persons
+    for (let leadData of mappedLeads) {
+      // Assign Lead Person if specified in CSV
+      if (leadData.leadPersonName) {
+        console.log(`\nLooking for Lead Person: "${leadData.leadPersonName}"`);
+        
+        // Try to find a matching Lead Person by name
+        const matchingLeadPerson = allUsers.find(user => {
+          if (user.role !== 'Lead Person') return false;
+          
+          const userName = user.fullName.toLowerCase();
+          const searchName = leadData.leadPersonName.toLowerCase();
+          
+          // Try exact match first
+          if (userName === searchName) return true;
+          
+          // Try partial match (contains)
+          if (userName.includes(searchName) || searchName.includes(userName)) return true;
+          
+          // Try first name match
+          const userFirstName = userName.split(' ')[0];
+          const searchFirstName = searchName.split(' ')[0];
+          if (userFirstName === searchFirstName) return true;
+          
+          return false;
+        });
+        
+        if (matchingLeadPerson) {
+          leadData.leadPerson = matchingLeadPerson._id;
+          console.log(`✅ Lead Person assigned to: ${matchingLeadPerson.fullName}`);
+          
+          // If no sales person specified, default assign to the Lead Person
+          if (!leadData.assignedToName) {
+            leadData.assignedTo = matchingLeadPerson._id;
+            console.log(`✅ Also assigned to Lead Person as default assignee`);
+          }
+        } else {
+          console.log(`❌ No matching Lead Person found for "${leadData.leadPersonName}"`);
+          console.log('Available Lead Persons:', allUsers.filter(u => u.role === 'Lead Person').map(u => u.fullName).join(', '));
+          
+          // Fallback to importing user if they are a Lead Person
+          if (req.user.role === 'Lead Person') {
+            leadData.leadPerson = req.user._id;
+            leadData.assignedTo = req.user._id;
+            console.log(`Fallback: Assigned to importing Lead Person: ${req.user.fullName}`);
+          }
+        }
+        
+        // Remove the temporary name field
+        delete leadData.leadPersonName;
+      }
+      
+      // Assign Sales Person if specified in CSV
+      if (leadData.assignedToName) {
+        console.log(`\nLooking for Sales Person: "${leadData.assignedToName}"`);
+        
+        // Try to find a matching user by name (Sales Person, Admin, or Manager)
+        const matchingSalesPerson = allUsers.find(user => {
+          if (!['Sales Person', 'Admin', 'Manager'].includes(user.role)) return false;
+          
+          const userName = user.fullName.toLowerCase();
+          const searchName = leadData.assignedToName.toLowerCase();
+          
+          // Try exact match first
+          if (userName === searchName) return true;
+          
+          // Try partial match (contains)
+          if (userName.includes(searchName) || searchName.includes(userName)) return true;
+          
+          // Try first name match
+          const userFirstName = userName.split(' ')[0];
+          const searchFirstName = searchName.split(' ')[0];
+          if (userFirstName === searchFirstName) return true;
+          
+          return false;
+        });
+        
+        if (matchingSalesPerson) {
+          leadData.assignedTo = matchingSalesPerson._id;
+          console.log(`✅ Sales Person assigned to: ${matchingSalesPerson.fullName} (${matchingSalesPerson.role})`);
+        } else {
+          console.log(`❌ No matching Sales Person found for "${leadData.assignedToName}"`);
+          console.log('Available Sales Persons:', allUsers.filter(u => ['Sales Person', 'Admin', 'Manager'].includes(u.role)).map(u => u.fullName).join(', '));
+          
+          // Keep existing assignment (Lead Person or importing user)
+          console.log(`Keeping existing assignment`);
+        }
+        
+        // Remove the temporary name field
+        delete leadData.assignedToName;
+      }
+    }
     
     // Validate the mapped data - make validation more flexible
     const validLeads = mappedLeads.filter((lead, index) => {
@@ -753,13 +1010,26 @@ exports.importLeads = async (req, res) => {
     // Log assignment info for debugging
     if (req.user.role === 'Lead Person') {
       console.log(`All imported leads assigned to Lead Person: ${req.user.fullName}`);
+      
+      // Count how many were auto-assigned to sales persons
+      const autoAssigned = results.filter(lead => 
+        lead.assignedTo && lead.assignedTo.toString() !== req.user._id.toString()
+      ).length;
+      
+      if (autoAssigned > 0) {
+        console.log(`${autoAssigned} leads were automatically assigned to sales persons from CSV data`);
+      }
     }
     
     res.status(201).json({
       success: true,
       count: results.length,
       data: results,
-      message: `Successfully imported ${results.length} leads. ${req.user.role === 'Lead Person' ? 'All leads assigned to you as Lead Person.' : ''}`,
+      message: `Successfully imported ${results.length} leads. ${
+        req.user.role === 'Lead Person' 
+          ? 'Leads with sales person names in CSV were automatically assigned. Others assigned to you as Lead Person.' 
+          : ''
+      }`,
       skipped: mappedLeads.length - results.length
     });
   } catch (err) {
