@@ -95,9 +95,18 @@ export const AuthProvider = ({ children }) => {
 
   // Logout user
   const logout = () => {
+    // Clear authentication data
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);
+    
+    // Clear activity tracking data
+    localStorage.removeItem('activitySessionStart');
+    localStorage.removeItem('activitySessionActive');
+    localStorage.removeItem('activityManuallyPaused');
+    localStorage.removeItem('activityPageHiddenTime');
+    
+    console.log('User logged out and activity session cleared');
   };
 
   return (

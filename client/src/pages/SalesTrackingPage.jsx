@@ -73,6 +73,30 @@ const SalesTrackingPage = () => {
   const [showCurrentMonth, setShowCurrentMonth] = useState(false); // Changed to false - don't filter by default
   const [showAllSales, setShowAllSales] = useState(true); // Changed to true - show all sales by default
   
+  // Advanced filter state
+  const [filters, setFilters] = useState({
+    search: "",
+    status: "",
+    country: "",
+    course: "",
+    salesPerson: "",
+    leadPerson: "",
+    dateFrom: "",
+    dateTo: "",
+    amountFrom: "",
+    amountTo: "",
+    currency: ""
+  });
+  
+  // Options for filters
+  const [filterOptions, setFilterOptions] = useState({
+    countries: [],
+    courses: [],
+    salesPersons: [],
+    leadPersons: [],
+    currencies: []
+  });
+  
   // Currency options
   const currencyOptions = [
     { value: "USD", label: "USD ($)", symbol: "$" },
@@ -115,21 +139,34 @@ const SalesTrackingPage = () => {
   // Add new state for delete confirmation
   const [deletingSale, setDeletingSale] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  
+  // State for collapsible advanced filters
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Fetch sales data
   useEffect(() => {
     fetchSales();
+    fetchUserOptions();
   }, [user]);
   
-  // Apply date filters when leads, month, or year changes
+  // Apply filters when sales or filters change
   useEffect(() => {
     if (sales.length > 0) {
-      applyDateFilters();
+      applyAllFilters();
+      extractFilterOptions();
     } else {
       // If no sales, clear filtered sales
       setFilteredSales([]);
     }
-  }, [sales, filterMonth, filterYear, showCurrentMonth, showAllSales]);
+  }, [sales, filters, filterMonth, filterYear, showCurrentMonth, showAllSales]);
+  
+  // Auto-expand advanced filters if any are active
+  useEffect(() => {
+    const hasActiveFilters = Object.values(filters).some(filter => filter !== "");
+    if (hasActiveFilters && !showAdvancedFilters) {
+      setShowAdvancedFilters(true);
+    }
+  }, [filters, showAdvancedFilters]);
   
   // Fetch lead persons when in reference sale mode
   useEffect(() => {
@@ -138,56 +175,191 @@ const SalesTrackingPage = () => {
     }
   }, [newSale.isReference]);
   
-  // Function to filter sales by selected date
-  const applyDateFilters = () => {
-    // Special case for Managers and Admins - option to see all sales regardless of date
+  // Function to apply all filters
+  const applyAllFilters = () => {
+    let filtered = [...sales];
+    
+    // Apply date filters first
     if ((user?.role === 'Manager' || user?.role === 'Admin') && showAllSales) {
-      setFilteredSales(sales);
-      return;
-    }
-    
-    let filtered = [];
-    
-    if (showCurrentMonth) {
+      // Show all sales regardless of date for admins/managers when showAllSales is true
+    } else if (showCurrentMonth) {
       // Show current month data
       const currentMonth = new Date().getMonth() + 1; // 1-12
       const currentYear = new Date().getFullYear();
       
-      filtered = sales.filter(sale => {
-        // Make sure we have a valid date to work with
-        if (!sale.date && !sale.createdAt) {
-          return false;
-        }
-        
+      filtered = filtered.filter(sale => {
+        if (!sale.date && !sale.createdAt) return false;
         const saleDate = new Date(sale.date || sale.createdAt);
-        const saleMonth = saleDate.getMonth() + 1; // Convert to 1-12 format
+        const saleMonth = saleDate.getMonth() + 1;
         const saleYear = saleDate.getFullYear();
-        
-        return (
-          saleMonth === currentMonth && 
-          saleYear === currentYear
-        );
+        return saleMonth === currentMonth && saleYear === currentYear;
       });
     } else {
       // Show selected month/year data
-      filtered = sales.filter(sale => {
-        // Make sure we have a valid date to work with
-        if (!sale.date && !sale.createdAt) {
-          return false;
-        }
-        
+      filtered = filtered.filter(sale => {
+        if (!sale.date && !sale.createdAt) return false;
         const saleDate = new Date(sale.date || sale.createdAt);
-        const saleMonth = saleDate.getMonth() + 1; // Convert to 1-12 format
+        const saleMonth = saleDate.getMonth() + 1;
         const saleYear = saleDate.getFullYear();
-        
-        return (
-          saleMonth === filterMonth && 
-          saleYear === filterYear
-        );
+        return saleMonth === filterMonth && saleYear === filterYear;
       });
     }
     
+    // Apply advanced filters
+    
+    // Text search (customer name, email, product, login ID)
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
+      filtered = filtered.filter(sale => 
+        (sale.customerName && sale.customerName.toLowerCase().includes(searchTerm)) ||
+        (sale.email && sale.email.toLowerCase().includes(searchTerm)) ||
+        (sale.product && sale.product.toLowerCase().includes(searchTerm)) ||
+        (sale.course && sale.course.toLowerCase().includes(searchTerm)) ||
+        (sale.loginId && sale.loginId.toLowerCase().includes(searchTerm)) ||
+        (sale.leadBy && sale.leadBy.toLowerCase().includes(searchTerm))
+      );
+    }
+    
+    // Status filter
+    if (filters.status) {
+      filtered = filtered.filter(sale => sale.status === filters.status);
+    }
+    
+    // Country filter
+    if (filters.country) {
+      filtered = filtered.filter(sale => sale.country === filters.country);
+    }
+    
+    // Course/Product filter
+    if (filters.course) {
+      filtered = filtered.filter(sale => 
+        (sale.course && sale.course === filters.course) ||
+        (sale.product && sale.product === filters.course)
+      );
+    }
+    
+    // Sales Person filter
+    if (filters.salesPerson) {
+      filtered = filtered.filter(sale => {
+        const salesPersonId = typeof sale.salesPerson === 'object' ? 
+          sale.salesPerson._id : sale.salesPerson;
+        return salesPersonId === filters.salesPerson;
+      });
+    }
+    
+    // Lead Person filter
+    if (filters.leadPerson) {
+      filtered = filtered.filter(sale => {
+        const leadPersonId = typeof sale.leadPerson === 'object' ? 
+          sale.leadPerson._id : sale.leadPerson;
+        return leadPersonId === filters.leadPerson;
+      });
+    }
+    
+    // Date range filter
+    if (filters.dateFrom) {
+      const fromDate = new Date(filters.dateFrom);
+      filtered = filtered.filter(sale => {
+        const saleDate = new Date(sale.date || sale.createdAt);
+        return saleDate >= fromDate;
+      });
+    }
+    
+    if (filters.dateTo) {
+      const toDate = new Date(filters.dateTo);
+      toDate.setHours(23, 59, 59, 999); // End of the day
+      filtered = filtered.filter(sale => {
+        const saleDate = new Date(sale.date || sale.createdAt);
+        return saleDate <= toDate;
+      });
+    }
+    
+    // Amount range filter
+    if (filters.amountFrom) {
+      const minAmount = parseFloat(filters.amountFrom);
+      filtered = filtered.filter(sale => {
+        const amount = parseFloat(sale.amount || sale.totalCost || 0);
+        return amount >= minAmount;
+      });
+    }
+    
+    if (filters.amountTo) {
+      const maxAmount = parseFloat(filters.amountTo);
+      filtered = filtered.filter(sale => {
+        const amount = parseFloat(sale.amount || sale.totalCost || 0);
+        return amount <= maxAmount;
+      });
+    }
+    
+    // Currency filter
+    if (filters.currency) {
+      filtered = filtered.filter(sale => 
+        (sale.currency === filters.currency) ||
+        (sale.totalCostCurrency === filters.currency)
+      );
+    }
+    
     setFilteredSales(filtered);
+  };
+  
+  // Extract filter options from sales data
+  const extractFilterOptions = () => {
+    const countries = [...new Set(sales.map(sale => sale.country).filter(Boolean))];
+    const courses = [...new Set(sales.map(sale => sale.course || sale.product).filter(Boolean))];
+    const currencies = [...new Set(sales.map(sale => sale.currency || sale.totalCostCurrency).filter(Boolean))];
+    
+    setFilterOptions(prev => ({
+      ...prev,
+      countries,
+      courses,
+      currencies
+    }));
+  };
+  
+  // Fetch user options for filters
+  const fetchUserOptions = async () => {
+    try {
+      const salesPersonsResponse = await authAPI.getUsers("Sales Person");
+      const leadPersonsResponse = await authAPI.getUsers("Lead Person");
+      
+      setFilterOptions(prev => ({
+        ...prev,
+        salesPersons: salesPersonsResponse.data.data || [],
+        leadPersons: leadPersonsResponse.data.data || []
+      }));
+    } catch (err) {
+      console.error("Error fetching user options:", err);
+    }
+  };
+  
+  // Handle filter changes
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({ ...prev, [name]: value }));
+    
+    // Auto-expand filters when a filter is applied
+    if (value && !showAdvancedFilters) {
+      setShowAdvancedFilters(true);
+    }
+  };
+  
+  // Reset all filters
+  const resetFilters = () => {
+    setFilters({
+      search: "",
+      status: "",
+      country: "",
+      course: "",
+      salesPerson: "",
+      leadPerson: "",
+      dateFrom: "",
+      dateTo: "",
+      amountFrom: "",
+      amountTo: "",
+      currency: ""
+    });
+    setShowCurrentMonth(false);
+    setShowAllSales(true);
   };
 
   // Fetch sales data
@@ -204,7 +376,9 @@ const SalesTrackingPage = () => {
       
       // Use direct axios for more reliable data fetching
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/sales?full=true&nocache=${new Date().getTime()}`, {
+        const isDevelopment = import.meta.env.DEV && import.meta.env.MODE !== 'production';
+        const apiUrl = isDevelopment ? 'http://localhost:8080' : 'https://crm-backend-o36v.onrender.com/api';
+        const response = await axios.get(`${apiUrl}${isDevelopment ? '/api' : ''}/sales?full=true&nocache=${new Date().getTime()}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -1715,9 +1889,262 @@ const SalesTrackingPage = () => {
           </div>
         ) : (
           <>
+            {/* Advanced Filters */}
+            <div className="bg-white rounded-lg shadow-md mb-6">
+              <div className="flex justify-between items-center p-4 border-b border-gray-200">
+                <div className="flex items-center space-x-3">
+                  <h2 className="text-lg font-medium">Advanced Filters</h2>
+                  {Object.values(filters).some(filter => filter !== "") && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {Object.values(filters).filter(filter => filter !== "").length} active
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={resetFilters}
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Reset All
+                  </button>
+                  <button
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                    className="flex items-center text-sm text-gray-600 hover:text-gray-800"
+                  >
+                    {showAdvancedFilters ? 'Hide Filters' : 'Show Filters'}
+                    <svg 
+                      className={`ml-1 h-4 w-4 transform transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`}
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              
+              {showAdvancedFilters && (
+                <div className="p-6">
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Search Field */}
+                <div>
+                  <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+                    Search
+                  </label>
+                  <input
+                    type="text"
+                    id="search"
+                    name="search"
+                    placeholder="Search customer, email, product..."
+                    value={filters.search}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                
+                {/* Status Filter */}
+                <div>
+                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                    Status
+                  </label>
+                  <select
+                    id="status"
+                    name="status"
+                    value={filters.status}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">All Statuses</option>
+                    {statusOptions.map(status => (
+                      <option key={status} value={status}>{status}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Sales Person Filter - Only show for Admin/Manager */}
+                {(user?.role === 'Admin' || user?.role === 'Manager') && (
+                  <div>
+                    <label htmlFor="salesPerson" className="block text-sm font-medium text-gray-700 mb-1">
+                      Sales Person
+                    </label>
+                    <select
+                      id="salesPerson"
+                      name="salesPerson"
+                      value={filters.salesPerson}
+                      onChange={handleFilterChange}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">All Sales Persons</option>
+                      {filterOptions.salesPersons.map(salesPerson => (
+                        <option key={salesPerson._id} value={salesPerson._id}>
+                          {salesPerson.fullName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                
+                {/* Country Filter */}
+                <div>
+                  <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
+                    Country
+                  </label>
+                  <select
+                    id="country"
+                    name="country"
+                    value={filters.country}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">All Countries</option>
+                    {filterOptions.countries.map(country => (
+                      <option key={country} value={country}>{country}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Course/Product Filter */}
+                <div>
+                  <label htmlFor="course" className="block text-sm font-medium text-gray-700 mb-1">
+                    Course/Product
+                  </label>
+                  <select
+                    id="course"
+                    name="course"
+                    value={filters.course}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">All Courses</option>
+                    {filterOptions.courses.map(course => (
+                      <option key={course} value={course}>{course}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Lead Person Filter */}
+                <div>
+                  <label htmlFor="leadPerson" className="block text-sm font-medium text-gray-700 mb-1">
+                    Lead Person
+                  </label>
+                  <select
+                    id="leadPerson"
+                    name="leadPerson"
+                    value={filters.leadPerson}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">All Lead Persons</option>
+                    {filterOptions.leadPersons.map(leadPerson => (
+                      <option key={leadPerson._id} value={leadPerson._id}>
+                        {leadPerson.fullName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Date Range - From */}
+                <div>
+                  <label htmlFor="dateFrom" className="block text-sm font-medium text-gray-700 mb-1">
+                    Date From
+                  </label>
+                  <input
+                    type="date"
+                    id="dateFrom"
+                    name="dateFrom"
+                    value={filters.dateFrom}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                
+                {/* Date Range - To */}
+                <div>
+                  <label htmlFor="dateTo" className="block text-sm font-medium text-gray-700 mb-1">
+                    Date To
+                  </label>
+                  <input
+                    type="date"
+                    id="dateTo"
+                    name="dateTo"
+                    value={filters.dateTo}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                
+                {/* Amount Range - From */}
+                <div>
+                  <label htmlFor="amountFrom" className="block text-sm font-medium text-gray-700 mb-1">
+                    Amount From
+                  </label>
+                  <input
+                    type="number"
+                    id="amountFrom"
+                    name="amountFrom"
+                    placeholder="Min amount"
+                    value={filters.amountFrom}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                
+                {/* Amount Range - To */}
+                <div>
+                  <label htmlFor="amountTo" className="block text-sm font-medium text-gray-700 mb-1">
+                    Amount To
+                  </label>
+                  <input
+                    type="number"
+                    id="amountTo"
+                    name="amountTo"
+                    placeholder="Max amount"
+                    value={filters.amountTo}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                
+                {/* Currency Filter */}
+                <div>
+                  <label htmlFor="currency" className="block text-sm font-medium text-gray-700 mb-1">
+                    Currency
+                  </label>
+                  <select
+                    id="currency"
+                    name="currency"
+                    value={filters.currency}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">All Currencies</option>
+                    {currencyOptions.map(currency => (
+                      <option key={currency.value} value={currency.value}>{currency.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+                               {/* Filter Summary */}
+                 <div className="mt-4 p-3 bg-gray-50 rounded-md">
+                   <div className="text-sm text-gray-600">
+                     <strong>{filteredSales.length}</strong> sales found from a total of <strong>{sales.length}</strong> sales
+                     {Object.values(filters).some(filter => filter !== "") && (
+                       <span className="ml-2 text-blue-600">
+                         (Filters applied)
+                       </span>
+                     )}
+                   </div>
+                 </div>
+               </div>
+              )}
+            </div>
+
             {/* Date Filter Controls */}
             <div className="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md transition-colors duration-300">
-                              <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">Filter Sales by Date</h3>
+                              <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">Quick Date Filters</h3>
               <div className="flex flex-wrap items-center gap-4">
                 <div>
                   <label htmlFor="month" className="block text-sm font-medium text-gray-600 mb-1">Month</label>
@@ -1797,16 +2224,72 @@ const SalesTrackingPage = () => {
               
               <div className="mt-3 text-sm text-gray-500">
                 {showAllSales ? (
-                  <p>Showing all sales regardless of date: {sales.length} total sales</p>
+                  <p>Quick filter: All sales regardless of date</p>
                 ) : showCurrentMonth ? (
-                  <p>Showing sales for current month: {months[new Date().getMonth()].label} {new Date().getFullYear()}</p>
+                  <p>Quick filter: Current month ({months[new Date().getMonth()].label} {new Date().getFullYear()})</p>
                 ) : (
-                  <p>Showing sales for: {months[filterMonth - 1].label} {filterYear}</p>
+                  <p>Quick filter: {months[filterMonth - 1].label} {filterYear}</p>
                 )}
-                <p>Total: {filteredSales.length} sales</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Note: Advanced filters above will further refine these results
+                </p>
               </div>
             </div>
             
+            {/* Active Filters Summary */}
+            {Object.values(filters).some(filter => filter !== "") && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-medium text-blue-800">Active Filters:</span>
+                  {filters.search && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      Search: "{filters.search}"
+                    </span>
+                  )}
+                  {filters.status && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      Status: {filters.status}
+                    </span>
+                  )}
+                  {filters.salesPerson && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      Sales Person: {filterOptions.salesPersons.find(sp => sp._id === filters.salesPerson)?.fullName}
+                    </span>
+                  )}
+                  {filters.country && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      Country: {filters.country}
+                    </span>
+                  )}
+                  {filters.course && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      Course: {filters.course}
+                    </span>
+                  )}
+                  {filters.leadPerson && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      Lead Person: {filterOptions.leadPersons.find(lp => lp._id === filters.leadPerson)?.fullName}
+                    </span>
+                  )}
+                  {(filters.dateFrom || filters.dateTo) && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      Date: {filters.dateFrom || 'Start'} to {filters.dateTo || 'End'}
+                    </span>
+                  )}
+                  {(filters.amountFrom || filters.amountTo) && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      Amount: {filters.amountFrom || '0'} - {filters.amountTo || '∞'}
+                    </span>
+                  )}
+                  {filters.currency && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      Currency: {filters.currency}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-md transition-colors duration-300">
                               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                   <thead className="bg-gray-50 dark:bg-gray-700">
@@ -1828,7 +2311,10 @@ const SalesTrackingPage = () => {
                   ) : (
                     <tr>
                       <td colSpan="9" className="px-6 py-4 text-center text-gray-500">
-                        No sales found for the selected period. Try another date range or add a new sale.
+                        {Object.values(filters).some(filter => filter !== "") ? 
+                          "No sales found matching your filters. Try adjusting your criteria or reset filters." :
+                          "No sales found for the selected period. Try another date range or add a new sale."
+                        }
                       </td>
                     </tr>
                   )}

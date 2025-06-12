@@ -59,20 +59,17 @@ const ManagerDashboard = () => {
       }
       
       // Also fetch leads count
-      try {
-        const token = localStorage.getItem('token');
-        const leadsResponse = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/leads`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (leadsResponse.data && leadsResponse.data.data && Array.isArray(leadsResponse.data.data)) {
-          leadCount = leadsResponse.data.data.length;
+      const isDevelopment = import.meta.env.DEV && import.meta.env.MODE !== 'production';
+      const apiUrl = isDevelopment ? 'http://localhost:8080' : 'https://crm-backend-o36v.onrender.com/api';
+      const leadsResponse = await axios.get(`${apiUrl}${isDevelopment ? '/api' : ''}/leads`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
         }
-      } catch (error) {
-        console.error("Error fetching leads count:", error);
+      });
+      
+      if (leadsResponse.data && leadsResponse.data.data && Array.isArray(leadsResponse.data.data)) {
+        leadCount = leadsResponse.data.data.length;
       }
       
       console.log("Final counts - Sales:", salesCount, "Leads:", leadCount);

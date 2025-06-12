@@ -1,14 +1,14 @@
 import axios from 'axios';
 
 // Determine if we're in development mode
-const isDevelopment = import.meta.env.DEV;
+const isDevelopment = import.meta.env.DEV && import.meta.env.MODE !== 'production';
 
-// API URL configuration - use localhost for development, Render for production
-const API_URL = isDevelopment ? 'http://localhost:8080' : (import.meta.env.VITE_API_URL || 'https://crm-backend-o36v.onrender.com');
+// API URL configuration - use localhost for development, your Hostinger backend for production
+const API_URL = isDevelopment ? 'http://localhost:8080' : (import.meta.env.VITE_API_URL || 'https://crm-backend-o36v.onrender.com/api');
 
 // Create axios instance
 const api = axios.create({
-  baseURL: `${API_URL}/api`,
+  baseURL: isDevelopment ? `${API_URL}/api` : API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -224,6 +224,36 @@ export const geminiAPI = {
   generateContent: (prompt) => api.post('/gemini/generate', { prompt }),
   generateContentWithImage: (prompt, imageData) => api.post('/gemini/generate-with-image', { prompt, imageData }),
   chatWithGemini: (messages) => api.post('/gemini/chat', { messages }),
+};
+
+// Activity API
+export const activityAPI = {
+  startSession: () => api.post('/activity/start-session'),
+  endSession: (duration) => api.post('/activity/end-session', { duration }),
+  trackActivity: (duration, isActive = true) => api.post('/activity/track', { duration, isActive }),
+  getMyActivity: (date = null, startDate = null, endDate = null) => {
+    const params = new URLSearchParams();
+    if (date) params.append('date', date);
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    
+    const queryString = params.toString();
+    const url = queryString ? `/activity/my-activity?${queryString}` : '/activity/my-activity';
+    
+    return api.get(url);
+  },
+  getAllUsersActivity: (date = null, startDate = null, endDate = null) => {
+    const params = new URLSearchParams();
+    if (date) params.append('date', date);
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    
+    const queryString = params.toString();
+    const url = queryString ? `/activity/all-users?${queryString}` : '/activity/all-users';
+    
+    return api.get(url);
+  },
+  getStatistics: (days = 7) => api.get(`/activity/statistics?days=${days}`),
 };
 
 export default api;

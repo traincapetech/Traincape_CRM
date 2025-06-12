@@ -32,7 +32,10 @@ export const ChatProvider = ({ children }) => {
   useEffect(() => {
     if (user && token) {
       // Support both Vite and Create React App environment variables
-      const serverUrl = import.meta.env?.VITE_API_URL || process.env.REACT_APP_API_URL || 'http://localhost:8080';
+      // Remove '/api' from the URL for socket connection
+      const isDevelopment = import.meta.env.DEV && import.meta.env.MODE !== 'production';
+      const apiUrl = isDevelopment ? 'http://localhost:8080/api' : 'https://crm-backend-o36v.onrender.com/api';
+      const serverUrl = apiUrl.replace('/api', ''); // Remove /api for socket connection
       console.log('🔌 Connecting to chat server:', serverUrl);
       console.log('👤 User:', user.fullName, 'Role:', user.role);
       console.log('🔑 Token present:', !!token);
@@ -246,8 +249,9 @@ export const ChatProvider = ({ children }) => {
   // Fetch chat rooms
   const fetchChatRooms = async () => {
     try {
-      const serverUrl = import.meta.env?.VITE_API_URL || process.env.REACT_APP_API_URL || 'http://localhost:8080';
-      const response = await fetch(`${serverUrl}/api/chat/rooms`, {
+      const isDevelopment = import.meta.env.DEV && import.meta.env.MODE !== 'production';
+      const apiUrl = isDevelopment ? 'http://localhost:8080/api' : 'https://crm-backend-o36v.onrender.com/api';
+      const response = await fetch(`${apiUrl}/chat/rooms`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -273,10 +277,11 @@ export const ChatProvider = ({ children }) => {
   };
 
   // Fetch messages for a specific chat
-  const fetchMessages = async (recipientId) => {
+  const fetchMessages = async (roomId) => {
     try {
-      const serverUrl = import.meta.env?.VITE_API_URL || process.env.REACT_APP_API_URL || 'http://localhost:8080';
-      const response = await fetch(`${serverUrl}/api/chat/messages/${recipientId}`, {
+      const isDevelopment = import.meta.env.DEV && import.meta.env.MODE !== 'production';
+      const apiUrl = isDevelopment ? 'http://localhost:8080/api' : 'https://crm-backend-o36v.onrender.com/api';
+      const response = await fetch(`${apiUrl}/chat/messages/${roomId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -285,7 +290,7 @@ export const ChatProvider = ({ children }) => {
 
       if (response.ok) {
         const data = await response.json();
-        const chatId = [user._id, recipientId].sort().join('_');
+        const chatId = [user._id, roomId].sort().join('_');
         setMessages(prev => ({
           ...prev,
           [chatId]: data.data
@@ -294,7 +299,7 @@ export const ChatProvider = ({ children }) => {
         // Clear unread count for this user
         setUnreadCounts(prev => ({
           ...prev,
-          [recipientId]: 0
+          [roomId]: 0
         }));
       }
     } catch (error) {
@@ -305,8 +310,9 @@ export const ChatProvider = ({ children }) => {
   // Fetch all users for chat
   const fetchAllUsers = async () => {
     try {
-      const serverUrl = import.meta.env?.VITE_API_URL || process.env.REACT_APP_API_URL || 'http://localhost:8080';
-      const response = await fetch(`${serverUrl}/api/chat/users`, {
+      const isDevelopment = import.meta.env.DEV && import.meta.env.MODE !== 'production';
+      const apiUrl = isDevelopment ? 'http://localhost:8080/api' : 'https://crm-backend-o36v.onrender.com/api';
+      const response = await fetch(`${apiUrl}/chat/users`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

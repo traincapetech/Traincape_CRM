@@ -3,6 +3,7 @@
  */
 
 import axios from 'axios';
+import { salesAPI } from '../services/api';
 
 // Default currency settings
 let currencySettings = {
@@ -129,22 +130,9 @@ export const getCurrencySettings = () => {
 // Add a new utility function to get a direct sales count
 export const getDirectSalesCount = async () => {
   try {
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-      throw new Error('No authentication token found');
-    }
-    
-    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-    
     // Strategy 1: Try the dedicated count endpoint
     try {
-      const response = await axios.get(`${baseURL}/api/sales/count`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await salesAPI.getCount();
       
       if (response.data && response.data.success && typeof response.data.count === 'number') {
         const salesCount = response.data.count;
@@ -155,12 +143,7 @@ export const getDirectSalesCount = async () => {
     } catch (countError) {
       // Strategy 2: Fallback to getting all sales and counting them
       try {
-        const response = await axios.get(`${baseURL}/api/sales?full=true&nocache=${new Date().getTime()}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        const response = await salesAPI.getAllForced();
         
         if (response.data && response.data.success) {
           let salesCount = 0;

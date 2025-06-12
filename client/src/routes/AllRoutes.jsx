@@ -16,6 +16,7 @@ import AdminUsersPage from "../pages/AdminUsersPage";
 import AdminLeadsPage from "../pages/AdminLeadsPage";
 import AdminImportPage from "../pages/AdminImportPage";
 import AdminReportsPage from "../pages/AdminReportsPage";
+import AdminActivityPage from "../pages/AdminActivityPage";
 import ProtectedRoute from "./ProtectedRoute";
 import ForgotPassword from "../components/Auth/ForgotPassword";
 import LeadSalesSheet from '../pages/LeadSalesSheet';
@@ -38,7 +39,7 @@ const AllRoutes = () => {
       {/* Public Routes */}
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<SignUp />} />
+      {/* <Route path="/signup" element={<SignUp />} /> */}
       <Route path="/customer-signup" element={<CustomerSignUp />} />
       <Route path="/debug" element={<TokenDebugPage />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -181,6 +182,16 @@ const AllRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={["Admin"]}>
             <AdminReportsPage />
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* Admin Activity Page - accessible to Admin and Manager */}
+      <Route
+        path="/admin/activity"
+        element={
+          <ProtectedRoute allowedRoles={["Admin", "Manager"]}>
+            <AdminActivityPage />
           </ProtectedRoute>
         }
       />

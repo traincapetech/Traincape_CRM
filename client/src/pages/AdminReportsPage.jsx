@@ -154,8 +154,10 @@ const AdminReportsPage = () => {
       let salesData = [];
       try {
         // Use direct axios for more reliable data fetching with full=true to get all sales
+        const isDevelopment = import.meta.env.DEV && import.meta.env.MODE !== 'production';
+        const apiUrl = isDevelopment ? 'http://localhost:8080' : 'https://crm-backend-o36v.onrender.com/api';
         const token = localStorage.getItem('token');
-        const salesResponse = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/sales?full=true&nocache=${new Date().getTime()}`, {
+        const salesResponse = await axios.get(`${apiUrl}${isDevelopment ? '/api' : ''}/sales?full=true&nocache=${new Date().getTime()}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'

@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import CurrencySelector from "./CurrencySelector";
 import ThemeToggle from "./ThemeToggle";
+import ActivityTimer from "./ActivityTimer/ActivityTimer";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -115,6 +116,11 @@ const Navbar = () => {
           {/* Theme Toggle */}
           <li className="ml-4">
             <ThemeToggle />
+          </li>
+
+          {/* Activity Timer */}
+          <li className="ml-4">
+            <ActivityTimer />
           </li>
 
           {/* Profile and Logout buttons for authenticated users */}

@@ -352,6 +352,120 @@ const TutorialsPage = () => {
           tip: "Regular reporting helps identify trends and opportunities for improvement."
         }
       ]
+    },
+    "activity-tracking": {
+      title: "Employee Activity Tracking",
+      icon: "🕐",
+      content: [
+        {
+          heading: "Understanding Activity Tracking",
+          description: "The CRM now automatically tracks how much time you spend using the system each day. This helps management understand productivity and usage patterns.",
+          steps: [
+            "The system starts tracking automatically when you log in",
+            "Timer runs in the background while you use the CRM",
+            "Time tracking pauses when you switch to other tabs or applications",
+            "Timer resumes automatically when you return to the CRM",
+            "Daily totals reset at midnight for accurate daily tracking"
+          ],
+          tip: "This system is designed to be completely automatic - you don't need to do anything special to make it work!"
+        },
+        {
+          heading: "What You'll See",
+          description: "The activity timer is visible in your navigation bar and shows real-time information.",
+          steps: [
+            "Look for the timer widget in the top navigation bar",
+            "You'll see your total time for today (e.g., '2h 30m')",
+            "Status indicator shows 'Active' when timer is running or 'Paused' when stopped",
+            "Manual pause/resume buttons are available if needed",
+            "Time display updates in real-time as you work"
+          ],
+          tip: "The timer widget is always visible so you can monitor your daily CRM usage at a glance."
+        },
+        {
+          heading: "How to Use the System",
+          description: "Follow these simple steps for accurate time tracking.",
+          steps: [
+            "Step 1: Login as usual - Timer starts automatically",
+            "Step 2: Work normally in the CRM - Timer runs in background",
+            "Step 3: When you leave CRM (switch tabs) - Timer pauses automatically",
+            "Step 4: Return to CRM - Timer resumes automatically",
+            "Step 5: Logout when done - Timer stops and saves your daily total"
+          ],
+          tip: "The system is designed to be hands-off. Just work normally and let it track your CRM usage automatically."
+        },
+        {
+          heading: "What Gets Tracked",
+          description: "Understanding what counts as active time versus paused time.",
+          steps: [
+            "ACTIVE TIME: Working with leads, sales, reports, or any CRM features",
+            "ACTIVE TIME: Reading customer information, making updates, or data entry",
+            "PAUSED TIME: Switching to other websites, applications, or taking breaks",
+            "PAUSED TIME: Phone calls outside the CRM or lunch breaks",
+            "PAUSED TIME: Computer going to sleep or being locked"
+          ],
+          tip: "Only actual CRM usage time is counted. The system automatically excludes time when you're not actively using the CRM."
+        },
+        {
+          heading: "Manual Controls (Optional)",
+          description: "While the system is automatic, you can manually control the timer if needed.",
+          steps: [
+            "Click the 'Pause' button in the timer widget to manually stop tracking",
+            "Click 'Resume' to restart the timer when you're ready to continue",
+            "Use manual pause for extended breaks or meetings",
+            "The system remembers your total time even if you refresh the page",
+            "Manual controls are helpful for precise time management"
+          ],
+          tip: "Manual controls are optional - the automatic system handles most situations perfectly."
+        },
+        {
+          heading: "Privacy and What Admins See",
+          description: "Understanding what information is tracked and what remains private.",
+          steps: [
+            "ADMINS CAN SEE: Daily usage time for each employee (e.g., '6h 45m')",
+            "ADMINS CAN SEE: Weekly and monthly activity reports and statistics",
+            "ADMINS CANNOT SEE: What specific pages you visit within the CRM",
+            "ADMINS CANNOT SEE: Your conversations, emails, or personal information",
+            "ADMINS CANNOT SEE: Screen recordings, screenshots, or activity outside CRM"
+          ],
+          tip: "The system only tracks time spent in the CRM - your privacy is fully protected for all other activities."
+        },
+        {
+          heading: "Troubleshooting Common Issues",
+          description: "Solutions for common activity tracking problems.",
+          steps: [
+            "Timer not starting? Refresh the page (F5) or log out and back in",
+            "Timer stuck on 'Paused'? Click the 'Resume' button manually",
+            "Time seems incorrect? Check if you switched tabs frequently (this pauses the timer)",
+            "Browser issues? Clear your browser cache and cookies",
+            "Still having problems? Contact your admin or manager for assistance"
+          ],
+          tip: "Most issues are resolved by refreshing the page or using the manual resume button."
+        },
+        {
+          heading: "Best Practices for Accurate Tracking",
+          description: "Tips to ensure your activity time is tracked accurately.",
+          steps: [
+            "DO: Keep the CRM tab active when working on CRM tasks",
+            "DO: Use manual pause for long breaks or meetings",
+            "DO: Log out properly when finished for the day",
+            "DON'T: Leave CRM open when not actually working",
+            "DON'T: Try to manipulate the system - it's designed to be fair and accurate"
+          ],
+          tip: "The system is designed to track actual work time fairly. Just use the CRM normally and let the system do its job."
+        },
+        {
+          heading: "Admin Activity Dashboard",
+          description: "For Admins and Managers: How to access and use the Activity Dashboard.",
+          steps: [
+            "Navigate to your Admin Dashboard",
+            "Look for the 'Employee Activity Monitoring' card",
+            "Click '🕐 Open Activity Dashboard' to access the full dashboard",
+            "View today's activity, date ranges, statistics, and employee details",
+            "Use the dashboard to monitor team productivity and identify training needs"
+          ],
+          tip: "The Activity Dashboard provides comprehensive insights into team CRM usage patterns and productivity metrics."
+        }
+      ]
     }
   };
   

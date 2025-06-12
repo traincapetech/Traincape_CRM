@@ -18,7 +18,9 @@ const TokenDebugPage = () => {
   const testToken = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('https://crm-backend-o36v.onrender.com/api/auth/debug', {
+      const isDevelopment = import.meta.env.DEV && import.meta.env.MODE !== 'production';
+      const apiUrl = isDevelopment ? 'http://localhost:8080' : 'https://crm-backend-o36v.onrender.com/api';
+      const response = await axios.get(`${apiUrl}${isDevelopment ? '/api' : ''}/auth/debug`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -70,4 +72,4 @@ const TokenDebugPage = () => {
   );
 };
 
-export default TokenDebugPage; 
+export default TokenDebugPage;

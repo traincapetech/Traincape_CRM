@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { FaHome, FaUser, FaUsers, FaChartLine, FaClipboardList, FaChartBar, FaCog, FaFileImport, FaCalendarCheck, FaUserCog } from 'react-icons/fa';
+import { FaHome, FaUser, FaUsers, FaChartLine, FaClipboardList, FaChartBar, FaCog, FaFileImport, FaCalendarCheck, FaUserCog, FaClock } from 'react-icons/fa';
 import ThemeToggle from '../ThemeToggle';
 
 const Sidebar = () => {
@@ -268,6 +268,25 @@ const Sidebar = () => {
                 </li>
                 <li>
                   <Link
+                    to="/admin/activity"
+                    className={`${
+                      location.pathname === '/admin/activity'
+                        ? 'bg-gray-900 text-white'
+                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
+                  >
+                    <FaClock
+                      className={`${
+                        location.pathname === '/admin/activity'
+                          ? 'text-gray-300'
+                          : 'text-gray-400 group-hover:text-gray-300'
+                      } mr-3 flex-shrink-0 h-6 w-6`}
+                    />
+                    Activity Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     to="/admin"
                     className={`${
                       location.pathname === '/admin'
@@ -283,6 +302,36 @@ const Sidebar = () => {
                       } mr-3 flex-shrink-0 h-6 w-6`}
                     />
                     Settings
+                  </Link>
+                </li>
+              </>
+            )}
+            
+            {/* Activity Dashboard for Managers - Only visible to Manager (not Admin) */}
+            {user?.role === 'Manager' && (
+              <>
+                <li className="mt-8 mb-2">
+                  <h3 className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Management
+                  </h3>
+                </li>
+                <li>
+                  <Link
+                    to="/admin/activity"
+                    className={`${
+                      location.pathname === '/admin/activity'
+                        ? 'bg-gray-900 text-white'
+                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
+                  >
+                    <FaClock
+                      className={`${
+                        location.pathname === '/admin/activity'
+                          ? 'text-gray-300'
+                          : 'text-gray-400 group-hover:text-gray-300'
+                      } mr-3 flex-shrink-0 h-6 w-6`}
+                    />
+                    Activity Dashboard
                   </Link>
                 </li>
               </>

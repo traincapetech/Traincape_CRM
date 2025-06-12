@@ -257,6 +257,46 @@ const AdminDashboardPage = () => {
               </div>
             </div>
 
+            {/* Activity Dashboard Card - Only show for Admins and Managers */}
+            {(user?.role === 'Admin' || user?.role === 'Manager') && (
+              <div className="bg-white rounded-lg shadow mb-8">
+                <div className="px-6 py-4 border-b border-gray-200">
+                  <h2 className="text-lg font-medium">Employee Activity Monitoring</h2>
+                </div>
+                <div className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-indigo-100 p-3 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold text-gray-900">Activity Dashboard</h3>
+                        <p className="text-gray-600 mt-1">Monitor employee CRM usage time and productivity</p>
+                        <div className="mt-2 text-sm text-gray-500">
+                          • View daily usage time in hours and minutes<br/>
+                          • Track individual employee activity<br/>
+                          • Generate activity reports and analytics
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col space-y-3">
+                      <Link 
+                        to="/admin/activity" 
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 text-center"
+                      >
+                        🕐 Open Activity Dashboard
+                      </Link>
+                      <div className="text-xs text-gray-500 text-center">
+                        View employee time tracking
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Users Overview - Only show for Admins */}
             {user?.role === 'Admin' && (
               <div className="bg-white rounded-lg shadow mb-8">
