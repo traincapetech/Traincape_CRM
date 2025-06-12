@@ -24,6 +24,7 @@ import {
 } from 'chart.js';
 import { Line, Bar, Pie } from 'react-chartjs-2';
 
+import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 // Register Chart.js components
 ChartJS.register(
   CategoryScale,
@@ -730,45 +731,45 @@ const AdminReportsPage = () => {
 
     return (
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full bg-white dark:bg-slate-900 transition-all duration-200 ease-out border border-slate-200 dark:border-slate-700">
+          <thead className="bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                 Course
               </th>
               {sortedPeriods.map(period => (
-                <th key={period} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th key={period} className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                   {period}
                 </th>
               ))}
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                 Total Sales
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out divide-y divide-slate-200 dark:divide-slate-700">
             {courses.map(course => {
               const courseData = courseAnalysisData.courseAnalysis[course];
               const totalSales = Object.values(courseData).reduce((sum, period) => sum + period.totalSales, 0);
               
               return (
-                <tr key={course} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <tr key={course} className="hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800 transition-all duration-200 ease-out">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
                     {course}
                   </td>
                   {sortedPeriods.map(period => {
                     const periodData = courseData[period];
                     return (
-                      <td key={period} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td key={period} className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-gray-400">
                         {periodData ? (
                           <div>
                             <div className="font-semibold">{periodData.totalSales} sales</div>
-                            <div className="text-xs text-gray-400">
+                            <div className="text-xs text-gray-400 dark:text-gray-400">
                               ${periodData.totalRevenue?.toFixed(2) || '0.00'}
                             </div>
                           </div>
                         ) : (
-                          <span className="text-gray-300">-</span>
+                          <span className="text-gray-300 dark:text-gray-500">-</span>
                         )}
                       </td>
                     );
@@ -838,20 +839,20 @@ const AdminReportsPage = () => {
         </div>
 
         {/* Currency Breakdown */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out p-6 rounded-lg shadow-md dark:shadow-2xl shadow-sm">
           <h3 className="text-lg font-semibold mb-4">Revenue by Currency</h3>
           <div className="overflow-x-auto">
             <table className="min-w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Currency</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sales</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Revenue (Original)</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Revenue (USD)</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tokens (USD)</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase">Currency</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase">Sales</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase">Revenue (Original)</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase">Revenue (USD)</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase">Tokens (USD)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                 {Object.entries(currencyBreakdown).map(([currency, data]) => (
                   <tr key={currency}>
                     <td className="px-4 py-2 font-medium">{currency}</td>
@@ -868,19 +869,19 @@ const AdminReportsPage = () => {
 
         {/* Daily Breakdown Chart */}
         {dailyBreakdown && dailyBreakdown.length > 0 && (
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out p-6 rounded-lg shadow-md dark:shadow-2xl shadow-sm">
             <h3 className="text-lg font-semibold mb-4">Daily Sales Trend</h3>
             <div className="overflow-x-auto">
               <table className="min-w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out">
                   <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sales</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tokens</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase">Date</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase">Sales</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase">Revenue</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase">Tokens</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                   {dailyBreakdown.slice(-10).map(day => (
                     <tr key={day.date}>
                       <td className="px-4 py-2 font-medium">{day.date}</td>
@@ -905,50 +906,50 @@ const AdminReportsPage = () => {
 
     return (
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full bg-white dark:bg-slate-900 transition-all duration-200 ease-out border border-slate-200 dark:border-slate-700">
+          <thead className="bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                 Rank
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                 Course
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                 Total Sales
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                 Total Revenue
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                 Average Price
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                 Completion Rate
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out divide-y divide-slate-200 dark:divide-slate-700">
             {topCoursesData.topCourses.map((course, index) => (
-              <tr key={course.course} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              <tr key={course.course} className="hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800 transition-all duration-200 ease-out">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
                   #{index + 1}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
                   {course.course}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100">
                   {course.totalSales}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100">
                   ${course.totalRevenue}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100">
                   ${course.averagePrice}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100">
                   <div className="flex items-center">
-                    <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                    <div className="w-16 bg-gray-200 dark:bg-slate-600 rounded-full h-2 mr-2">
                       <div 
                         className="bg-green-600 h-2 rounded-full" 
                         style={{ width: `${course.completionRate}%` }}
@@ -982,23 +983,23 @@ const AdminReportsPage = () => {
               className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
                 selectedStatus === statusData.status 
                   ? 'border-blue-500 bg-blue-50' 
-                  : 'border-gray-200 bg-white hover:border-gray-300'
+                  : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-gray-300 dark:border-slate-600'
               }`}
               onClick={() => setSelectedStatus(selectedStatus === statusData.status ? null : statusData.status)}
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">{statusData.status}</p>
-                  <p className="text-2xl font-bold text-gray-900">{statusData.totalSales}</p>
-                  <p className="text-xs text-gray-500">sales</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-500">{statusData.status}</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{statusData.totalSales}</p>
+                  <p className="text-xs text-slate-500 dark:text-gray-400">sales</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-green-600">{formatCurrency(statusData.totalRevenueUSD)}</p>
-                  <p className="text-xs text-gray-500">revenue</p>
+                  <p className="text-xs text-slate-500 dark:text-gray-400">revenue</p>
                 </div>
               </div>
               <div className="mt-2 pt-2 border-t border-gray-100">
-                <div className="flex justify-between text-xs text-gray-500">
+                <div className="flex justify-between text-xs text-slate-500 dark:text-gray-400">
                   <span>Avg: {formatCurrency(statusData.averageOrderValueUSD)}</span>
                   <span>Pending: {formatCurrency(statusData.pendingAmountUSD)}</span>
                 </div>
@@ -1009,27 +1010,27 @@ const AdminReportsPage = () => {
 
         {/* Detailed Sales Table (shown when a status is selected) */}
         {currentStatus && detailedSales && detailedSales.length > 0 && (
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out p-6 rounded-lg shadow-md dark:shadow-2xl shadow-sm">
             <h3 className="text-lg font-semibold mb-4">
               Detailed Sales for "{currentStatus}" Status ({detailedSales.length} sales)
             </h3>
             <div className="overflow-x-auto">
               <table className="min-w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out">
                   <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Course</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Country</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sales Person</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total Cost</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Token</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Pending</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase">Date</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase">Customer</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase">Course</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase">Country</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase">Sales Person</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase">Total Cost</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase">Token</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase">Pending</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                   {detailedSales.map(sale => (
-                    <tr key={sale._id} className="hover:bg-gray-50">
+                    <tr key={sale._id} className="hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800 transition-all duration-200 ease-out">
                       <td className="px-4 py-2 text-sm">{new Date(sale.date).toLocaleDateString()}</td>
                       <td className="px-4 py-2 text-sm font-medium">{sale.customerName}</td>
                       <td className="px-4 py-2 text-sm">{sale.course}</td>
@@ -1061,11 +1062,11 @@ const AdminReportsPage = () => {
     <Layout>
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-800">Sales Reports & Analytics</h2>
+          <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200">Sales Reports & Analytics</h2>
           <button
             onClick={loadAllReports}
             disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-300 flex items-center"
+            className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 shadow-sm dark:shadow-xl hover:shadow-md transition-all duration-200 text-white py-2 px-4 rounded-md transition duration-300 flex items-center"
           >
             {loading ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -1077,16 +1078,16 @@ const AdminReportsPage = () => {
         </div>
 
         {/* Course Analysis Section */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-2xl p-6 mb-8 shadow-sm">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-semibold text-gray-800 flex items-center">
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 flex items-center">
               <FaGraduationCap className="mr-2 text-blue-600" />
               Course Sales Analysis
             </h3>
             <select
               value={selectedCourseFilter}
               onChange={(e) => setSelectedCourseFilter(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2"
             >
               {courseFilterOptions.map(option => (
                 <option key={option.value} value={option.value}>
@@ -1099,16 +1100,16 @@ const AdminReportsPage = () => {
         </div>
 
         {/* Revenue Analysis Section */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-2xl p-6 mb-8 shadow-sm">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-semibold text-gray-800 flex items-center">
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 flex items-center">
               <FaDollarSign className="mr-2 text-green-600" />
               Revenue Analysis
             </h3>
             <select
               value={selectedRevenueFilter}
               onChange={(e) => setSelectedRevenueFilter(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2"
             >
               {revenueFilterOptions.map(option => (
                 <option key={option.value} value={option.value}>
@@ -1121,8 +1122,8 @@ const AdminReportsPage = () => {
         </div>
 
         {/* Top Courses Section */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-2xl p-6 shadow-sm">
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-6 flex items-center">
             <FaChartBar className="mr-2 text-purple-600" />
             Top Performing Courses (All Time)
           </h3>
@@ -1130,9 +1131,9 @@ const AdminReportsPage = () => {
         </div>
 
         {/* Status Analysis Section */}
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-2xl p-6 shadow-sm">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-semibold text-gray-800 flex items-center">
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 flex items-center">
               <FaChartPie className="mr-2 text-pink-600" />
               Status Analysis
             </h3>
@@ -1140,7 +1141,7 @@ const AdminReportsPage = () => {
               <select
                 value={selectedStatusFilter}
                 onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2"
               >
                 <option value="1month">1 Month</option>
                 <option value="3month">3 Months</option>
@@ -1151,7 +1152,7 @@ const AdminReportsPage = () => {
               {selectedStatus && (
                 <button
                   onClick={() => setSelectedStatus(null)}
-                  className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-md text-sm"
+                  className="bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out0 hover:bg-gray-600 text-white px-3 py-2 rounded-md text-sm"
                 >
                   Clear Selection
                 </button>

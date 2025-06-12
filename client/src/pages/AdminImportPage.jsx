@@ -5,6 +5,7 @@ import Layout from "../components/Layout/Layout";
 import { useAuth } from "../context/AuthContext";
 import { leadsAPI, salesAPI } from "../services/api";
 
+import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 const AdminImportPage = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("leads");
@@ -252,15 +253,15 @@ const AdminImportPage = () => {
           <h1 className="text-3xl font-bold">Data Import</h1>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
-          <div className="border-b border-gray-200">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-2xl overflow-hidden mb-6 shadow-sm">
+          <div className="border-b border-slate-200 dark:border-slate-700">
             <nav className="flex -mb-px">
               <button
                 onClick={() => setActiveTab("leads")}
                 className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
                   activeTab === "leads"
                     ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    : "border-transparent text-gray-500 dark:text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 dark:text-gray-400 hover:border-gray-300 dark:border-slate-600"
                 }`}
               >
                 Import Leads
@@ -270,7 +271,7 @@ const AdminImportPage = () => {
                 className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
                   activeTab === "sales"
                     ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    : "border-transparent text-gray-500 dark:text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 dark:text-gray-400 hover:border-gray-300 dark:border-slate-600"
                 }`}
               >
                 Import Sales
@@ -280,7 +281,7 @@ const AdminImportPage = () => {
                 className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
                   activeTab === "google-forms"
                     ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    : "border-transparent text-gray-500 dark:text-gray-400 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 dark:text-gray-400 hover:border-gray-300 dark:border-slate-600"
                 }`}
               >
                 Import Google Forms
@@ -292,7 +293,7 @@ const AdminImportPage = () => {
             {activeTab === "leads" && (
               <div>
                 <h2 className="text-lg font-medium mb-4">Import Leads from CSV</h2>
-                <p className="mb-4 text-gray-600">
+                <p className="mb-4 text-gray-600 dark:text-gray-500">
                   Upload a CSV file exported from Google Sheets containing lead information.
                   Make sure your file has headers for: Name, Email, Phone, Country, Course,
                   and other lead properties. For dates, you can use either YYYY-MM-DD (e.g., 2025-04-15) 
@@ -300,18 +301,18 @@ const AdminImportPage = () => {
                 </p>
 
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Upload CSV File
                   </label>
                   <input
                     type="file"
                     accept=".csv"
                     onChange={handleFileChangeLeads}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                     disabled={loading}
                   />
                   {csvFileLeads && (
-                    <p className="mt-1 text-sm text-gray-500">
+                    <p className="mt-1 text-sm text-slate-500 dark:text-gray-400">
                       Selected file: {csvFileLeads.name}
                     </p>
                   )}
@@ -334,25 +335,25 @@ const AdminImportPage = () => {
             {activeTab === "sales" && (
               <div>
                 <h2 className="text-lg font-medium mb-4">Import Sales from CSV</h2>
-                <p className="mb-4 text-gray-600">
+                <p className="mb-4 text-gray-600 dark:text-gray-500">
                   Upload a CSV file exported from Google Sheets containing sales information.
                   Make sure your file has headers for: Email or Phone (to identify the lead),
                   Amount, Product, Status, and other sales properties.
                 </p>
 
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Upload CSV File
                   </label>
                   <input
                     type="file"
                     accept=".csv"
                     onChange={handleFileChangeSales}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                     disabled={loading}
                   />
                   {csvFileSales && (
-                    <p className="mt-1 text-sm text-gray-500">
+                    <p className="mt-1 text-sm text-slate-500 dark:text-gray-400">
                       Selected file: {csvFileSales.name}
                     </p>
                   )}
@@ -375,25 +376,25 @@ const AdminImportPage = () => {
             {activeTab === "google-forms" && (
               <div>
                 <h2 className="text-lg font-medium mb-4">Import Google Forms Responses</h2>
-                <p className="mb-4 text-gray-600">
+                <p className="mb-4 text-gray-600 dark:text-gray-500">
                   Upload a CSV file exported from Google Forms containing lead information.
                   The system will try to map common Google Forms fields to the appropriate lead properties.
                   For dates, you can use either YYYY-MM-DD (e.g., 2025-04-15) or DD-MM-YYYY (e.g., 15-04-2025) format.
                 </p>
 
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Upload CSV File
                   </label>
                   <input
                     type="file"
                     accept=".csv"
                     onChange={handleFileChangeGoogleForms}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                     disabled={loading}
                   />
                   {csvFileGoogleForms && (
-                    <p className="mt-1 text-sm text-gray-500">
+                    <p className="mt-1 text-sm text-slate-500 dark:text-gray-400">
                       Selected file: {csvFileGoogleForms.name}
                     </p>
                   )}
@@ -439,19 +440,19 @@ const AdminImportPage = () => {
             )}
 
             {importSummary && (
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <div className="mt-6 p-4 bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out rounded-lg">
                 <h3 className="text-lg font-medium mb-2">Import Summary</h3>
                 <div className="grid grid-cols-3 gap-4 mb-4">
                   <div className="bg-blue-50 p-3 rounded-md">
-                    <p className="text-sm text-gray-600">Total Records</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-500">Total Records</p>
                     <p className="text-xl font-bold">{importSummary.total}</p>
                   </div>
                   <div className="bg-green-50 p-3 rounded-md">
-                    <p className="text-sm text-gray-600">Successfully Imported</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-500">Successfully Imported</p>
                     <p className="text-xl font-bold text-green-600">{importSummary.imported}</p>
                   </div>
                   <div className="bg-red-50 p-3 rounded-md">
-                    <p className="text-sm text-gray-600">Failed Records</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-500">Failed Records</p>
                     <p className="text-xl font-bold text-red-600">{importSummary.errors}</p>
                   </div>
                 </div>
@@ -459,15 +460,15 @@ const AdminImportPage = () => {
                 {importSummary.errorDetails && importSummary.errorDetails.length > 0 && (
                   <div className="mt-4">
                     <h4 className="text-md font-medium mb-2">Error Details</h4>
-                    <div className="max-h-40 overflow-y-auto bg-white p-2 rounded border border-gray-300">
-                      <ul className="text-sm text-gray-700">
+                    <div className="max-h-40 overflow-y-auto bg-white dark:bg-slate-900 transition-all duration-200 ease-out p-2 rounded border border-slate-300 dark:border-slate-600">
+                      <ul className="text-sm text-slate-700 dark:text-slate-300">
                         {importSummary.errorDetails.slice(0, 10).map((error, index) => (
-                          <li key={index} className="mb-1 pb-1 border-b border-gray-200">
+                          <li key={index} className="mb-1 pb-1 border-b border-slate-200 dark:border-slate-700">
                             {error.message}
                           </li>
                         ))}
                         {importSummary.errorDetails.length > 10 && (
-                          <li className="text-gray-500 italic">
+                          <li className="text-slate-500 dark:text-gray-400 italic">
                             ...and {importSummary.errorDetails.length - 10} more errors
                           </li>
                         )}
@@ -480,7 +481,7 @@ const AdminImportPage = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden p-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-2xl overflow-hidden p-6 shadow-sm">
           <h2 className="text-lg font-medium mb-4">Import Instructions</h2>
           
           <div className="mb-4">
@@ -488,7 +489,7 @@ const AdminImportPage = () => {
             
             <div className="mb-4">
               <h4 className="font-medium text-blue-600">Leads Sheet:</h4>
-              <ul className="list-disc ml-5 text-sm text-gray-600">
+              <ul className="list-disc ml-5 text-sm text-gray-600 dark:text-gray-500">
                 <li><strong>Name</strong> - Lead's full name</li>
                 <li><strong>Email</strong> - Lead's email address</li>
                 <li><strong>Phone</strong> - Lead's phone number</li>
@@ -501,7 +502,7 @@ const AdminImportPage = () => {
             
             <div className="mb-4">
               <h4 className="font-medium text-blue-600">Sales Sheet:</h4>
-              <ul className="list-disc ml-5 text-sm text-gray-600">
+              <ul className="list-disc ml-5 text-sm text-gray-600 dark:text-gray-500">
                 <li><strong>Email</strong> or <strong>Phone</strong> - To identify the associated lead</li>
                 <li><strong>Amount</strong> - Sale amount</li>
                 <li><strong>Product</strong> - Product/service sold</li>
@@ -511,7 +512,7 @@ const AdminImportPage = () => {
             
             <div>
               <h4 className="font-medium text-blue-600">Google Forms:</h4>
-              <ul className="list-disc ml-5 text-sm text-gray-600">
+              <ul className="list-disc ml-5 text-sm text-gray-600 dark:text-gray-500">
                 <li>The system automatically maps common Google Forms field names</li>
                 <li>Ensure your form includes name, email, phone, and course interest fields</li>
               </ul>
@@ -520,7 +521,7 @@ const AdminImportPage = () => {
           
           <div>
             <h3 className="text-md font-semibold mb-2">Export Instructions</h3>
-            <ol className="list-decimal ml-5 text-sm text-gray-600">
+            <ol className="list-decimal ml-5 text-sm text-gray-600 dark:text-gray-500">
               <li>Open your Google Sheet</li>
               <li>Go to <strong>File</strong> &gt; <strong>Download</strong> &gt; <strong>Comma-separated values (.csv)</strong></li>
               <li>Save the file to your computer</li>

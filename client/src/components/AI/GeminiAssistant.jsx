@@ -109,14 +109,14 @@ const GeminiAssistant = ({ isFloating = false }) => {
   };
 
   return (
-    <div className={`${isFloating ? '' : 'p-4 bg-white rounded-lg shadow-md'}`}>
+    <div className={`${isFloating ? '' : 'p-4 bg-white dark:bg-slate-900 rounded-lg shadow-md dark:shadow-xl dark:shadow-black/25'}`}>
       {!isFloating && <h2 className="text-2xl font-bold mb-4">Gemini AI Assistant</h2>}
       
       <div className="mb-4">
         <button
           onClick={toggleChatMode}
           className={`mr-2 px-4 py-2 rounded ${
-            chatMode ? 'bg-blue-600 text-white' : 'bg-gray-200'
+            chatMode ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-slate-600'
           } ${isFloating ? 'text-sm px-2 py-1' : ''}`}
         >
           Chat Mode
@@ -125,7 +125,7 @@ const GeminiAssistant = ({ isFloating = false }) => {
         <button
           onClick={toggleChatMode}
           className={`px-4 py-2 rounded ${
-            !chatMode ? 'bg-blue-600 text-white' : 'bg-gray-200'
+            !chatMode ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-slate-600'
           } ${isFloating ? 'text-sm px-2 py-1' : ''}`}
           disabled={imageData && !chatMode}
         >
@@ -134,9 +134,9 @@ const GeminiAssistant = ({ isFloating = false }) => {
       </div>
       
       {chatMode && (
-        <div className="mb-4 p-4 bg-gray-50 rounded-lg max-h-96 overflow-y-auto">
+        <div className="mb-4 p-4 bg-gray-50 dark:bg-slate-800 rounded-lg max-h-96 overflow-y-auto">
           {messages.length === 0 ? (
-            <p className="text-gray-500">Start a conversation with Gemini...</p>
+            <p className="text-gray-500 dark:text-gray-500">Start a conversation with Gemini...</p>
           ) : (
             messages.map((message, index) => (
               <div 
@@ -144,7 +144,7 @@ const GeminiAssistant = ({ isFloating = false }) => {
                 className={`mb-3 p-3 rounded-lg ${
                   message.role === 'user' 
                     ? 'bg-blue-100 ml-12' 
-                    : 'bg-gray-200 mr-12'
+                    : 'bg-gray-200 dark:bg-slate-600 mr-12'
                 }`}
               >
                 <p className="text-sm font-semibold mb-1">
@@ -168,7 +168,7 @@ const GeminiAssistant = ({ isFloating = false }) => {
       
       {!chatMode && !imageData && (
         <div className="mb-4">
-          <label htmlFor="image-upload" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="image-upload" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
             Add an image (optional)
           </label>
           <input
@@ -177,12 +177,7 @@ const GeminiAssistant = ({ isFloating = false }) => {
             accept="image/*"
             onChange={handleFileChange}
             ref={fileInputRef}
-            className="block w-full text-sm text-gray-500
-                      file:mr-4 file:py-2 file:px-4
-                      file:rounded-full file:border-0
-                      file:text-sm file:font-semibold
-                      file:bg-blue-50 file:text-blue-700
-                      hover:file:bg-blue-100"
+            className="block w-full text-sm text-gray-500 dark:text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
         </div>
       )}
@@ -208,7 +203,7 @@ const GeminiAssistant = ({ isFloating = false }) => {
       
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label htmlFor="prompt" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="prompt" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
             {chatMode ? 'Your Message' : 'Prompt'}
           </label>
           <textarea
@@ -217,7 +212,7 @@ const GeminiAssistant = ({ isFloating = false }) => {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder={chatMode ? "Type your message here..." : "Enter your prompt for Gemini..."}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
             required
           />
         </div>
@@ -225,7 +220,7 @@ const GeminiAssistant = ({ isFloating = false }) => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-blue-300"
+          className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:bg-blue-300"
         >
           {loading ? 'Processing...' : chatMode ? 'Send Message' : imageData ? 'Analyze Image & Text' : 'Generate Content'}
         </button>
@@ -234,7 +229,7 @@ const GeminiAssistant = ({ isFloating = false }) => {
       {!chatMode && response && (
         <div className="mt-6">
           <h3 className="text-lg font-semibold mb-2">Gemini Response:</h3>
-          <div className="p-4 bg-gray-50 rounded-lg whitespace-pre-wrap">{response}</div>
+          <div className="p-4 bg-gray-50 dark:bg-slate-800 rounded-lg whitespace-pre-wrap">{response}</div>
         </div>
       )}
     </div>

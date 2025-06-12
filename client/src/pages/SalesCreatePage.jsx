@@ -6,6 +6,7 @@ import { FaPlus, FaSave, FaTimes } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import CurrencySelector from '../components/CurrencySelector';
 
+import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 const SalesCreatePage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -162,119 +163,119 @@ const SalesCreatePage = () => {
           </div>
         )}
 
-        <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out shadow-md dark:shadow-2xl rounded-lg p-6 mb-6 shadow-sm">
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Date */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Date</label>
                 <input
                   type="date"
                   name="date"
                   value={formData.date}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md"
                   required
                 />
               </div>
 
               {/* Customer Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Customer Name</label>
                 <input
                   type="text"
                   name="customerName"
                   value={formData.customerName}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md"
                   required
                 />
               </div>
 
               {/* Country */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Country</label>
                 <input
                   type="text"
                   name="country"
                   value={formData.country}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md"
                   required
                 />
               </div>
 
               {/* Course */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Course</label>
                 <input
                   type="text"
                   name="course"
                   value={formData.course}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md"
                   required
                 />
               </div>
 
               {/* Country Code */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Country Code</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Country Code</label>
                 <input
                   type="text"
                   name="countryCode"
                   value={formData.countryCode}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md"
                   placeholder="e.g. +1, +91"
                 />
               </div>
 
               {/* Phone Number */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone Number</label>
                 <input
                   type="text"
                   name="contactNumber"
                   value={formData.contactNumber}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md"
                   required
                 />
               </div>
 
               {/* Email */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md"
                 />
               </div>
 
               {/* Pseudo ID */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Pseudo ID</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Pseudo ID</label>
                 <input
                   type="text"
                   name="pseudoId"
                   value={formData.pseudoId}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md"
                 />
               </div>
 
               {/* Lead Person - This is the key field */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Lead Person</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Lead Person</label>
                 <select
                   name="leadPerson"
                   value={formData.leadPerson}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md"
                   required
                 >
                   <option value="">Select Lead Person</option>
@@ -284,40 +285,40 @@ const SalesCreatePage = () => {
                     </option>
                   ))}
                 </select>
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-slate-500 dark:text-gray-400">
                   The lead person will see this sale on their dashboard
                 </p>
               </div>
 
               {/* Source */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Source</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Source</label>
                 <input
                   type="text"
                   name="source"
                   value={formData.source}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md"
                 />
               </div>
 
               {/* Total Cost */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Total Cost</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Total Cost</label>
                 <div className="flex">
                   <input
                     type="number"
                     name="totalCost"
                     value={formData.totalCost}
                     onChange={handleChange}
-                    className="w-2/3 p-2 border border-gray-300 rounded-l-md"
+                    className="w-2/3 p-2 border border-slate-300 dark:border-slate-600 rounded-l-md"
                     required
                   />
                   <select
                     name="totalCostCurrency"
                     value={formData.totalCostCurrency}
                     onChange={e => handleCurrencyChange('totalCost', e.target.value)}
-                    className="w-1/3 p-2 border border-gray-300 rounded-r-md"
+                    className="w-1/3 p-2 border border-slate-300 dark:border-slate-600 rounded-r-md"
                   >
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
@@ -329,21 +330,21 @@ const SalesCreatePage = () => {
 
               {/* Token Amount */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Token Amount</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Token Amount</label>
                 <div className="flex">
                   <input
                     type="number"
                     name="tokenAmount"
                     value={formData.tokenAmount}
                     onChange={handleChange}
-                    className="w-2/3 p-2 border border-gray-300 rounded-l-md"
+                    className="w-2/3 p-2 border border-slate-300 dark:border-slate-600 rounded-l-md"
                     required
                   />
                   <select
                     name="tokenAmountCurrency"
                     value={formData.tokenAmountCurrency}
                     onChange={e => handleCurrencyChange('tokenAmount', e.target.value)}
-                    className="w-1/3 p-2 border border-gray-300 rounded-r-md"
+                    className="w-1/3 p-2 border border-slate-300 dark:border-slate-600 rounded-r-md"
                   >
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
@@ -356,25 +357,25 @@ const SalesCreatePage = () => {
 
             {/* Client Remark */}
             <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Client Remark</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Client Remark</label>
               <textarea
                 name="clientRemark"
                 value={formData.clientRemark}
                 onChange={handleChange}
                 rows="2"
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md"
               ></textarea>
             </div>
 
             {/* Feedback */}
             <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Feedback</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Feedback</label>
               <textarea
                 name="feedback"
                 value={formData.feedback}
                 onChange={handleChange}
                 rows="2"
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md"
               ></textarea>
             </div>
 
@@ -382,7 +383,7 @@ const SalesCreatePage = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300 flex items-center"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 shadow-sm dark:shadow-xl hover:shadow-md transition-all duration-200 text-white rounded-md disabled:bg-blue-300 flex items-center"
               >
                 {loading ? (
                   <>

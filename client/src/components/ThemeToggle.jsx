@@ -7,14 +7,14 @@ const ThemeToggle = ({ className = "" }) => {
   return (
     <button
       onClick={toggleTheme}
-      className={`relative inline-flex items-center justify-center p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ${className}`}
+      className={`relative inline-flex items-center justify-center p-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 shadow-sm dark:shadow-lg dark:shadow-2xl dark:shadow-black/25 hover:shadow-md dark:hover:shadow-xl transition-all duration-200 ease-out ${className}`}
       title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
     >
       <div className="relative w-5 h-5">
         {theme === 'dark' ? (
-          <FaSun className="w-5 h-5 text-yellow-400 animate-pulse" />
+          <FaSun className="w-5 h-5 text-yellow-400 animate-pulse drop-shadow-sm dark:shadow-black/25" />
         ) : (
-          <FaMoon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          <FaMoon className="w-5 h-5 text-slate-600 dark:text-slate-300 drop-shadow-sm dark:shadow-black/25" />
         )}
       </div>
     </button>

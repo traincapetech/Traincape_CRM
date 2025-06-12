@@ -6,6 +6,7 @@ import { FaWhatsapp, FaEnvelope, FaPhone, FaTrash, FaEdit, FaCheck, FaTimes } fr
 import axios from "axios";
 import { toast } from "react-toastify";
 import PhoneInput from 'react-phone-input-2';
+import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 import 'react-phone-input-2/lib/style.css';
 import api from "../services/api"; // Import the api instance to access baseURL
 
@@ -1475,7 +1476,7 @@ const SalesTrackingPage = () => {
     }
     
     return message ? (
-      <div className="relative inline-block ml-1 text-gray-400">
+      <div className="relative inline-block ml-1 text-gray-400 dark:text-gray-400">
         <span className="cursor-help text-sm">
           <i className="fas fa-info-circle"></i>
           <span className="tooltip absolute invisible group-hover:visible bg-gray-800 text-white p-2 rounded text-xs w-48 -mt-16 -ml-24 z-10">
@@ -1507,7 +1508,7 @@ const SalesTrackingPage = () => {
 
   // Render a sale row
   const renderSaleRow = (sale) => (
-    <tr key={sale._id} className="hover:bg-gray-50">
+    <tr key={sale._id} className="hover:bg-slate-50 dark:hover:bg-slate-800">
       <td className="px-6 py-4 whitespace-nowrap">
         {editingSale === sale._id ? (
           <div className="flex flex-col space-y-2">
@@ -1515,7 +1516,7 @@ const SalesTrackingPage = () => {
               type="date"
               value={editValues.saleDate ? new Date(editValues.saleDate).toISOString().split('T')[0] : new Date(sale.date || sale.createdAt).toISOString().split('T')[0]}
               onChange={(e) => handleInputChange('saleDate', new Date(e.target.value))}
-              className="w-full px-2 border border-gray-300 rounded"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
             <div className="flex space-x-2">
               <button
@@ -1534,7 +1535,7 @@ const SalesTrackingPage = () => {
           </div>
         ) : (
           <div className="flex flex-col space-y-2">
-            <div className="text-sm text-gray-900">{formatDate(sale.date || sale.createdAt || new Date())}</div>
+            <div className="text-sm text-gray-900 dark:text-white">{formatDate(sale.date || sale.createdAt || new Date())}</div>
             {canEditSale(sale) && (
               <button
                 onClick={() => handleEdit(sale)}
@@ -1547,10 +1548,10 @@ const SalesTrackingPage = () => {
         )}
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm font-medium text-gray-900">
+        <div className="text-sm font-medium text-gray-900 dark:text-white">
           {formatCustomerName(sale)}
         </div>
-        <div className="text-xs text-gray-500">
+        <div className="text-xs text-gray-500 dark:text-gray-500">
           {sale.product || safeGet(sale, 'leadId.course') || 'No product'}
         </div>
         {editingSale === sale._id && (
@@ -1560,10 +1561,10 @@ const SalesTrackingPage = () => {
               placeholder="Lead By (Optional)"
               value={editValues.leadBy || ''}
               onChange={(e) => handleInputChange('leadBy', e.target.value)}
-              className="w-full text-xs px-2 py-1 border border-gray-300 rounded"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
-            <div className="text-xs text-gray-500 mt-1 flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-gray-400 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-gray-400 dark:text-gray-400 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span>Name of person who led this sale</span>
@@ -1571,7 +1572,7 @@ const SalesTrackingPage = () => {
           </div>
         )}
         {editingSale !== sale._id && sale.leadBy && (
-          <div className="text-xs text-gray-600 mt-1">
+          <div className="text-xs text-gray-600 dark:text-gray-500 mt-1">
             Lead By: {sale.leadBy}
           </div>
         )}
@@ -1586,7 +1587,7 @@ const SalesTrackingPage = () => {
                   sale.contactNumber || safeGet(sale, 'leadId.phone'), 
                   sale.countryCode || safeGet(sale, 'leadId.countryCode', '+91')
                 )}
-                className="text-sm text-gray-900 flex items-center hover:text-green-600"
+                className="text-sm text-gray-900 dark:text-white flex items-center hover:text-green-600"
                 title="Open in WhatsApp"
               >
                 <FaWhatsapp className="mr-1 text-green-500" /> 
@@ -1599,7 +1600,7 @@ const SalesTrackingPage = () => {
             <div className="flex items-center">
               <button 
                 onClick={() => openEmail(sale.email || safeGet(sale, 'leadId.email'))}
-                className="text-sm text-gray-500 flex items-center hover:text-blue-600"
+                className="text-sm text-gray-500 dark:text-gray-500 flex items-center hover:text-blue-600"
                 title="Send email"
               >
                 <FaEnvelope className="mr-1 text-blue-500" /> 
@@ -1615,14 +1616,14 @@ const SalesTrackingPage = () => {
                 placeholder="Login ID (Optional)"
                 value={editValues.loginId || ''}
                 onChange={(e) => handleInputChange('loginId', e.target.value)}
-                className="w-full text-xs px-2 py-1 border border-gray-300 rounded"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
               <input
                 type="text"
                 placeholder="Password (Optional)"
                 value={editValues.password || ''}
                 onChange={(e) => handleInputChange('password', e.target.value)}
-                className="w-full text-xs px-2 py-1 border border-gray-300 rounded"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
           )}
@@ -1641,22 +1642,22 @@ const SalesTrackingPage = () => {
               type="text"
               value={editValues.product || ''}
               onChange={(e) => handleInputChange('product', e.target.value)}
-              className="w-full px-2 border border-gray-300 rounded"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               placeholder="Product or course name"
             />
             {/* Display lead person info while editing */}
             {(sale.leadPerson && typeof sale.leadPerson === 'object' && sale.leadPerson.fullName) && (
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                 Lead Person: {sale.leadPerson.fullName}
               </div>
             )}
           </div>
         ) : (
-          <div className="text-sm text-gray-900">{sale.product || safeGet(sale, 'course') || 'N/A'}</div>
+          <div className="text-sm text-gray-900 dark:text-white">{sale.product || safeGet(sale, 'course') || 'N/A'}</div>
         )}
         {/* Show Lead Person if available */}
         {!editingSale === sale._id && (sale.leadPerson && typeof sale.leadPerson === 'object' && sale.leadPerson.fullName) && (
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
             Lead Person: {sale.leadPerson.fullName}
           </div>
         )}
@@ -1666,7 +1667,7 @@ const SalesTrackingPage = () => {
           <div className="flex flex-col space-y-2">
             <div className="flex items-center space-x-2">
               <div className="relative">
-                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">
                   {getCurrencySymbol(editValues.currency)}
                 </span>
                 <input
@@ -1674,13 +1675,13 @@ const SalesTrackingPage = () => {
                   type="number"
                   value={editValues.amount !== undefined ? editValues.amount.toString() : "0"}
                   onChange={(e) => handleInputChange('amount', e.target.value)}
-                  className="w-24 px-2 pl-7 border border-gray-300 rounded"
+                  className="w-24 px-2 pl-7 border border-gray-300 dark:border-slate-600 rounded"
                 />
               </div>
               <select
                 value={editValues.currency || 'USD'}
                 onChange={(e) => handleInputChange('currency', e.target.value)}
-                className="border border-gray-300 rounded p-1 text-xs"
+                className="border border-gray-300 dark:border-slate-600 rounded p-1 text-xs"
               >
                 {currencyOptions.map(option => (
                   <option key={option.value} value={option.value}>{option.label}</option>
@@ -1689,7 +1690,7 @@ const SalesTrackingPage = () => {
             </div>
           </div>
         ) : (
-          <div className="text-sm font-medium text-gray-900">
+          <div className="text-sm font-medium text-gray-900 dark:text-white">
             {formatCurrency(sale.amount || sale.totalCost || 0, sale.currency || 'USD')}
           </div>
         )}
@@ -1697,7 +1698,7 @@ const SalesTrackingPage = () => {
       <td className="px-6 py-4 whitespace-nowrap">
         {editingSale === sale._id ? (
           <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">
               {getCurrencySymbol(editValues.currency)}
             </span>
             <input
@@ -1705,11 +1706,11 @@ const SalesTrackingPage = () => {
               type="number"
               value={editValues.token !== undefined ? editValues.token.toString() : "0"}
               onChange={(e) => handleInputChange('token', e.target.value)}
-              className="w-24 px-2 pl-7 border border-gray-300 rounded"
+              className="w-24 px-2 pl-7 border border-gray-300 dark:border-slate-600 rounded"
             />
           </div>
         ) : (
-          <div className="text-sm font-medium text-gray-900">
+          <div className="text-sm font-medium text-gray-900 dark:text-white">
             {formatCurrency(sale.token || sale.tokenAmount || 0, sale.currency || 'USD')}
           </div>
         )}
@@ -1717,7 +1718,7 @@ const SalesTrackingPage = () => {
       <td className="px-6 py-4 whitespace-nowrap">
         {editingSale === sale._id ? (
           <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">
               {getCurrencySymbol(editValues.currency)}
             </span>
             <input
@@ -1725,12 +1726,12 @@ const SalesTrackingPage = () => {
               type="number"
               value={editValues.pending !== undefined ? editValues.pending.toString() : "0"}
               onChange={(e) => handleInputChange('pending', e.target.value)}
-              className="w-24 px-2 pl-7 border border-gray-300 rounded"
+              className="w-24 px-2 pl-7 border border-gray-300 dark:border-slate-600 rounded"
               disabled={editValues.status === 'Completed'}
             />
           </div>
         ) : (
-          <div className="text-sm font-medium text-gray-900">
+          <div className="text-sm font-medium text-gray-900 dark:text-white">
             {formatCurrency(
               sale.status === 'Completed' ? 0 : 
               sale.pending !== undefined ? sale.pending : 
@@ -1749,8 +1750,8 @@ const SalesTrackingPage = () => {
               sale.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
               sale.status === 'Completed' ? 'bg-green-100 text-green-800' :
               sale.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
-              'bg-gray-100 text-gray-800'
-            } border border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+              'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'
+            } border border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400`}
             disabled={!canEditSale(sale)}
           >
             {statusOptions.map(status => (
@@ -1766,22 +1767,22 @@ const SalesTrackingPage = () => {
                 sale.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
                 sale.status === 'Completed' ? 'bg-green-100 text-green-800' :
                 sale.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
-                'bg-gray-100 text-gray-800'
-              } border border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+                'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'
+              } border border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400`}
               disabled={!canEditSale(sale)}
             >
               {statusOptions.map(status => (
                 <option key={status} value={status}>{status}</option>
               ))}
             </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-400">
               <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                 <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
               </svg>
             </div>
             {!canEditSale(sale) && (
               <div className="absolute left-0 -bottom-5 w-full">
-                <div className="text-xs text-gray-500 italic">
+                <div className="text-xs text-gray-500 dark:text-gray-500 italic">
                   {user?.role === 'Sales Person' ? "Can only update your own sales" : "No edit permission"}
                 </div>
               </div>
@@ -1817,7 +1818,7 @@ const SalesTrackingPage = () => {
                       setDeletingSale(null);
                       setConfirmDelete(false);
                     }}
-                    className="text-gray-600 hover:text-gray-900 flex items-center"
+                    className="text-gray-600 dark:text-white hover:text-gray-900 flex items-center"
                   >
                     <FaTimes className="mr-1" /> Cancel
                   </button>
@@ -1834,7 +1835,7 @@ const SalesTrackingPage = () => {
                 </button>
               )
             ) : (
-              <div className="flex items-center text-gray-400 text-xs">
+              <div className="flex items-center text-gray-400 dark:text-gray-400 text-xs">
                 <span className="italic">Not Deletable</span>
                 <PermissionTooltip role={user?.role} />
               </div>
@@ -1885,13 +1886,13 @@ const SalesTrackingPage = () => {
         {loading ? (
           <div className="text-center py-10">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-            <p className="mt-2 text-gray-600">Loading sales data...</p>
+            <p className="mt-2 text-gray-600 dark:text-gray-500">Loading sales data...</p>
           </div>
         ) : (
           <>
             {/* Advanced Filters */}
-            <div className="bg-white rounded-lg shadow-md mb-6">
-              <div className="flex justify-between items-center p-4 border-b border-gray-200">
+            <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out border border-slate-200 dark:border-slate-700 rounded-lg shadow-md dark:shadow-2xl mb-6 shadow-sm">
+              <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-slate-700">
                 <div className="flex items-center space-x-3">
                   <h2 className="text-lg font-medium">Advanced Filters</h2>
                   {Object.values(filters).some(filter => filter !== "") && (
@@ -1909,7 +1910,7 @@ const SalesTrackingPage = () => {
                   </button>
                   <button
                     onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                    className="flex items-center text-sm text-gray-600 hover:text-gray-800"
+                    className="flex items-center text-sm text-gray-600 dark:text-gray-200 hover:text-gray-800"
                   >
                     {showAdvancedFilters ? 'Hide Filters' : 'Show Filters'}
                     <svg 
@@ -1930,7 +1931,7 @@ const SalesTrackingPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Search Field */}
                 <div>
-                  <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                     Search
                   </label>
                   <input
@@ -1940,13 +1941,13 @@ const SalesTrackingPage = () => {
                     placeholder="Search customer, email, product..."
                     value={filters.search}
                     onChange={handleFilterChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                   />
                 </div>
                 
                 {/* Status Filter */}
                 <div>
-                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                     Status
                   </label>
                   <select
@@ -1954,7 +1955,7 @@ const SalesTrackingPage = () => {
                     name="status"
                     value={filters.status}
                     onChange={handleFilterChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                   >
                     <option value="">All Statuses</option>
                     {statusOptions.map(status => (
@@ -1966,7 +1967,7 @@ const SalesTrackingPage = () => {
                 {/* Sales Person Filter - Only show for Admin/Manager */}
                 {(user?.role === 'Admin' || user?.role === 'Manager') && (
                   <div>
-                    <label htmlFor="salesPerson" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="salesPerson" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                       Sales Person
                     </label>
                     <select
@@ -1974,7 +1975,7 @@ const SalesTrackingPage = () => {
                       name="salesPerson"
                       value={filters.salesPerson}
                       onChange={handleFilterChange}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                     >
                       <option value="">All Sales Persons</option>
                       {filterOptions.salesPersons.map(salesPerson => (
@@ -1988,7 +1989,7 @@ const SalesTrackingPage = () => {
                 
                 {/* Country Filter */}
                 <div>
-                  <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                     Country
                   </label>
                   <select
@@ -1996,7 +1997,7 @@ const SalesTrackingPage = () => {
                     name="country"
                     value={filters.country}
                     onChange={handleFilterChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                   >
                     <option value="">All Countries</option>
                     {filterOptions.countries.map(country => (
@@ -2007,7 +2008,7 @@ const SalesTrackingPage = () => {
                 
                 {/* Course/Product Filter */}
                 <div>
-                  <label htmlFor="course" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="course" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                     Course/Product
                   </label>
                   <select
@@ -2015,7 +2016,7 @@ const SalesTrackingPage = () => {
                     name="course"
                     value={filters.course}
                     onChange={handleFilterChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                   >
                     <option value="">All Courses</option>
                     {filterOptions.courses.map(course => (
@@ -2026,7 +2027,7 @@ const SalesTrackingPage = () => {
                 
                 {/* Lead Person Filter */}
                 <div>
-                  <label htmlFor="leadPerson" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="leadPerson" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                     Lead Person
                   </label>
                   <select
@@ -2034,7 +2035,7 @@ const SalesTrackingPage = () => {
                     name="leadPerson"
                     value={filters.leadPerson}
                     onChange={handleFilterChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                   >
                     <option value="">All Lead Persons</option>
                     {filterOptions.leadPersons.map(leadPerson => (
@@ -2047,7 +2048,7 @@ const SalesTrackingPage = () => {
                 
                 {/* Date Range - From */}
                 <div>
-                  <label htmlFor="dateFrom" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="dateFrom" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                     Date From
                   </label>
                   <input
@@ -2056,13 +2057,13 @@ const SalesTrackingPage = () => {
                     name="dateFrom"
                     value={filters.dateFrom}
                     onChange={handleFilterChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                   />
                 </div>
                 
                 {/* Date Range - To */}
                 <div>
-                  <label htmlFor="dateTo" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="dateTo" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                     Date To
                   </label>
                   <input
@@ -2071,13 +2072,13 @@ const SalesTrackingPage = () => {
                     name="dateTo"
                     value={filters.dateTo}
                     onChange={handleFilterChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                   />
                 </div>
                 
                 {/* Amount Range - From */}
                 <div>
-                  <label htmlFor="amountFrom" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="amountFrom" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                     Amount From
                   </label>
                   <input
@@ -2087,13 +2088,13 @@ const SalesTrackingPage = () => {
                     placeholder="Min amount"
                     value={filters.amountFrom}
                     onChange={handleFilterChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                   />
                 </div>
                 
                 {/* Amount Range - To */}
                 <div>
-                  <label htmlFor="amountTo" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="amountTo" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                     Amount To
                   </label>
                   <input
@@ -2103,13 +2104,13 @@ const SalesTrackingPage = () => {
                     placeholder="Max amount"
                     value={filters.amountTo}
                     onChange={handleFilterChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                   />
                 </div>
                 
                 {/* Currency Filter */}
                 <div>
-                  <label htmlFor="currency" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="currency" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                     Currency
                   </label>
                   <select
@@ -2117,7 +2118,7 @@ const SalesTrackingPage = () => {
                     name="currency"
                     value={filters.currency}
                     onChange={handleFilterChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                   >
                     <option value="">All Currencies</option>
                     {currencyOptions.map(currency => (
@@ -2128,8 +2129,8 @@ const SalesTrackingPage = () => {
               </div>
               
                                {/* Filter Summary */}
-                 <div className="mt-4 p-3 bg-gray-50 rounded-md">
-                   <div className="text-sm text-gray-600">
+                 <div className="mt-4 p-3 bg-gray-50 dark:bg-slate-800 rounded-md">
+                   <div className="text-sm text-gray-600 dark:text-gray-500">
                      <strong>{filteredSales.length}</strong> sales found from a total of <strong>{sales.length}</strong> sales
                      {Object.values(filters).some(filter => filter !== "") && (
                        <span className="ml-2 text-blue-600">
@@ -2143,16 +2144,16 @@ const SalesTrackingPage = () => {
             </div>
 
             {/* Date Filter Controls */}
-            <div className="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md transition-colors duration-300">
-                              <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">Quick Date Filters</h3>
+            <div className="mb-6 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-md dark:shadow-2xl transition-all duration-200 ease-out shadow-sm">
+                              <h3 className="text-lg font-semibold mb-3 text-slate-900 dark:text-slate-100">Quick Date Filters</h3>
               <div className="flex flex-wrap items-center gap-4">
                 <div>
-                  <label htmlFor="month" className="block text-sm font-medium text-gray-600 mb-1">Month</label>
+                  <label htmlFor="month" className="block text-sm font-medium text-gray-600 dark:text-gray-500 mb-1">Month</label>
                   <select
                     id="month"
                     value={filterMonth}
                     onChange={handleMonthChange}
-                    className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="border border-gray-300 dark:border-slate-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                     disabled={showCurrentMonth}
                   >
                     {months.map(month => (
@@ -2164,12 +2165,12 @@ const SalesTrackingPage = () => {
                 </div>
                 
                 <div>
-                  <label htmlFor="year" className="block text-sm font-medium text-gray-600 mb-1">Year</label>
+                  <label htmlFor="year" className="block text-sm font-medium text-gray-600 dark:text-gray-500 mb-1">Year</label>
                   <select
                     id="year"
                     value={filterYear}
                     onChange={handleYearChange}
-                    className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="border border-gray-300 dark:border-slate-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                     disabled={showCurrentMonth}
                   >
                     {years.map(year => (
@@ -2191,9 +2192,9 @@ const SalesTrackingPage = () => {
                         setShowAllSales(false); // Disable show all when showing current month
                       }
                     }}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 border-gray-300 dark:border-slate-600 rounded"
                   />
-                  <label htmlFor="currentMonth" className="ml-2 block text-sm text-gray-700">
+                  <label htmlFor="currentMonth" className="ml-2 block text-sm text-gray-700 dark:text-gray-400">
                     Show Current Month Only
                   </label>
                 </div>
@@ -2206,9 +2207,9 @@ const SalesTrackingPage = () => {
                       type="checkbox"
                       checked={showAllSales}
                       onChange={handleShowAllSales}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 border-gray-300 dark:border-slate-600 rounded"
                     />
-                    <label htmlFor="showAllSales" className="ml-2 block text-sm text-gray-700 font-semibold text-blue-600">
+                    <label htmlFor="showAllSales" className="ml-2 block text-sm text-gray-700 dark:text-gray-400 font-semibold text-blue-600">
                       Show All Sales (No Date Filter)
                     </label>
                   </div>
@@ -2216,13 +2217,13 @@ const SalesTrackingPage = () => {
                 
                 <button
                   onClick={handleResetToCurrentMonth}
-                  className="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-md ml-auto transition duration-300"
+                  className="bg-gray-200 dark:bg-slate-600 hover:bg-gray-300 text-gray-800 dark:text-gray-200 py-2 px-4 rounded-md ml-auto transition duration-300"
                 >
                   Reset to Current Month
                 </button>
               </div>
               
-              <div className="mt-3 text-sm text-gray-500">
+              <div className="mt-3 text-sm text-gray-500 dark:text-gray-500">
                 {showAllSales ? (
                   <p>Quick filter: All sales regardless of date</p>
                 ) : showCurrentMonth ? (
@@ -2230,7 +2231,7 @@ const SalesTrackingPage = () => {
                 ) : (
                   <p>Quick filter: {months[filterMonth - 1].label} {filterYear}</p>
                 )}
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-gray-400 dark:text-gray-400 mt-1">
                   Note: Advanced filters above will further refine these results
                 </p>
               </div>
@@ -2290,27 +2291,27 @@ const SalesTrackingPage = () => {
               </div>
             )}
 
-            <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-md transition-colors duration-300">
-                              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
+            <div className="overflow-x-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-md dark:shadow-2xl transition-all duration-200 ease-out shadow-sm">
+                              <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                  <thead className="bg-gray-50 dark:bg-slate-800">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lead</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact/Login</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Token</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pending</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Lead</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Contact/Login</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Product</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Token</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Pending</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out divide-y divide-gray-200 dark:divide-slate-700">
                   {filteredSales.length > 0 ? (
                     filteredSales.map(sale => renderSaleRow(sale))
                   ) : (
                     <tr>
-                      <td colSpan="9" className="px-6 py-4 text-center text-gray-500">
+                      <td colSpan="9" className="px-6 py-4 text-center text-gray-500 dark:text-gray-500">
                         {Object.values(filters).some(filter => filter !== "") ? 
                           "No sales found matching your filters. Try adjusting your criteria or reset filters." :
                           "No sales found for the selected period. Try another date range or add a new sale."
@@ -2327,7 +2328,7 @@ const SalesTrackingPage = () => {
         {/* Add Sale Modal */}
         {showAddModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg dark:shadow-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-sm">
               <div className="bg-green-600 text-white p-4 flex justify-between items-center">
                 <h3 className="text-xl font-bold">Add New Sale</h3>
                 <button 
@@ -2343,18 +2344,18 @@ const SalesTrackingPage = () => {
                   {/* Reference Sale Toggle */}
                   <div className="col-span-2 mb-4">
                     <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium text-gray-700">Sale Type:</span>
-                      <div className="flex border border-gray-300 rounded-md overflow-hidden">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-400">Sale Type:</span>
+                      <div className="flex border border-gray-300 dark:border-slate-600 rounded-md overflow-hidden">
                         <button
                           type="button"
-                          className={`px-4 py-2 text-sm font-medium ${!newSale.isReference ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                          className={`px-4 py-2 text-sm font-medium ${!newSale.isReference ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 dark:text-gray-400'}`}
                           onClick={() => handleReferenceToggle(false)}
                         >
                           From Lead
                         </button>
                         <button
                           type="button"
-                          className={`px-4 py-2 text-sm font-medium ${newSale.isReference ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                          className={`px-4 py-2 text-sm font-medium ${newSale.isReference ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 dark:text-gray-400'}`}
                           onClick={() => handleReferenceToggle(true)}
                         >
                           From Reference
@@ -2368,12 +2369,12 @@ const SalesTrackingPage = () => {
                     <>
                       {/* Lead Selection */}
                       <div className="col-span-2">
-                        <label htmlFor="leadId" className="block text-sm font-medium text-gray-700">Lead</label>
+                        <label htmlFor="leadId" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Lead</label>
                         <select
                           id="leadId"
                           value={newSale.leadId}
                           onChange={handleLeadSelect}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                         >
                           <option value="">Select a lead</option>
                           {availableLeads.map(lead => (
@@ -2384,7 +2385,7 @@ const SalesTrackingPage = () => {
                       
                       {/* Lead Person Selection */}
                       <div className="col-span-2">
-                        <label htmlFor="leadPerson" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="leadPerson" className="block text-sm font-medium text-gray-700 dark:text-gray-400">
                           Lead Person
                           <span className="ml-1 text-xs text-blue-600 font-normal">(Who should see this sale on their dashboard)</span>
                         </label>
@@ -2392,7 +2393,7 @@ const SalesTrackingPage = () => {
                           id="leadPerson"
                           value={newSale.leadPerson}
                           onChange={(e) => handleNewSaleChange('leadPerson', e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                         >
                           <option value="">Select a lead person</option>
                           {leadPersonOptions.map(person => (
@@ -2400,31 +2401,31 @@ const SalesTrackingPage = () => {
                           ))}
                         </select>
                         {loadingLeadPersons && (
-                          <div className="mt-1 text-sm text-gray-500">Loading lead persons...</div>
+                          <div className="mt-1 text-sm text-gray-500 dark:text-gray-500">Loading lead persons...</div>
                         )}
-                        <p className="mt-1 text-xs text-gray-500">
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">
                           The selected lead person will see this sale on their dashboard
                         </p>
                       </div>
                       
                       {/* Sale Date */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="saleDate" className="block text-sm font-medium text-gray-700">Sale Date</label>
+                        <label htmlFor="saleDate" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Sale Date</label>
                         <input
                           id="saleDate"
                           type="date"
                           value={newSale.saleDate ? new Date(newSale.saleDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
                           onChange={(e) => handleNewSaleChange('saleDate', new Date(e.target.value))}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                         />
                       </div>
                       
                       {/* Lead By (Optional) */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="leadBy" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="leadBy" className="block text-sm font-medium text-gray-700 dark:text-gray-400">
                           Lead By (Optional)
                           <span className="ml-1 inline-block relative group">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400 dark:text-gray-400 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 hidden group-hover:block">
@@ -2437,57 +2438,57 @@ const SalesTrackingPage = () => {
                           type="text"
                           value={newSale.leadBy}
                           onChange={(e) => handleNewSaleChange('leadBy', e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                           placeholder="Who led this sale?"
                         />
                       </div>
                       
                       {/* Product (pulled from lead but can be modified) */}
                       <div className="col-span-2">
-                        <label htmlFor="product" className="block text-sm font-medium text-gray-700">Product</label>
+                        <label htmlFor="product" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Product</label>
                         <input
                           id="product"
                           type="text"
                           value={newSale.product}
                           onChange={(e) => handleNewSaleChange('product', e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                           placeholder="Product or course name"
                         />
                       </div>
                       
                       {/* Login Credentials (Optional) */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="loginId" className="block text-sm font-medium text-gray-700">Login ID (Optional)</label>
+                        <label htmlFor="loginId" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Login ID (Optional)</label>
                         <input
                           id="loginId"
                           type="text"
                           value={newSale.loginId}
                           onChange={(e) => handleNewSaleChange('loginId', e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                           placeholder="Customer login ID"
                         />
                       </div>
                       
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password (Optional)</label>
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Password (Optional)</label>
                         <input
                           id="password"
                           type="text"
                           value={newSale.password}
                           onChange={(e) => handleNewSaleChange('password', e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                           placeholder="Customer password"
                         />
                       </div>
                       
                       {/* Currency */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="currency" className="block text-sm font-medium text-gray-700">Currency</label>
+                        <label htmlFor="currency" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Currency</label>
                         <select
                           id="currency"
                           value={newSale.currency}
                           onChange={(e) => handleNewSaleChange('currency', e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                         >
                           {currencyOptions.map(option => (
                             <option key={option.value} value={option.value}>{option.label}</option>
@@ -2497,15 +2498,15 @@ const SalesTrackingPage = () => {
                       
                       {/* Amount */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="amount" className="block text-sm font-medium text-gray-700">Amount</label>
+                        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Amount</label>
                         <div className="relative mt-1">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">{getCurrencySymbol(newSale.currency)}</span>
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">{getCurrencySymbol(newSale.currency)}</span>
                           <input
                             id="amount"
                             type="number"
                             value={newSale.amount}
                             onChange={(e) => handleNewSaleChange('amount', e.target.value)}
-                            className="block w-full pl-7 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            className="block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                             placeholder="0.00"
                           />
                         </div>
@@ -2513,15 +2514,15 @@ const SalesTrackingPage = () => {
                       
                       {/* Token */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="token" className="block text-sm font-medium text-gray-700">Token</label>
+                        <label htmlFor="token" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Token</label>
                         <div className="relative mt-1">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">{getCurrencySymbol(newSale.currency)}</span>
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">{getCurrencySymbol(newSale.currency)}</span>
                           <input
                             id="token"
                             type="number"
                             value={newSale.token}
                             onChange={(e) => handleNewSaleChange('token', e.target.value)}
-                            className="block w-full pl-7 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            className="block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                             placeholder="0.00"
                           />
                         </div>
@@ -2529,15 +2530,15 @@ const SalesTrackingPage = () => {
                       
                       {/* Pending (calculated automatically) */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="pending" className="block text-sm font-medium text-gray-700">Pending</label>
+                        <label htmlFor="pending" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Pending</label>
                         <div className="relative mt-1">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">{getCurrencySymbol(newSale.currency)}</span>
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">{getCurrencySymbol(newSale.currency)}</span>
                           <input
                             id="pending"
                             type="number"
                             value={newSale.pending}
                             onChange={(e) => handleNewSaleChange('pending', e.target.value)}
-                            className="block w-full pl-7 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            className="block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                             placeholder="0.00"
                             disabled={newSale.status === 'Completed'}
                           />
@@ -2546,12 +2547,12 @@ const SalesTrackingPage = () => {
                       
                       {/* Status */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status</label>
+                        <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Status</label>
                         <select
                           id="status"
                           value={newSale.status}
                           onChange={(e) => handleNewSaleChange('status', e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                         >
                           {statusOptions.map(status => (
                             <option key={status} value={status}>{status}</option>
@@ -2566,32 +2567,32 @@ const SalesTrackingPage = () => {
                     <>
                       {/* Customer Name */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="customerName" className="block text-sm font-medium text-gray-700">Customer Name</label>
+                        <label htmlFor="customerName" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Customer Name</label>
                         <input
                           id="customerName"
                           type="text"
                           value={newSale.customerName}
                           onChange={(e) => handleNewSaleChange('customerName', e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                           placeholder="Enter customer name"
                         />
                       </div>
 
                       {/* Sale Date */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="saleDate" className="block text-sm font-medium text-gray-700">Sale Date</label>
+                        <label htmlFor="saleDate" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Sale Date</label>
                         <input
                           id="saleDate"
                           type="date"
                           value={newSale.saleDate ? new Date(newSale.saleDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
                           onChange={(e) => handleNewSaleChange('saleDate', new Date(e.target.value))}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                         />
                       </div>
                       
                       {/* Contact Number */}
                       <div className="col-span-2">
-                        <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
+                        <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Contact Number</label>
                         <PhoneInput
                           country={'us'}
                           value={newSale.contactNumber}
@@ -2616,36 +2617,36 @@ const SalesTrackingPage = () => {
                       
                       {/* Email */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Email</label>
                         <input
                           id="email"
                           type="email"
                           value={newSale.email}
                           onChange={(e) => handleNewSaleChange('email', e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                           placeholder="customer@example.com"
                         />
                       </div>
                       
                       {/* Country */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="country" className="block text-sm font-medium text-gray-700">Country</label>
+                        <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Country</label>
                         <input
                           id="country"
                           type="text"
                           value={newSale.country}
                           onChange={(e) => handleNewSaleChange('country', e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                           placeholder="Enter country"
                         />
                       </div>
                       
                       {/* Lead By (Optional) */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="leadBy" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="leadBy" className="block text-sm font-medium text-gray-700 dark:text-gray-400">
                           Lead By (Optional)
                           <span className="ml-1 inline-block relative group">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400 dark:text-gray-400 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 hidden group-hover:block">
@@ -2658,19 +2659,19 @@ const SalesTrackingPage = () => {
                           type="text"
                           value={newSale.leadBy}
                           onChange={(e) => handleNewSaleChange('leadBy', e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                           placeholder="Who led this sale?"
                         />
                       </div>
                       
                       {/* Currency */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="currency" className="block text-sm font-medium text-gray-700">Currency</label>
+                        <label htmlFor="currency" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Currency</label>
                         <select
                           id="currency"
                           value={newSale.currency}
                           onChange={(e) => handleNewSaleChange('currency', e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                         >
                           {currencyOptions.map(option => (
                             <option key={option.value} value={option.value}>{option.label}</option>
@@ -2680,50 +2681,50 @@ const SalesTrackingPage = () => {
                       
                       {/* Product */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="product" className="block text-sm font-medium text-gray-700">Product</label>
+                        <label htmlFor="product" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Product</label>
                         <input
                           id="product"
                           type="text"
                           value={newSale.product}
                           onChange={(e) => handleNewSaleChange('product', e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                           placeholder="Product or course name"
                         />
                       </div>
                       
                       {/* Login Credentials (Optional) */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="loginId" className="block text-sm font-medium text-gray-700">Login ID (Optional)</label>
+                        <label htmlFor="loginId" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Login ID (Optional)</label>
                         <input
                           id="loginId"
                           type="text"
                           value={newSale.loginId}
                           onChange={(e) => handleNewSaleChange('loginId', e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                           placeholder="Customer login ID"
                         />
                       </div>
                       
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password (Optional)</label>
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Password (Optional)</label>
                         <input
                           id="password"
                           type="text"
                           value={newSale.password}
                           onChange={(e) => handleNewSaleChange('password', e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                           placeholder="Customer password"
                         />
                       </div>
                       
                       {/* Lead Person Selection */}
                       <div className="col-span-2">
-                        <label htmlFor="leadPerson" className="block text-sm font-medium text-gray-700">Lead Person</label>
+                        <label htmlFor="leadPerson" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Lead Person</label>
                         <select
                           id="leadPerson"
                           value={newSale.leadPerson}
                           onChange={(e) => handleNewSaleChange('leadPerson', e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                         >
                           <option value="">Select a lead person</option>
                           {leadPersonOptions.map(person => (
@@ -2731,21 +2732,21 @@ const SalesTrackingPage = () => {
                           ))}
                         </select>
                         {loadingLeadPersons && (
-                          <div className="mt-1 text-sm text-gray-500">Loading lead persons...</div>
+                          <div className="mt-1 text-sm text-gray-500 dark:text-gray-500">Loading lead persons...</div>
                         )}
                       </div>
                       
                       {/* Amount */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="amount" className="block text-sm font-medium text-gray-700">Amount</label>
+                        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Amount</label>
                         <div className="relative mt-1">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">{getCurrencySymbol(newSale.currency)}</span>
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">{getCurrencySymbol(newSale.currency)}</span>
                           <input
                             id="amount"
                             type="number"
                             value={newSale.amount}
                             onChange={(e) => handleNewSaleChange('amount', e.target.value)}
-                            className="block w-full pl-7 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            className="block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                             placeholder="0.00"
                           />
                         </div>
@@ -2753,15 +2754,15 @@ const SalesTrackingPage = () => {
                       
                       {/* Token */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="token" className="block text-sm font-medium text-gray-700">Token</label>
+                        <label htmlFor="token" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Token</label>
                         <div className="relative mt-1">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">{getCurrencySymbol(newSale.currency)}</span>
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">{getCurrencySymbol(newSale.currency)}</span>
                           <input
                             id="token"
                             type="number"
                             value={newSale.token}
                             onChange={(e) => handleNewSaleChange('token', e.target.value)}
-                            className="block w-full pl-7 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            className="block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                             placeholder="0.00"
                           />
                         </div>
@@ -2769,15 +2770,15 @@ const SalesTrackingPage = () => {
                       
                       {/* Pending (calculated automatically) */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="pending" className="block text-sm font-medium text-gray-700">Pending</label>
+                        <label htmlFor="pending" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Pending</label>
                         <div className="relative mt-1">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">{getCurrencySymbol(newSale.currency)}</span>
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">{getCurrencySymbol(newSale.currency)}</span>
                           <input
                             id="pending"
                             type="number"
                             value={newSale.pending}
                             onChange={(e) => handleNewSaleChange('pending', e.target.value)}
-                            className="block w-full pl-7 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            className="block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                             placeholder="0.00"
                             disabled={newSale.status === 'Completed'}
                           />
@@ -2786,12 +2787,12 @@ const SalesTrackingPage = () => {
                       
                       {/* Status */}
                       <div className="col-span-2 md:col-span-1">
-                        <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status</label>
+                        <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-400">Status</label>
                         <select
                           id="status"
                           value={newSale.status}
                           onChange={(e) => handleNewSaleChange('status', e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                         >
                           {statusOptions.map(status => (
                             <option key={status} value={status}>{status}</option>
@@ -2804,7 +2805,7 @@ const SalesTrackingPage = () => {
                 <div className="mt-6">
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 shadow-sm dark:shadow-xl hover:shadow-md transition-all duration-200 text-white rounded-md"
                   >
                     Add Sale
                   </button>

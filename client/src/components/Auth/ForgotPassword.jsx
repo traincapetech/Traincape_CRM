@@ -268,12 +268,12 @@ const ForgotPassword = () => {
             >
               <h2 className="text-2xl font-bold mb-4">Password Recovery</h2>
               <p className="mb-6">Recover your account access quickly and securely</p>
-              <div className="w-16 h-1 bg-white mx-auto"></div>
+              <div className="w-16 h-1 bg-white dark:bg-slate-900 transition-all duration-200 ease-out mx-auto"></div>
             </motion.div>
           </motion.div>
           
           <motion.div 
-            className="bg-white bg-opacity-95 p-8 md:p-12 shadow-xl w-full md:w-[60%] rounded-lg"
+            className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out bg-opacity-95 p-8 md:p-12 shadow-xl w-full md:w-[60%] rounded-lg"
             variants={formVariants}
             initial="hidden"
             animate="visible"
@@ -315,7 +315,7 @@ const ForgotPassword = () => {
                   <motion.div className="mb-6" variants={itemVariants}>
                     <label
                       htmlFor="email"
-                      className="block text-sm font-medium text-gray-700 mb-2"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2"
                     >
                       Email Address
                     </label>
@@ -327,7 +327,7 @@ const ForgotPassword = () => {
                       value={payload.email}
                       onChange={handleChange}
                       placeholder="Enter your email address"
-                      className="w-full px-4 py-3 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#152B54] transition-all duration-200"
+                      className="w-full px-4 py-3 mt-1 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#152B54] transition-all duration-200"
                     />
                   </motion.div>
                   <motion.button
@@ -379,7 +379,7 @@ const ForgotPassword = () => {
                     Enter Verification Code
                   </motion.h2>
                   <motion.p 
-                    className="text-center text-gray-600 mb-6"
+                    className="text-center text-gray-600 dark:text-gray-400 mb-6"
                     variants={itemVariants}
                   >
                     We've sent a 6-digit code to your email
@@ -401,7 +401,7 @@ const ForgotPassword = () => {
                           onKeyDown={(e) => handleKeyDown(e, index)}
                           ref={(el) => (inputRefs.current[index] = el)}
                           whileFocus={{ scale: 1.1 }}
-                          className="w-12 h-12 text-3xl text-center border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#152B54] focus:border-[#152B54] transition-all duration-200"
+                          className="w-12 h-12 text-3xl text-center border-2 border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#152B54] focus:border-[#152B54] transition-all duration-200"
                         />
                       ))}
                   </motion.div>
@@ -454,7 +454,7 @@ const ForgotPassword = () => {
                     Create New Password
                   </motion.h2>
                   <motion.p 
-                    className="text-center text-gray-600 mb-6"
+                    className="text-center text-gray-600 dark:text-gray-400 mb-6"
                     variants={itemVariants}
                   >
                     Your new password must be at least 8 characters
@@ -462,7 +462,7 @@ const ForgotPassword = () => {
                   <motion.div className="mb-5 relative" variants={itemVariants}>
                     <label
                       htmlFor="newPassword"
-                      className="block text-sm font-medium text-gray-700 mb-2"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2"
                     >
                       New Password
                     </label>
@@ -475,11 +475,11 @@ const ForgotPassword = () => {
                         onChange={handleChange}
                         required
                         placeholder="Enter new password"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#152B54] transition-all duration-200"
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#152B54] transition-all duration-200"
                       />
                       <button
                         type="button"
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 dark:text-gray-300 hover:text-gray-700"
                         onClick={() => setPasswordVisible(!passwordVisible)}
                       >
                         {passwordVisible ? <FaRegEyeSlash size={18} /> : <FaEye size={18} />}
@@ -489,7 +489,7 @@ const ForgotPassword = () => {
                   <motion.div className="mb-6" variants={itemVariants}>
                     <label
                       htmlFor="confirmPassword"
-                      className="block text-sm font-medium text-gray-700 mb-2"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2"
                     >
                       Confirm Password
                     </label>
@@ -501,7 +501,7 @@ const ForgotPassword = () => {
                       onChange={handleChange}
                       required
                       placeholder="Confirm new password"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#152B54] transition-all duration-200"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#152B54] transition-all duration-200"
                     />
                   </motion.div>
                   <motion.button

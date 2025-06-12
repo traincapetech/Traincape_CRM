@@ -21,7 +21,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className="bg-blue-600 dark:bg-gray-800 text-white py-4 shadow-md transition-colors duration-300">
+    <header className="bg-blue-600 dark:bg-slate-900 text-white py-4 shadow-md dark:shadow-black/25 transition-all duration-200 ease-out border-b border-transparent dark:border-slate-700">
       <nav className="container mx-auto flex justify-between items-center">
         <a href="/"> <h1 className="text-xl font-bold">My CRM</h1></a>
         <button 

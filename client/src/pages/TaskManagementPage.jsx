@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { leadsAPI, tasksAPI } from "../services/api";
 import notificationService from "../services/notificationService";
 
+import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 // Get API URL for Vite (fixes "process is not defined" error)
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -479,11 +480,11 @@ const TaskManagementPage = () => {
   
   return (
     <Layout>
-      <div className="bg-gray-50 min-h-screen py-4 md:py-8">
+      <div className="bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out min-h-screen py-4 md:py-8">
         <div className="container mx-auto px-4">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-3">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Task Management</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200">Task Management</h1>
             <div className="flex gap-2">
               <button
                 onClick={() => {
@@ -501,7 +502,7 @@ const TaskManagementPage = () => {
                   resetForm();
                   setModalOpen(true);
                 }}
-                className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm sm:text-base"
+                className="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 shadow-sm dark:shadow-xl hover:shadow-md transition-all duration-200 text-white rounded-md text-sm sm:text-base"
               >
                 Schedule New Exam
               </button>
@@ -533,19 +534,19 @@ const TaskManagementPage = () => {
           {loading ? (
             <div className="text-center py-8">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
-              <p className="mt-2 text-gray-600">Loading tasks...</p>
+              <p className="mt-2 text-gray-600 dark:text-gray-500">Loading tasks...</p>
             </div>
           ) : tasks.length === 0 ? (
-            <div className="bg-white p-4 sm:p-8 rounded-md shadow text-center">
-              <p className="text-gray-600">No tasks scheduled yet.</p>
-              <p className="mt-2 text-sm text-gray-500">Click "Schedule New Exam" to create your first task.</p>
+            <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out p-4 sm:p-8 rounded-md shadow text-center">
+              <p className="text-gray-600 dark:text-gray-500">No tasks scheduled yet.</p>
+              <p className="mt-2 text-sm text-slate-500 dark:text-gray-400">Click "Schedule New Exam" to create your first task.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {tasks.map((task) => (
                 <div
                   key={task._id}
-                  className={`bg-white rounded-lg shadow p-4 border-l-4 ${
+                  className={`bg-white dark:bg-slate-900 rounded-lg shadow p-4 border-l-4 ${
                     task.completed
                       ? "border-green-500"
                       : new Date(task.examDate) < new Date()
@@ -575,20 +576,20 @@ const TaskManagementPage = () => {
                     </div>
                   </div>
                   
-                  <p className="text-xs sm:text-sm text-gray-600 mb-3">{task.description}</p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-500 mb-3">{task.description}</p>
                   
                   <div className="mb-3">
                     <div className="flex items-center mb-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 sm:h-4 sm:w-4 text-slate-500 dark:text-gray-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                       </svg>
-                      <p className="text-xs sm:text-sm text-gray-700">{getLeadName(task.customer)}</p>
+                      <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300">{getLeadName(task.customer)}</p>
                     </div>
                     <div className="flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 sm:h-4 sm:w-4 text-slate-500 dark:text-gray-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                       </svg>
-                      <p className="text-xs sm:text-sm text-gray-700">{formatDateTime(task.examDate)}</p>
+                      <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300">{formatDateTime(task.examDate)}</p>
                     </div>
                   </div>
                   
@@ -600,7 +601,7 @@ const TaskManagementPage = () => {
                       onClick={() => handleMarkCompleted(task._id, !task.completed)}
                       className={`text-xs w-full sm:w-auto px-3 py-1 rounded-full ${
                         task.completed
-                          ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                          ? "bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-gray-300 dark:text-gray-400 hover:bg-gray-300"
                           : "bg-green-100 text-green-700 hover:bg-green-200"
                       }`}
                     >
@@ -615,15 +616,15 @@ const TaskManagementPage = () => {
           {/* Modal for creating/editing tasks */}
           {modalOpen && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-              <div className="bg-white rounded-lg shadow-lg w-full max-w-md my-8">
-                <div className="p-4 sm:p-5 border-b border-gray-200">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-lg dark:shadow-lg w-full max-w-md my-8 shadow-sm">
+                <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-700">
                   <h3 className="font-bold text-base sm:text-lg">
                     {currentTask ? "Edit Task" : "Schedule New Exam"}
                   </h3>
                 </div>
                 <form onSubmit={handleSubmit} className="p-4 sm:p-5">
                   <div className="mb-4">
-                    <label className="block text-gray-700 text-xs sm:text-sm font-medium mb-2">
+                    <label className="block text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-medium mb-2">
                       Title
                     </label>
                     <input
@@ -631,40 +632,40 @@ const TaskManagementPage = () => {
                       name="title"
                       value={formData.title}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500 text-sm"
                       placeholder="Exam Title"
                       required
                     />
                   </div>
                   <div className="mb-4">
-                    <label className="block text-gray-700 text-xs sm:text-sm font-medium mb-2">
+                    <label className="block text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-medium mb-2">
                       Description
                     </label>
                     <textarea
                       name="description"
                       value={formData.description}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500 text-sm"
                       placeholder="Exam details"
                       rows="3"
                     ></textarea>
                   </div>
                   <div className="mb-4">
                     <div className="flex justify-between items-center mb-2">
-                      <label className="block text-gray-700 text-xs sm:text-sm font-medium">
+                      <label className="block text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-medium">
                         Customer
                       </label>
                       <div className="flex items-center">
-                        <span className="text-xs text-gray-600 mr-2">Manual Entry</span>
+                        <span className="text-xs text-gray-600 dark:text-gray-500 mr-2">Manual Entry</span>
                         <button
                           type="button"
                           onClick={() => setManualCustomerMode(!manualCustomerMode)}
                           className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none ${
-                            manualCustomerMode ? 'bg-blue-600' : 'bg-gray-200'
+                            manualCustomerMode ? 'bg-blue-600' : 'bg-gray-200 dark:bg-slate-600'
                           }`}
                         >
                           <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-900 transition-transform ${
                               manualCustomerMode ? 'translate-x-5' : 'translate-x-1'
                             }`}
                           />
@@ -681,7 +682,7 @@ const TaskManagementPage = () => {
                             name="manualCustomerName"
                             value={formData.manualCustomerName}
                             onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500 text-sm"
                             placeholder="Customer Name *"
                             required
                           />
@@ -692,7 +693,7 @@ const TaskManagementPage = () => {
                             name="manualCustomerEmail"
                             value={formData.manualCustomerEmail}
                             onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500 text-sm"
                             placeholder="Email Address"
                           />
                         </div>
@@ -702,7 +703,7 @@ const TaskManagementPage = () => {
                             name="manualCustomerPhone"
                             value={formData.manualCustomerPhone}
                             onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500 text-sm"
                             placeholder="Phone Number *"
                             required
                           />
@@ -713,7 +714,7 @@ const TaskManagementPage = () => {
                             name="manualCustomerCourse"
                             value={formData.manualCustomerCourse}
                             onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500 text-sm"
                             placeholder="Course/Exam Name *"
                             required
                           />
@@ -730,10 +731,10 @@ const TaskManagementPage = () => {
                               placeholder="Search leads by name, email, or course..."
                               value={leadSearchQuery}
                               onChange={(e) => setLeadSearchQuery(e.target.value)}
-                              className="w-full px-3 py-2 pl-9 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                              className="w-full px-3 py-2 pl-9 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500 text-sm"
                             />
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                               </svg>
                             </div>
@@ -744,7 +745,7 @@ const TaskManagementPage = () => {
                           name="customer"
                           value={formData.customer}
                           onChange={handleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500 text-sm"
                           required
                         >
                           <option value="">Select Customer</option>
@@ -805,9 +806,9 @@ const TaskManagementPage = () => {
                         </select>
                         
                         {leadsLoading ? (
-                          <p className="mt-1 text-xs text-gray-500">Loading customers...</p>
+                          <p className="mt-1 text-xs text-slate-500 dark:text-gray-400">Loading customers...</p>
                         ) : (
-                          <p className="mt-1 text-xs text-gray-500">
+                          <p className="mt-1 text-xs text-slate-500 dark:text-gray-400">
                             {leads.filter(lead => !lead.isReferenceSale).length} leads + 
                             {leads.filter(lead => lead.isReferenceSale).length} reference customers available
                             {leadSearchQuery && (
@@ -826,7 +827,7 @@ const TaskManagementPage = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
-                      <label className="block text-gray-700 text-xs sm:text-sm font-medium mb-2">
+                      <label className="block text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-medium mb-2">
                         Exam Date
                       </label>
                       <input
@@ -834,12 +835,12 @@ const TaskManagementPage = () => {
                         name="examDate"
                         value={formData.examDate}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500 text-sm"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-700 text-xs sm:text-sm font-medium mb-2">
+                      <label className="block text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-medium mb-2">
                         Exam Time
                       </label>
                       <input
@@ -847,7 +848,7 @@ const TaskManagementPage = () => {
                         name="examTime"
                         value={formData.examTime}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500 text-sm"
                         required
                       />
                     </div>
@@ -856,13 +857,13 @@ const TaskManagementPage = () => {
                     <button
                       type="button"
                       onClick={() => setModalOpen(false)}
-                      className="w-full sm:w-auto px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 text-sm order-2 sm:order-1"
+                      className="w-full sm:w-auto px-4 py-2 bg-gray-200 dark:bg-slate-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 text-sm order-2 sm:order-1"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm order-1 sm:order-2"
+                      className="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 shadow-sm dark:shadow-xl hover:shadow-md transition-all duration-200 text-white rounded-md text-sm order-1 sm:order-2"
                     >
                       {currentTask ? "Update Task" : "Create Task"}
                     </button>

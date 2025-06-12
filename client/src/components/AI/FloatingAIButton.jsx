@@ -19,7 +19,7 @@ const FloatingAIButton = () => {
       {/* Floating button */}
       <button
         onClick={toggleAssistant}
-        className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg z-50 flex items-center justify-center transition-all duration-300 transform hover:scale-105"
+        className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg dark:shadow-black/25 z-50 flex items-center justify-center transition-all duration-300 transform hover:scale-105"
         aria-label="AI Assistant"
       >
         <svg 
@@ -36,14 +36,14 @@ const FloatingAIButton = () => {
       {/* Modal overlay */}
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
             {/* Header */}
             <div className="flex justify-between items-center p-4 border-b">
               <h2 className="text-xl font-bold">Gemini AI Assistant</h2>
               <div className="flex space-x-2">
                 <button
                   onClick={openFullPage}
-                  className="p-2 text-gray-600 hover:text-gray-900"
+                  className="p-2 text-gray-600 dark:text-white hover:text-gray-900"
                   title="Open in full page"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -52,7 +52,7 @@ const FloatingAIButton = () => {
                 </button>
                 <button
                   onClick={toggleAssistant}
-                  className="p-2 text-gray-600 hover:text-gray-900"
+                  className="p-2 text-gray-600 dark:text-white hover:text-gray-900"
                   title="Close"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import Layout from "../components/Layout/Layout";
 import { FaWhatsapp, FaEnvelope, FaPhone, FaFilter, FaCalendarAlt } from "react-icons/fa";
 
+import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 const SalesPage = () => {
   const { user } = useAuth();
   const [leads, setLeads] = useState([]);
@@ -299,16 +300,16 @@ const SalesPage = () => {
         {loading ? (
           <div className="text-center py-10">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-            <p className="mt-2 text-gray-600">Loading your assigned leads...</p>
+            <p className="mt-2 text-gray-600 dark:text-gray-500">Loading your assigned leads...</p>
           </div>
         ) : leads.length === 0 ? (
-          <div className="text-center py-10 bg-gray-50 rounded-lg">
-            <p className="text-gray-600">No leads assigned to you yet.</p>
+          <div className="text-center py-10 bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out rounded-lg">
+            <p className="text-gray-600 dark:text-gray-500">No leads assigned to you yet.</p>
           </div>
         ) : (
           <>
             {/* Date Filter Controls - Enhanced */}
-            <div className="mb-6 p-4 bg-white rounded-lg shadow-md">
+            <div className="mb-6 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-2xl shadow-sm">
               <h3 className="text-lg font-semibold mb-3 flex items-center">
                 <FaFilter className="mr-2 text-blue-500" /> 
                 Filter Leads by Date
@@ -317,12 +318,12 @@ const SalesPage = () => {
                 <div className="flex items-center">
                   <FaCalendarAlt className="text-blue-500 mr-2" />
                   <div>
-                    <label htmlFor="month" className="block text-sm font-medium text-gray-600 mb-1">Month</label>
+                    <label htmlFor="month" className="block text-sm font-medium text-gray-600 dark:text-gray-500 mb-1">Month</label>
                     <select
                       id="month"
                       value={filterMonth}
                       onChange={handleMonthChange}
-                      className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="border border-slate-300 dark:border-slate-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                       disabled={showCurrentMonth}
                     >
                       {months.map(month => (
@@ -335,12 +336,12 @@ const SalesPage = () => {
                 </div>
                 
                 <div>
-                  <label htmlFor="year" className="block text-sm font-medium text-gray-600 mb-1">Year</label>
+                  <label htmlFor="year" className="block text-sm font-medium text-gray-600 dark:text-gray-500 mb-1">Year</label>
                   <select
                     id="year"
                     value={filterYear}
                     onChange={handleYearChange}
-                    className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="border border-slate-300 dark:border-slate-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                     disabled={showCurrentMonth}
                   >
                     {years.map(year => (
@@ -357,9 +358,9 @@ const SalesPage = () => {
                     type="checkbox"
                     checked={showCurrentMonth}
                     onChange={() => setShowCurrentMonth(!showCurrentMonth)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 border-slate-300 dark:border-slate-600 rounded"
                   />
-                  <label htmlFor="currentMonth" className="ml-2 text-sm text-gray-600">
+                  <label htmlFor="currentMonth" className="ml-2 text-sm text-gray-600 dark:text-gray-500">
                     Show current month only
                   </label>
                 </div>
@@ -374,7 +375,7 @@ const SalesPage = () => {
               </div>
               
               {/* Display filter result summary */}
-              <div className="mt-3 text-sm text-gray-600">
+              <div className="mt-3 text-sm text-gray-600 dark:text-gray-500">
                 Showing {filteredLeads.length} lead{filteredLeads.length !== 1 ? 's' : ''} 
                 {showCurrentMonth 
                   ? ' for the current month' 
@@ -384,25 +385,25 @@ const SalesPage = () => {
             </div>
             
             {/* Leads Table */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-2xl overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                  <thead className="bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Feedback</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">Contact</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">Course</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">Feedback</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out divide-y divide-slate-200 dark:divide-slate-700">
                     {filteredLeads.map(lead => (
-                      <tr key={lead._id} className="hover:bg-gray-50">
+                      <tr key={lead._id} className="hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800 transition-all duration-200 ease-out">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{lead.name}</div>
+                          <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{lead.name}</div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-col space-y-1">
@@ -410,7 +411,7 @@ const SalesPage = () => {
                               <div className="flex items-center">
                                 <button 
                                   onClick={() => openWhatsApp(lead.phone, lead.countryCode)}
-                                  className="text-sm text-gray-900 flex items-center hover:text-green-600"
+                                  className="text-sm text-slate-900 dark:text-slate-100 flex items-center hover:text-green-600"
                                   title="Open in WhatsApp"
                                 >
                                   <FaWhatsapp className="mr-1 text-green-500" /> 
@@ -422,7 +423,7 @@ const SalesPage = () => {
                               <div className="flex items-center">
                                 <button 
                                   onClick={() => openEmail(lead.email)}
-                                  className="text-sm text-gray-500 flex items-center hover:text-blue-600"
+                                  className="text-sm text-slate-500 dark:text-gray-400 flex items-center hover:text-blue-600"
                                   title="Send email"
                                 >
                                   <FaEnvelope className="mr-1 text-blue-500" /> 
@@ -433,7 +434,7 @@ const SalesPage = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{lead.course}</div>
+                          <div className="text-sm text-slate-900 dark:text-slate-100">{lead.course}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="relative">
@@ -453,14 +454,14 @@ const SalesPage = () => {
                                 lead.status === 'Future Promise' ? 'bg-cyan-100 text-cyan-800' :
                                 lead.status === 'Payment' ? 'bg-green-100 text-green-800' :
                                 lead.status === 'Analysis' ? 'bg-red-100 text-red-800' :
-                                'bg-gray-100 text-gray-800'
-                              } border border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none cursor-pointer w-full pr-8`}
+                                'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'
+                              } border border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 appearance-none cursor-pointer w-full pr-8`}
                             >
                               {statusOptions.map(status => (
                                 <option key={status} value={status}>{status}</option>
                               ))}
                             </select>
-                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700 dark:text-slate-300">
                               <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                 <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
                               </svg>
@@ -478,7 +479,7 @@ const SalesPage = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">{formatDate(lead.createdAt)}</div>
+                          <div className="text-sm text-slate-500 dark:text-gray-400">{formatDate(lead.createdAt)}</div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="relative">
@@ -486,14 +487,14 @@ const SalesPage = () => {
                               value={feedback[lead._id] || ''}
                               onChange={(e) => handleFeedbackChange(lead._id, e.target.value)}
                               placeholder="Add feedback..."
-                              className="text-sm w-full h-20 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              className="text-sm w-full h-20 p-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                             />
                             <button
                               onClick={() => updateFeedback(lead._id)}
                               disabled={updating[lead._id] || !feedback[lead._id]}
                               className={`mt-1 px-3 py-1 text-xs rounded ${
                                 updating[lead._id] || !feedback[lead._id]
-                                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                  ? 'bg-gray-300 text-gray-500 dark:text-gray-400 dark:text-gray-400 cursor-not-allowed'
                                   : 'bg-blue-600 text-white hover:bg-blue-700'
                               }`}
                             >
@@ -521,12 +522,12 @@ const SalesPage = () => {
         {/* Lead Details Modal */}
         {selectedLead && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-sm dark:shadow-black/25">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold text-gray-900">Lead Details</h3>
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Lead Details</h3>
                 <button
                   onClick={closeLeadDetails}
-                  className="text-gray-400 hover:text-gray-500"
+                  className="text-gray-400 dark:text-slate-400 hover:text-slate-500"
                 >
                   &times;
                 </button>
@@ -534,11 +535,11 @@ const SalesPage = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Name</p>
+                  <p className="text-sm font-medium text-slate-500 dark:text-gray-400">Name</p>
                   <p className="text-base">{selectedLead.name}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Email</p>
+                  <p className="text-sm font-medium text-slate-500 dark:text-gray-400">Email</p>
                   <p className="text-base">
                     <button 
                       onClick={() => openEmail(selectedLead.email)}
@@ -549,7 +550,7 @@ const SalesPage = () => {
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Phone</p>
+                  <p className="text-sm font-medium text-slate-500 dark:text-gray-400">Phone</p>
                   <p className="text-base">
                     <button 
                       onClick={() => openWhatsApp(selectedLead.phone, selectedLead.countryCode)}
@@ -560,11 +561,11 @@ const SalesPage = () => {
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Course</p>
+                  <p className="text-sm font-medium text-slate-500 dark:text-gray-400">Course</p>
                   <p className="text-base">{selectedLead.course}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Status</p>
+                  <p className="text-sm font-medium text-slate-500 dark:text-gray-400">Status</p>
                   <div className="relative">
                     <select
                       value={selectedLead.status}
@@ -584,14 +585,14 @@ const SalesPage = () => {
                         selectedLead.status === 'Future Promise' ? 'bg-cyan-100 text-cyan-800' :
                         selectedLead.status === 'Payment' ? 'bg-green-100 text-green-800' :
                         selectedLead.status === 'Analysis' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      } border border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none cursor-pointer pr-8 relative`}
+                        'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'
+                      } border border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 appearance-none cursor-pointer pr-8 relative`}
                     >
                       {statusOptions.map(status => (
                         <option key={status} value={status}>{status}</option>
                       ))}
                     </select>
-                    <div className="pointer-events-none absolute right-0 top-1/2 transform -translate-y-1/2 flex items-center px-2 text-gray-700">
+                    <div className="pointer-events-none absolute right-0 top-1/2 transform -translate-y-1/2 flex items-center px-2 text-slate-700 dark:text-slate-300">
                       <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                         <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
                       </svg>
@@ -609,33 +610,33 @@ const SalesPage = () => {
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Created At</p>
+                  <p className="text-sm font-medium text-slate-500 dark:text-gray-400">Created At</p>
                   <p className="text-base">{formatDate(selectedLead.createdAt)}</p>
                 </div>
                 
                 {/* Additional client data */}
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Country</p>
+                  <p className="text-sm font-medium text-slate-500 dark:text-gray-400">Country</p>
                   <p className="text-base">{selectedLead.country || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Company</p>
+                  <p className="text-sm font-medium text-slate-500 dark:text-gray-400">Company</p>
                   <p className="text-base">{selectedLead.company || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Client</p>
+                  <p className="text-sm font-medium text-slate-500 dark:text-gray-400">Client</p>
                   <p className="text-base">{selectedLead.client || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Pseudo ID</p>
+                  <p className="text-sm font-medium text-slate-500 dark:text-gray-400">Pseudo ID</p>
                   <p className="text-base">{selectedLead.pseudoId || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Source</p>
+                  <p className="text-sm font-medium text-slate-500 dark:text-gray-400">Source</p>
                   <p className="text-base">{selectedLead.source || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">LinkedIn</p>
+                  <p className="text-sm font-medium text-slate-500 dark:text-gray-400">LinkedIn</p>
                   <p className="text-base">
                     {selectedLead.sourceLink ? (
                       <a 
@@ -652,26 +653,26 @@ const SalesPage = () => {
               </div>
               
               <div className="mb-4">
-                <p className="text-sm font-medium text-gray-500 mb-1">Remarks</p>
-                <p className="text-base p-2 bg-gray-50 rounded min-h-[40px]">
+                <p className="text-sm font-medium text-slate-500 dark:text-gray-400 mb-1">Remarks</p>
+                <p className="text-base p-2 bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out rounded min-h-[40px]">
                   {selectedLead.remarks || 'No remarks available'}
                 </p>
               </div>
               
               <div className="mb-4">
-                <p className="text-sm font-medium text-gray-500 mb-1">Feedback</p>
+                <p className="text-sm font-medium text-slate-500 dark:text-gray-400 mb-1">Feedback</p>
                 <textarea
                   value={feedback[selectedLead._id] || ''}
                   onChange={(e) => handleFeedbackChange(selectedLead._id, e.target.value)}
                   placeholder="Add feedback..."
-                  className="w-full h-24 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full h-24 p-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                 />
                 <button
                   onClick={() => updateFeedback(selectedLead._id)}
                   disabled={updating[selectedLead._id] || !feedback[selectedLead._id]}
                   className={`mt-2 px-4 py-2 rounded ${
                     updating[selectedLead._id] || !feedback[selectedLead._id]
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      ? 'bg-gray-300 text-gray-500 dark:text-gray-400 dark:text-gray-400 cursor-not-allowed'
                       : 'bg-blue-600 text-white hover:bg-blue-700'
                   }`}
                 >
@@ -682,7 +683,7 @@ const SalesPage = () => {
               <div className="flex justify-end">
                 <button
                   onClick={closeLeadDetails}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
+                  className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-md text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
                 >
                   Close
                 </button>

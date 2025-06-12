@@ -74,26 +74,26 @@ const ActivityTimer = () => {
         <div className={`w-2 h-2 rounded-full ${
           !isManuallyPaused && sessionStartTime ? 'bg-green-500 animate-pulse' : 'bg-gray-400'
         }`}></div>
-        <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <div className="text-sm font-medium text-gray-700 dark:text-gray-500">
           <span className="hidden sm:inline">Session: </span>
           <span className="font-mono">{formatTime(sessionTime)}</span>
         </div>
         
         {/* Status indicator */}
-        <div className="text-xs text-gray-500 dark:text-gray-400">
+        <div className="text-xs text-gray-500 dark:text-gray-500">
           {isManuallyPaused ? '⏸️' : sessionStartTime ? '▶️' : '⏹️'}
         </div>
       </div>
 
       {/* Control Panel (shows on hover) */}
       {showControls && (
-        <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg p-3 z-50 min-w-[200px]">
-          <div className="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2">
+        <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg dark:shadow-black/25 p-3 z-50 min-w-[200px]">
+          <div className="text-xs font-semibold text-gray-600 dark:text-gray-500 mb-2">
             Activity Timer Controls
           </div>
           
           {/* Current Status */}
-          <div className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+          <div className="text-xs text-gray-500 dark:text-gray-500 mb-3">
             Status: {
               isManuallyPaused ? 'Manually Paused' : 
               sessionStartTime ? 'Active' : 'Stopped'
@@ -115,7 +115,7 @@ const ActivityTimer = () => {
           </div>
           
           {/* Help Text */}
-          <div className="text-xs text-gray-400 dark:text-gray-500 mt-2 leading-relaxed">
+          <div className="text-xs text-gray-400 dark:text-gray-400 mt-2 leading-relaxed">
             Timer automatically pauses when system locks or tab is hidden.
           </div>
         </div>

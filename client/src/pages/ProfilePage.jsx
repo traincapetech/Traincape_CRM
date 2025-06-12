@@ -8,6 +8,7 @@ import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import axios from "axios";
 
+import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 const ProfilePage = () => {
   const { user, loading, setUser } = useAuth();
   const [uploading, setUploading] = useState(false);
@@ -193,8 +194,8 @@ const ProfilePage = () => {
   return (
     <Layout>
       <div className="container mx-auto p-6">
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="bg-blue-600 text-white p-4">
+        <div className="max-w-2xl mx-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-2xl overflow-hidden shadow-sm">
+          <div className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 shadow-sm dark:shadow-xl hover:shadow-md transition-all duration-200 text-white p-4">
             <h2 className="text-2xl font-bold">User Profile</h2>
           </div>
           <div className="p-6">
@@ -230,7 +231,7 @@ const ProfilePage = () => {
                       <button 
                         type="button" 
                         onClick={cancelUpload}
-                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                        className="px-4 py-2 bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out0 text-white rounded hover:bg-gray-600"
                       >
                         Cancel
                       </button>
@@ -266,7 +267,7 @@ const ProfilePage = () => {
                   {/* Camera Icon for Upload */}
                   <label 
                     htmlFor="profile-upload" 
-                    className="absolute bottom-0 right-0 bg-blue-600 text-white rounded-full p-2 cursor-pointer hover:bg-blue-700 transition-colors"
+                    className="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 shadow-sm dark:shadow-xl hover:shadow-md transition-all duration-200 text-white rounded-full p-2 cursor-pointer transition-colors"
                   >
                     <FaCamera size={12} />
                   </label>
@@ -306,45 +307,45 @@ const ProfilePage = () => {
               )}
               
               <h3 className="text-xl font-bold mt-2">{user.fullName}</h3>
-              <p className="text-gray-600">{user.email}</p>
+              <p className="text-gray-600 dark:text-gray-500">{user.email}</p>
               <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold mt-2">
                 {user.role}
               </span>
             </div>
             
             <div className="space-y-4">
-              <div className="border-t border-gray-200 pt-4">
+              <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
                 <h4 className="text-lg font-bold mb-2">Account Details</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-600">User ID</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-500">User ID</p>
                     <p className="font-medium">{user._id}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Created</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-500">Created</p>
                     <p className="font-medium">{formatDate(user.createdAt)}</p>
                   </div>
                 </div>
               </div>
               
               {user.role === "Sales Person" && (
-                <div className="border-t border-gray-200 pt-4">
+                <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
                   <h4 className="text-lg font-bold mb-2">Sales Information</h4>
-                  <p className="text-gray-600">You have access to view and manage leads assigned to you.</p>
+                  <p className="text-gray-600 dark:text-gray-500">You have access to view and manage leads assigned to you.</p>
                 </div>
               )}
               
               {user.role === "Lead Person" && (
-                <div className="border-t border-gray-200 pt-4">
+                <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
                   <h4 className="text-lg font-bold mb-2">Lead Management</h4>
-                  <p className="text-gray-600">You have access to create leads and view leads assigned to you.</p>
+                  <p className="text-gray-600 dark:text-gray-500">You have access to create leads and view leads assigned to you.</p>
                 </div>
               )}
               
               {(user.role === "Admin" || user.role === "Manager") && (
-                <div className="border-t border-gray-200 pt-4">
+                <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
                   <h4 className="text-lg font-bold mb-2">Administrative Access</h4>
-                  <p className="text-gray-600">You have access to all leads and administrative functions.</p>
+                  <p className="text-gray-600 dark:text-gray-500">You have access to all leads and administrative functions.</p>
                 </div>
               )}
             </div>

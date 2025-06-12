@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { prospectsAPI, authAPI } from '../services/api';
 import { toast } from 'react-hot-toast';
+import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 import { 
   FiPlus, 
   FiSearch, 
@@ -25,11 +26,11 @@ const StatusBadge = ({ status }) => {
     'Follow Up': 'bg-purple-100 text-purple-800',
     'Qualified': 'bg-indigo-100 text-indigo-800',
     'Converted to Lead': 'bg-emerald-100 text-emerald-800',
-    'Lost': 'bg-gray-100 text-gray-800'
+    'Lost': 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'
   };
 
   return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[status] || 'bg-gray-100 text-gray-800'}`}>
+    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[status] || 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'}`}>
       {status}
     </span>
   );
@@ -44,7 +45,7 @@ const PriorityBadge = ({ priority }) => {
   };
 
   return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${priorityColors[priority] || 'bg-gray-100 text-gray-800'}`}>
+    <span className={`px-2 py-1 rounded-full text-xs font-medium ${priorityColors[priority] || 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'}`}>
       {priority}
     </span>
   );
@@ -160,12 +161,12 @@ const ProspectsPage = () => {
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Prospects</h1>
-            <p className="text-gray-600">Manage your potential customers</p>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Prospects</h1>
+            <p className="text-gray-600 dark:text-gray-500">Manage your potential customers</p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+            className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 shadow-sm dark:shadow-xl hover:shadow-md transition-all duration-200 text-white px-4 py-2 rounded-lg flex items-center gap-2"
           >
             <FiPlus /> Add Prospect
           </button>
@@ -173,48 +174,48 @@ const ProspectsPage = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out p-4 rounded-lg shadow shadow-sm dark:shadow-black/25">
             <div className="text-2xl font-bold text-blue-600">{stats.overview?.total || 0}</div>
-            <div className="text-sm text-gray-600">Total</div>
+            <div className="text-sm text-gray-600 dark:text-gray-500">Total</div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out p-4 rounded-lg shadow shadow-sm dark:shadow-black/25">
             <div className="text-2xl font-bold text-blue-500">{stats.overview?.new || 0}</div>
-            <div className="text-sm text-gray-600">New</div>
+            <div className="text-sm text-gray-600 dark:text-gray-500">New</div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out p-4 rounded-lg shadow shadow-sm dark:shadow-black/25">
             <div className="text-2xl font-bold text-yellow-500">{stats.overview?.contacted || 0}</div>
-            <div className="text-sm text-gray-600">Contacted</div>
+            <div className="text-sm text-gray-600 dark:text-gray-500">Contacted</div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out p-4 rounded-lg shadow shadow-sm dark:shadow-black/25">
             <div className="text-2xl font-bold text-green-500">{stats.overview?.interested || 0}</div>
-            <div className="text-sm text-gray-600">Interested</div>
+            <div className="text-sm text-gray-600 dark:text-gray-500">Interested</div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out p-4 rounded-lg shadow shadow-sm dark:shadow-black/25">
             <div className="text-2xl font-bold text-indigo-500">{stats.overview?.qualified || 0}</div>
-            <div className="text-sm text-gray-600">Qualified</div>
+            <div className="text-sm text-gray-600 dark:text-gray-500">Qualified</div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out p-4 rounded-lg shadow shadow-sm dark:shadow-black/25">
             <div className="text-2xl font-bold text-emerald-500">{stats.overview?.converted || 0}</div>
-            <div className="text-sm text-gray-600">Converted</div>
+            <div className="text-sm text-gray-600 dark:text-gray-500">Converted</div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow border">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out p-4 rounded-lg shadow shadow-sm dark:shadow-black/25">
             <div className="text-2xl font-bold text-red-500">{stats.overview?.lost || 0}</div>
-            <div className="text-sm text-gray-600">Lost</div>
+            <div className="text-sm text-gray-600 dark:text-gray-500">Lost</div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white p-4 rounded-lg shadow border mb-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out p-4 rounded-lg shadow mb-6 shadow-sm dark:shadow-black/25">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div className="relative">
-              <FiSearch className="absolute left-3 top-3 text-gray-400" />
+              <FiSearch className="absolute left-3 top-3 text-gray-400 dark:text-gray-400" />
               <input
                 type="text"
                 placeholder="Search prospects..."
                 value={filters.search}
                 onChange={handleSearch}
-                className="pl-10 pr-4 py-2 border rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="pl-10 pr-4 py-2 border rounded-lg w-full focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
               />
             </div>
 
@@ -222,7 +223,7 @@ const ProspectsPage = () => {
             <select
               value={filters.status}
               onChange={(e) => handleFilterChange('status', e.target.value)}
-              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
             >
               <option value="">All Status</option>
               <option value="New">New</option>
@@ -239,7 +240,7 @@ const ProspectsPage = () => {
             <select
               value={filters.source}
               onChange={(e) => handleFilterChange('source', e.target.value)}
-              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
             >
               <option value="">All Sources</option>
               <option value="LinkedIn">LinkedIn</option>
@@ -256,7 +257,7 @@ const ProspectsPage = () => {
             <select
               value={filters.priority}
               onChange={(e) => handleFilterChange('priority', e.target.value)}
-              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
             >
               <option value="">All Priorities</option>
               <option value="High">High</option>
@@ -268,21 +269,21 @@ const ProspectsPage = () => {
       </div>
 
       {/* Prospects Table */}
-      <div className="bg-white rounded-lg shadow border overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow overflow-hidden shadow-sm dark:shadow-black/25">
         {loading ? (
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Loading prospects...</p>
+            <p className="mt-2 text-gray-600 dark:text-gray-500">Loading prospects...</p>
           </div>
         ) : prospects.length === 0 ? (
           <div className="p-8 text-center">
-            <FiUser className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No prospects</h3>
-            <p className="mt-1 text-sm text-gray-500">Get started by creating a new prospect.</p>
+            <FiUser className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">No prospects</h3>
+            <p className="mt-1 text-sm text-slate-500 dark:text-gray-400">Get started by creating a new prospect.</p>
             <div className="mt-6">
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 mx-auto"
+                className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 shadow-sm dark:shadow-xl hover:shadow-md transition-all duration-200 text-white px-4 py-2 rounded-lg flex items-center gap-2 mx-auto"
               >
                 <FiPlus /> Add Prospect
               </button>
@@ -292,44 +293,44 @@ const ProspectsPage = () => {
           <>
             {/* Desktop Table */}
             <div className="hidden lg:block overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                <thead className="bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                       Contact Info
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                       Company
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                       Source
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                       Priority
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                       Assigned To
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                       Created
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out divide-y divide-slate-200 dark:divide-slate-700">
                   {prospects.map((prospect) => (
-                    <tr key={prospect._id} className="hover:bg-gray-50">
+                    <tr key={prospect._id} className="hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800 transition-all duration-200 ease-out">
                       <td className="px-4 py-3">
                         <div className="max-w-xs">
-                          <div className="text-sm font-medium text-gray-900 truncate">
+                          <div className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
                             {prospect.name || 'No Name'}
                           </div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-slate-500 dark:text-gray-400">
                             {prospect.email && (
                               <div className="flex items-center gap-1 truncate">
                                 <FiMail className="w-3 h-3 flex-shrink-0" />
@@ -347,12 +348,12 @@ const ProspectsPage = () => {
                       </td>
                       <td className="px-4 py-3">
                         <div className="max-w-xs">
-                          <div className="text-sm text-gray-900 truncate">{prospect.company || '-'}</div>
-                          <div className="text-xs text-gray-500 truncate">{prospect.designation || '-'}</div>
+                          <div className="text-sm text-slate-900 dark:text-slate-100 truncate">{prospect.company || '-'}</div>
+                          <div className="text-xs text-slate-500 dark:text-gray-400 truncate">{prospect.designation || '-'}</div>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-sm text-gray-900">{prospect.source}</div>
+                        <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.source}</div>
                       </td>
                       <td className="px-4 py-3">
                         <StatusBadge status={prospect.status} />
@@ -361,11 +362,11 @@ const ProspectsPage = () => {
                         <PriorityBadge priority={prospect.priority} />
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-sm text-gray-900 max-w-xs truncate">
+                        <div className="text-sm text-slate-900 dark:text-slate-100 max-w-xs truncate">
                           {prospect.assignedTo?.fullName || 'Unassigned'}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-500">
+                      <td className="px-4 py-3 text-sm text-slate-500 dark:text-gray-400">
                         {new Date(prospect.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-3">
@@ -422,13 +423,13 @@ const ProspectsPage = () => {
             {/* Mobile Card View */}
             <div className="lg:hidden">
               {prospects.map((prospect) => (
-                <div key={prospect._id} className="border-b border-gray-200 p-4">
+                <div key={prospect._id} className="border-b border-slate-200 dark:border-slate-700 p-4">
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1">
-                      <h3 className="text-sm font-medium text-gray-900">
+                      <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">
                         {prospect.name || 'No Name'}
                       </h3>
-                      <p className="text-xs text-gray-500">{prospect.company || 'No Company'}</p>
+                      <p className="text-xs text-slate-500 dark:text-gray-400">{prospect.company || 'No Company'}</p>
                     </div>
                     <div className="flex gap-2 ml-4">
                       <button
@@ -457,24 +458,24 @@ const ProspectsPage = () => {
                   
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <span className="text-gray-500">Status:</span>
+                      <span className="text-slate-500 dark:text-gray-400">Status:</span>
                       <div className="mt-1">
                         <StatusBadge status={prospect.status} />
                       </div>
                     </div>
                     <div>
-                      <span className="text-gray-500">Priority:</span>
+                      <span className="text-slate-500 dark:text-gray-400">Priority:</span>
                       <div className="mt-1">
                         <PriorityBadge priority={prospect.priority} />
                       </div>
                     </div>
                     <div>
-                      <span className="text-gray-500">Source:</span>
-                      <div className="mt-1 text-gray-900">{prospect.source}</div>
+                      <span className="text-slate-500 dark:text-gray-400">Source:</span>
+                      <div className="mt-1 text-slate-900 dark:text-slate-100">{prospect.source}</div>
                     </div>
                     <div>
-                      <span className="text-gray-500">Assigned:</span>
-                      <div className="mt-1 text-gray-900 truncate">
+                      <span className="text-slate-500 dark:text-gray-400">Assigned:</span>
+                      <div className="mt-1 text-slate-900 dark:text-slate-100 truncate">
                         {prospect.assignedTo?.fullName || 'Unassigned'}
                       </div>
                     </div>
@@ -483,13 +484,13 @@ const ProspectsPage = () => {
                   {(prospect.email || prospect.phone) && (
                     <div className="mt-3 pt-3 border-t border-gray-100">
                       {prospect.email && (
-                        <div className="flex items-center gap-2 text-xs text-gray-600 mb-1">
+                        <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-500 mb-1">
                           <FiMail className="w-3 h-3" />
                           <span className="truncate">{prospect.email}</span>
                         </div>
                       )}
                       {prospect.phone && (
-                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                        <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-500">
                           <FiPhone className="w-3 h-3" />
                           <span>{prospect.phone}</span>
                         </div>
@@ -502,26 +503,26 @@ const ProspectsPage = () => {
 
             {/* Pagination */}
             {pagination.pages > 1 && (
-              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+              <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out px-4 py-3 flex items-center justify-between border-t border-slate-200 dark:border-slate-700 sm:px-6">
                 <div className="flex-1 flex justify-between sm:hidden">
                   <button
                     onClick={() => handleFilterChange('page', Math.max(1, filters.page - 1))}
                     disabled={filters.page === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                    className="relative inline-flex items-center px-4 py-2 border border-slate-300 dark:border-slate-600 text-sm font-medium rounded-md text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 transition-all duration-200 ease-out hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"
                   >
                     Previous
                   </button>
                   <button
                     onClick={() => handleFilterChange('page', Math.min(pagination.pages, filters.page + 1))}
                     disabled={filters.page === pagination.pages}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-slate-300 dark:border-slate-600 text-sm font-medium rounded-md text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 transition-all duration-200 ease-out hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"
                   >
                     Next
                   </button>
                 </div>
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm text-slate-700 dark:text-slate-300">
                       Showing <span className="font-medium">{((filters.page - 1) * filters.limit) + 1}</span> to{' '}
                       <span className="font-medium">
                         {Math.min(filters.page * filters.limit, pagination.total)}
@@ -530,7 +531,7 @@ const ProspectsPage = () => {
                     </p>
                   </div>
                   <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                    <nav className="relative z-0 inline-flex rounded-md shadow-sm dark:shadow-black/25 -space-x-px">
                       {Array.from({ length: pagination.pages }, (_, i) => i + 1).map((page) => (
                         <button
                           key={page}
@@ -538,7 +539,7 @@ const ProspectsPage = () => {
                           className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                             page === filters.page
                               ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                              : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                              : 'bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-600 text-gray-500 dark:text-gray-400 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                           }`}
                         >
                           {page}
@@ -728,15 +729,15 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-sm dark:shadow-black/25">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
               {prospect ? 'Edit Prospect' : 'Add New Prospect'}
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 dark:text-gray-300 hover:text-gray-600"
             >
               ✕
             </button>
@@ -745,10 +746,10 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+              <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-4">Basic Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Name
                   </label>
                   <input
@@ -756,13 +757,13 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                     placeholder="Contact person name"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Email
                   </label>
                   <input
@@ -770,13 +771,13 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                     placeholder="email@example.com"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Phone
                   </label>
                   <input
@@ -784,13 +785,13 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                     placeholder="+1 (555) 123-4567"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Company
                   </label>
                   <input
@@ -798,13 +799,13 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                     name="company"
                     value={formData.company}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                     placeholder="Company name"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Designation
                   </label>
                   <input
@@ -812,13 +813,13 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                     name="designation"
                     value={formData.designation}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                     placeholder="Job title"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Industry
                   </label>
                   <input
@@ -826,7 +827,7 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                     name="industry"
                     value={formData.industry}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                     placeholder="Technology, Healthcare, etc."
                   />
                 </div>
@@ -835,17 +836,17 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
 
             {/* Source & Business Info */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Source & Business Information</h3>
+              <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-4">Source & Business Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Source
                   </label>
                   <select
                     name="source"
                     value={formData.source}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                   >
                     <option value="LinkedIn">LinkedIn</option>
                     <option value="Website">Website</option>
@@ -859,7 +860,7 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Source Details
                   </label>
                   <input
@@ -867,20 +868,20 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                     name="sourceDetails"
                     value={formData.sourceDetails}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                     placeholder="Additional source information"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Company Size
                   </label>
                   <select
                     name="companySize"
                     value={formData.companySize}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                   >
                     <option value="1-10">1-10</option>
                     <option value="11-50">11-50</option>
@@ -893,7 +894,7 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Budget
                   </label>
                   <div className="flex">
@@ -901,7 +902,7 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                       name="budgetCurrency"
                       value={formData.budgetCurrency}
                       onChange={handleChange}
-                      className="px-3 py-2 border border-gray-300 rounded-l-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-l-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                     >
                       <option value="USD">USD</option>
                       <option value="EUR">EUR</option>
@@ -913,7 +914,7 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                       name="budget"
                       value={formData.budget}
                       onChange={handleChange}
-                      className="flex-1 px-3 py-2 border border-l-0 border-gray-300 rounded-r-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-l-0 border-slate-300 dark:border-slate-600 rounded-r-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                       placeholder="0"
                       min="0"
                     />
@@ -924,10 +925,10 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
 
             {/* Interest & Requirements */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Interest & Requirements</h3>
+              <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-4">Interest & Requirements</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Service Interest
                   </label>
                   <input
@@ -935,20 +936,20 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                     name="serviceInterest"
                     value={formData.serviceInterest}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                     placeholder="What services are they interested in?"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Timeline
                   </label>
                   <select
                     name="timeline"
                     value={formData.timeline}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                   >
                     <option value="Immediate">Immediate</option>
                     <option value="Within 1 month">Within 1 month</option>
@@ -960,7 +961,7 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Requirements
                   </label>
                   <textarea
@@ -968,7 +969,7 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                     value={formData.requirements}
                     onChange={handleChange}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                     placeholder="Detailed requirements and needs"
                   />
                 </div>
@@ -977,17 +978,17 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
 
             {/* Status & Assignment */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Status & Assignment</h3>
+              <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-4">Status & Assignment</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Status
                   </label>
                   <select
                     name="status"
                     value={formData.status}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                   >
                     <option value="New">New</option>
                     <option value="Contacted">Contacted</option>
@@ -1000,14 +1001,14 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Priority
                   </label>
                   <select
                     name="priority"
                     value={formData.priority}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                   >
                     <option value="High">High</option>
                     <option value="Medium">Medium</option>
@@ -1016,14 +1017,14 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Assigned To
                   </label>
                   <select
                     name="assignedTo"
                     value={formData.assignedTo}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                   >
                     <option value="">Unassigned</option>
                     {users.map(user => (
@@ -1038,10 +1039,10 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
 
             {/* Follow-up Information */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Follow-up Information</h3>
+              <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-4">Follow-up Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Last Contact Date
                   </label>
                   <input
@@ -1049,12 +1050,12 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                     name="lastContactDate"
                     value={formData.lastContactDate}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Next Follow-up Date
                   </label>
                   <input
@@ -1062,19 +1063,19 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                     name="nextFollowUpDate"
                     value={formData.nextFollowUpDate}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Contact Method
                   </label>
                   <select
                     name="contactMethod"
                     value={formData.contactMethod}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                   >
                     <option value="">Select method</option>
                     <option value="Email">Email</option>
@@ -1090,10 +1091,10 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
 
             {/* Additional Information */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Additional Information</h3>
+              <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-4">Additional Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     LinkedIn Profile
                   </label>
                   <input
@@ -1101,13 +1102,13 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                     name="linkedinProfile"
                     value={formData.linkedinProfile}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                     placeholder="https://linkedin.com/in/username"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Website URL
                   </label>
                   <input
@@ -1115,13 +1116,13 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                     name="websiteUrl"
                     value={formData.websiteUrl}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                     placeholder="https://company.com"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Tags
                   </label>
                   <input
@@ -1129,14 +1130,14 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                     name="tags"
                     value={formData.tags}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                     placeholder="tag1, tag2, tag3"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Separate tags with commas</p>
+                  <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">Separate tags with commas</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Notes
                   </label>
                   <textarea
@@ -1144,7 +1145,7 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
                     value={formData.notes}
                     onChange={handleChange}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 focus:border-transparent"
                     placeholder="Additional notes and observations"
                   />
                 </div>
@@ -1156,14 +1157,14 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                className="px-4 py-2 text-slate-700 dark:text-slate-300 bg-gray-100 dark:bg-slate-600 rounded-lg hover:bg-gray-200"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 shadow-sm dark:shadow-xl hover:shadow-md transition-all duration-200 text-white rounded-lg disabled:opacity-50 flex items-center gap-2"
               >
                 {loading && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>}
                 {prospect ? 'Update Prospect' : 'Create Prospect'}
@@ -1188,11 +1189,11 @@ const ViewProspectModal = ({ isOpen, onClose, prospect, onEdit, onConvert, onDel
       'Follow Up': 'bg-purple-100 text-purple-800',
       'Qualified': 'bg-indigo-100 text-indigo-800',
       'Converted to Lead': 'bg-emerald-100 text-emerald-800',
-      'Lost': 'bg-gray-100 text-gray-800'
+      'Lost': 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'
     };
 
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[status] || 'bg-gray-100 text-gray-800'}`}>
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[status] || 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'}`}>
         {status}
       </span>
     );
@@ -1206,7 +1207,7 @@ const ViewProspectModal = ({ isOpen, onClose, prospect, onEdit, onConvert, onDel
     };
 
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${priorityColors[priority] || 'bg-gray-100 text-gray-800'}`}>
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${priorityColors[priority] || 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'}`}>
         {priority}
       </span>
     );
@@ -1216,15 +1217,15 @@ const ViewProspectModal = ({ isOpen, onClose, prospect, onEdit, onConvert, onDel
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-sm dark:shadow-black/25">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
               View Prospect Details
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 dark:text-gray-300 hover:text-gray-600"
             >
               ✕
             </button>
@@ -1233,162 +1234,162 @@ const ViewProspectModal = ({ isOpen, onClose, prospect, onEdit, onConvert, onDel
           <div className="space-y-6">
             {/* Prospect Details */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Prospect Details</h3>
+              <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-4">Prospect Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Name
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.name || 'No Name'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.name || 'No Name'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Email
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.email || 'No Email'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.email || 'No Email'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Phone
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.phone || 'No Phone'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.phone || 'No Phone'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Company
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.company || 'No Company'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.company || 'No Company'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Designation
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.designation || 'No Designation'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.designation || 'No Designation'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Industry
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.industry || 'No Industry'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.industry || 'No Industry'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Source
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.source || 'No Source'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.source || 'No Source'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Status
                   </label>
-                  <div className="text-sm text-gray-900">
+                  <div className="text-sm text-slate-900 dark:text-slate-100">
                     <StatusBadge status={prospect.status} />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Priority
                   </label>
-                  <div className="text-sm text-gray-900">
+                  <div className="text-sm text-slate-900 dark:text-slate-100">
                     <PriorityBadge priority={prospect.priority} />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Assigned To
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.assignedTo?.fullName || 'Unassigned'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.assignedTo?.fullName || 'Unassigned'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Created
                   </label>
-                  <div className="text-sm text-gray-900">{new Date(prospect.createdAt).toLocaleDateString()}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{new Date(prospect.createdAt).toLocaleDateString()}</div>
                 </div>
               </div>
             </div>
 
             {/* Additional Details */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Additional Details</h3>
+              <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-4">Additional Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Source Details
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.sourceDetails || 'No source details'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.sourceDetails || 'No source details'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Company Size
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.companySize || 'Unknown'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.companySize || 'Unknown'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Budget
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.budget ? `${prospect.budget} ${prospect.budgetCurrency}` : 'No budget'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.budget ? `${prospect.budget} ${prospect.budgetCurrency}` : 'No budget'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Service Interest
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.serviceInterest || 'No service interest'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.serviceInterest || 'No service interest'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Timeline
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.timeline || 'Not specified'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.timeline || 'Not specified'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Requirements
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.requirements || 'No requirements'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.requirements || 'No requirements'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Last Contact Date
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.lastContactDate ? new Date(prospect.lastContactDate).toLocaleDateString() : 'No last contact date'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.lastContactDate ? new Date(prospect.lastContactDate).toLocaleDateString() : 'No last contact date'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Next Follow-up Date
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.nextFollowUpDate ? new Date(prospect.nextFollowUpDate).toLocaleDateString() : 'No next follow-up date'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.nextFollowUpDate ? new Date(prospect.nextFollowUpDate).toLocaleDateString() : 'No next follow-up date'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Contact Method
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.contactMethod || 'No contact method'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.contactMethod || 'No contact method'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     LinkedIn Profile
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.linkedinProfile || 'No LinkedIn profile'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.linkedinProfile || 'No LinkedIn profile'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Website URL
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.websiteUrl || 'No website URL'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.websiteUrl || 'No website URL'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Tags
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.tags?.join(', ') || 'No tags'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.tags?.join(', ') || 'No tags'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Notes
                   </label>
-                  <div className="text-sm text-gray-900">{prospect.notes || 'No notes'}</div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.notes || 'No notes'}</div>
                 </div>
               </div>
             </div>
@@ -1397,14 +1398,14 @@ const ViewProspectModal = ({ isOpen, onClose, prospect, onEdit, onConvert, onDel
             <div className="flex justify-end gap-4 pt-6 border-t">
               <button
                 onClick={onClose}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                className="px-4 py-2 text-slate-700 dark:text-slate-300 bg-gray-100 dark:bg-slate-600 rounded-lg hover:bg-gray-200"
               >
                 Close
               </button>
               
               <button
                 onClick={onEdit}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 shadow-sm dark:shadow-xl hover:shadow-md transition-all duration-200 text-white rounded-lg"
               >
                 Edit
               </button>

@@ -10,6 +10,7 @@ import 'aos/dist/aos.css';
 import { FaEdit, FaTrash, FaFilter, FaPlus } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 
+import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 const LeadsPage = () => {
   const { user } = useAuth();
   const [leads, setLeads] = useState([]);
@@ -296,7 +297,7 @@ const LeadsPage = () => {
 
   return (
     <Layout>
-      <div className="bg-gray-50 min-h-screen pb-12">
+      <div className="bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out min-h-screen pb-12">
         {/* Header with gradient background */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 mb-8">
           <div className="container mx-auto">
@@ -310,7 +311,7 @@ const LeadsPage = () => {
               
               <button
                 onClick={() => setShowAddForm(true)}
-                className="mt-4 md:mt-0 bg-white hover:bg-blue-50 text-blue-600 py-2 px-6 rounded-lg shadow-md transition duration-300 flex items-center font-medium"
+                className="mt-4 md:mt-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out duration-300 flex items-center font-medium shadow-sm"
               >
                 <FaPlus className="h-4 w-4 mr-2" />
                 Add New Lead
@@ -322,7 +323,7 @@ const LeadsPage = () => {
         <div className="container mx-auto px-4">
           {/* Error message */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 text-red-700 border border-red-200 rounded-lg shadow-sm">
+            <div className="mb-6 p-4 bg-red-50 text-red-700 border border-red-200 rounded-lg shadow-sm dark:shadow-black/25">
               <div className="flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -334,9 +335,9 @@ const LeadsPage = () => {
           
           {/* Add/Edit Lead Form */}
           {(showAddForm || selectedLead) && (
-            <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+            <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out rounded-xl shadow-md dark:shadow-black/25 overflow-hidden mb-8">
               <div className="px-6 py-4 bg-blue-50 border-b border-blue-100">
-                <h2 className="text-xl font-bold text-gray-800">
+                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
                   {selectedLead ? "Edit Lead" : "Add New Lead"}
                 </h2>
               </div>
@@ -366,20 +367,20 @@ const LeadsPage = () => {
           {!showAddForm && !selectedLead && (
             <>
               {/* Date Filter Controls */}
-              <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-                <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
-                  <h3 className="text-lg font-bold text-gray-800">Filter Leads by Month</h3>
-                  <FaFilter className="text-gray-500" />
+              <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out rounded-xl shadow-md dark:shadow-black/25 overflow-hidden mb-8">
+                <div className="px-6 py-4 bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out border-b border-gray-100 flex justify-between items-center">
+                  <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Filter Leads by Month</h3>
+                  <FaFilter className="text-slate-500 dark:text-gray-400" />
                 </div>
                 <div className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                      <label htmlFor="month" className="block text-sm font-medium text-gray-700 mb-1">Month</label>
+                      <label htmlFor="month" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Month</label>
                       <select
                         id="month"
                         value={filterMonth}
                         onChange={handleMonthChange}
-                        className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full border border-slate-300 dark:border-slate-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                       >
                         {months.map(month => (
                           <option key={month.value} value={month.value}>
@@ -390,12 +391,12 @@ const LeadsPage = () => {
                     </div>
                     
                     <div>
-                      <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                      <label htmlFor="year" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Year</label>
                       <select
                         id="year"
                         value={filterYear}
                         onChange={handleYearChange}
-                        className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full border border-slate-300 dark:border-slate-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                       >
                         {years.map(year => (
                           <option key={year} value={year}>
@@ -409,7 +410,7 @@ const LeadsPage = () => {
                       <div className="grid grid-cols-1 gap-2 w-full">
                         <button
                           onClick={handleResetToCurrentMonth}
-                          className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                          className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 shadow-sm dark:shadow-xl hover:shadow-md transition-all duration-200 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2"
                         >
                           Show Current Month
                         </button>
@@ -437,26 +438,26 @@ const LeadsPage = () => {
               </div>
               
               {/* Leads Cards */}
-              <div className="bg-white rounded-xl shadow-md overflow-hidden">
-                <div className="px-6 py-4 bg-gray-50 border-b border-gray-100">
-                  <h3 className="text-lg font-bold text-gray-800">Leads Overview ({filteredLeads.length})</h3>
+              <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out rounded-xl shadow-md dark:shadow-black/25 overflow-hidden">
+                <div className="px-6 py-4 bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out border-b border-gray-100">
+                  <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Leads Overview ({filteredLeads.length})</h3>
                 </div>
                 
                 {loading ? (
                   <div className="p-12 flex justify-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                    <p className="ml-4 text-gray-600">Loading leads...</p>
+                    <p className="ml-4 text-gray-600 dark:text-gray-500">Loading leads...</p>
                   </div>
                 ) : filteredLeads.length === 0 ? (
                   <div className="p-12 text-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-gray-300 dark:text-gray-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <h3 className="text-xl font-medium text-gray-700 mb-2">No leads found</h3>
-                    <p className="text-gray-500 mb-6">No leads were found for the selected time period</p>
+                    <h3 className="text-xl font-medium text-slate-700 dark:text-slate-300 mb-2">No leads found</h3>
+                    <p className="text-slate-500 dark:text-gray-400 mb-6">No leads were found for the selected time period</p>
                     <button
                       onClick={() => setShowAddForm(true)}
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm dark:shadow-xl text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
@@ -468,10 +469,10 @@ const LeadsPage = () => {
                   <div className="p-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {filteredLeads.map((lead) => (
-                        <div key={lead._id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow duration-200">
+                        <div key={lead._id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out-shadow shadow-sm">
                           <div className="flex justify-between items-start mb-4">
                             <div className="flex-1">
-                              <h3 className="text-lg font-semibold text-gray-900 mb-1">{lead.name}</h3>
+                              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1">{lead.name}</h3>
                               <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                 lead.feedback === 'Converted' 
                                   ? 'bg-green-100 text-green-800' 
@@ -491,32 +492,32 @@ const LeadsPage = () => {
                             </button>
                           </div>
                           
-                          <div className="space-y-2 text-sm text-gray-600">
+                          <div className="space-y-2 text-sm text-gray-600 dark:text-gray-500">
                             <div className="flex items-center">
-                              <span className="font-medium text-gray-700 w-16">Course:</span>
+                              <span className="font-medium text-slate-700 dark:text-slate-300 w-16">Course:</span>
                               <span>{lead.course}</span>
                             </div>
                             <div className="flex items-center">
-                              <span className="font-medium text-gray-700 w-16">Phone:</span>
+                              <span className="font-medium text-slate-700 dark:text-slate-300 w-16">Phone:</span>
                               <span>{lead.phone || lead.countryCode}</span>
                             </div>
                             {lead.email && (
                               <div className="flex items-center">
-                                <span className="font-medium text-gray-700 w-16">Email:</span>
+                                <span className="font-medium text-slate-700 dark:text-slate-300 w-16">Email:</span>
                                 <span className="truncate">{lead.email}</span>
                               </div>
                             )}
                             <div className="flex items-center">
-                              <span className="font-medium text-gray-700 w-16">Country:</span>
+                              <span className="font-medium text-slate-700 dark:text-slate-300 w-16">Country:</span>
                               <span>{lead.country || lead.countryCode}</span>
                             </div>
                             <div className="flex items-center">
-                              <span className="font-medium text-gray-700 w-16">Date:</span>
+                              <span className="font-medium text-slate-700 dark:text-slate-300 w-16">Date:</span>
                               <span>{formatDate(lead.createdAt)}</span>
                             </div>
                             {lead.assignedTo && (
                               <div className="flex items-center">
-                                <span className="font-medium text-gray-700 w-16">Assigned:</span>
+                                <span className="font-medium text-slate-700 dark:text-slate-300 w-16">Assigned:</span>
                                 <span className="text-blue-600">
                                   {typeof lead.assignedTo === 'object' 
                                     ? lead.assignedTo.fullName || lead.assignedTo.name || 'Unknown User'

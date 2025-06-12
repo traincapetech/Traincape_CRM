@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { getDirectSalesCount } from '../utils/helpers';
 
+import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 const ManagerDashboard = () => {
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState([]);
@@ -229,7 +230,7 @@ const ManagerDashboard = () => {
               resetForm();
               setShowModal(true);
             }}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 shadow-sm dark:shadow-xl hover:shadow-md transition-all duration-200 text-white rounded-md"
           >
             <FaPlus className="mr-2" /> Add New User
           </button>
@@ -237,10 +238,10 @@ const ManagerDashboard = () => {
 
         {/* Dashboard Stats Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-2xl p-4 shadow-sm">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-gray-500 text-sm font-medium">Total Users</h3>
+                <h3 className="text-slate-500 dark:text-gray-400 text-sm font-medium">Total Users</h3>
                 <p className="text-2xl font-bold mt-1">{stats.totalUsers}</p>
               </div>
               <div className="bg-blue-100 p-3 rounded-full">
@@ -249,10 +250,10 @@ const ManagerDashboard = () => {
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-2xl p-4 shadow-sm">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-gray-500 text-sm font-medium">Total Sales</h3>
+                <h3 className="text-slate-500 dark:text-gray-400 text-sm font-medium">Total Sales</h3>
                 <p className="text-2xl font-bold mt-1">{stats.totalSales}</p>
               </div>
               <div className="bg-green-100 p-3 rounded-full">
@@ -264,10 +265,10 @@ const ManagerDashboard = () => {
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-2xl p-4 shadow-sm">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-gray-500 text-sm font-medium">Total Leads</h3>
+                <h3 className="text-slate-500 dark:text-gray-400 text-sm font-medium">Total Leads</h3>
                 <p className="text-2xl font-bold mt-1">{stats.totalLeads}</p>
               </div>
               <div className="bg-yellow-100 p-3 rounded-full">
@@ -276,10 +277,10 @@ const ManagerDashboard = () => {
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-2xl p-4 shadow-sm">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-gray-500 text-sm font-medium">Team Breakdown</h3>
+                <h3 className="text-slate-500 dark:text-gray-400 text-sm font-medium">Team Breakdown</h3>
                 <p className="text-sm mt-1">Sales: {stats.userCounts.salesPerson}</p>
                 <p className="text-sm">Leads: {stats.userCounts.leadPerson}</p>
               </div>
@@ -291,7 +292,7 @@ const ManagerDashboard = () => {
         </div>
 
         {/* User Management Section */}
-        <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out shadow-md dark:shadow-2xl rounded-lg p-6 mb-6 shadow-sm">
           <h2 className="text-xl font-semibold mb-4">User Management</h2>
           
           {!isAdmin && (
@@ -310,38 +311,38 @@ const ManagerDashboard = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                <thead className="bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out divide-y divide-slate-200 dark:divide-slate-700">
                   {users.length === 0 ? (
                     <tr>
-                      <td colSpan="4" className="px-6 py-4 text-center text-gray-500">No users found</td>
+                      <td colSpan="4" className="px-6 py-4 text-center text-slate-500 dark:text-gray-400">No users found</td>
                     </tr>
                   ) : (
                     users.map(user => (
-                      <tr key={user._id} className={`hover:bg-gray-50 ${!isAdmin && user.role === 'Admin' ? 'bg-gray-50' : ''}`}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.fullName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.email}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <tr key={user._id} className={`hover:bg-slate-50 dark:hover:bg-slate-800 ${!isAdmin && user.role === 'Admin' ? 'bg-gray-50 dark:bg-slate-800' : ''}`}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100">{user.fullName}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100">{user.email}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100">
                           <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
                             ${user.role === 'Admin' ? 'bg-purple-100 text-purple-800' : 
                               user.role === 'Manager' ? 'bg-blue-100 text-blue-800' :
                               user.role === 'Lead Person' ? 'bg-green-100 text-green-800' :
-                              'bg-gray-100 text-gray-800'}`}>
+                              'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'}`}>
                             {user.role}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-gray-400">
                           <div className="flex space-x-3">
                             {(!isAdmin && user.role === 'Admin') ? (
-                              <span className="text-gray-400" title="Admin users can only be managed by other Admins">
+                              <span className="text-gray-400 dark:text-gray-400" title="Admin users can only be managed by other Admins">
                                 <FaLock className="h-5 w-5" />
                               </span>
                             ) : (
@@ -377,14 +378,14 @@ const ManagerDashboard = () => {
       {/* User Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg p-6 max-w-md w-full shadow-sm dark:shadow-black/25">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">
                 {editUser ? 'Edit User' : 'Add New User'}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-slate-500 dark:text-slate-300 hover:text-slate-700"
               >
                 <FaTimes className="h-5 w-5" />
               </button>
@@ -392,7 +393,7 @@ const ManagerDashboard = () => {
             
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Full Name
                 </label>
                 <input
@@ -400,13 +401,13 @@ const ManagerDashboard = () => {
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md"
                   required
                 />
               </div>
               
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Email
                 </label>
                 <input
@@ -414,13 +415,13 @@ const ManagerDashboard = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md"
                   required
                 />
               </div>
               
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   {editUser ? 'Password (leave empty to keep current)' : 'Password'}
                 </label>
                 <input
@@ -428,20 +429,20 @@ const ManagerDashboard = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md"
                   required={!editUser}
                 />
               </div>
               
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Role
                 </label>
                 <select
                   name="role"
                   value={formData.role}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md"
                   disabled={!isAdmin && formData.role === 'Admin'}
                 >
                   <option value="Sales Person">Sales Person</option>
@@ -450,7 +451,7 @@ const ManagerDashboard = () => {
                   {isAdmin && <option value="Admin">Admin</option>}
                 </select>
                 {!isAdmin && (
-                  <p className="mt-1 text-sm text-gray-500">Only Admins can create or modify Admin accounts</p>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-gray-400">Only Admins can create or modify Admin accounts</p>
                 )}
               </div>
               
@@ -458,14 +459,14 @@ const ManagerDashboard = () => {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
+                  className="px-4 py-2 bg-gray-300 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-400"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading || (!isAdmin && formData.role === 'Admin')}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 shadow-sm dark:shadow-xl hover:shadow-md transition-all duration-200 text-white rounded-md disabled:bg-blue-300"
                 >
                   {loading ? 'Processing...' : (editUser ? 'Update User' : 'Add User')}
                 </button>

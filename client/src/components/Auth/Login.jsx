@@ -91,13 +91,13 @@ const Login = () => {
 
   return (
     <Layout>
-      <div className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
-        <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
+      <div className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-slate-800">
+        <div className="max-w-md w-full space-y-8 bg-white dark:bg-slate-900 transition-all duration-200 ease-out p-8 rounded-lg shadow-md dark:shadow-black/25">
           <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
               Sign in to your account
             </h2>
-            {/* <p className="mt-2 text-center text-sm text-gray-600">
+            {/* <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-500">
               Or{" "}
               <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-500">
                 create a new account
@@ -120,7 +120,7 @@ const Login = () => {
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div className="rounded-md -space-y-px">
               <div className="mb-4">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                   Email address
                 </label>
                 <input
@@ -129,7 +129,7 @@ const Login = () => {
                   type="email"
                   autoComplete="email"
                   required
-                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500 focus:z-10 sm:text-sm"
                   placeholder="Email address"
                   value={formData.email}
                   onChange={handleChange}
@@ -137,7 +137,7 @@ const Login = () => {
               </div>
               
               <div className="mb-4">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                   Password
                 </label>
                 <div className="relative">
@@ -147,14 +147,14 @@ const Login = () => {
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     required
-                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm pr-10"
+                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500 focus:z-10 sm:text-sm pr-10"
                     placeholder="Password"
                     value={formData.password}
                     onChange={handleChange}
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 hover:text-gray-800"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 dark:text-gray-200 hover:text-gray-800"
                     onClick={togglePasswordVisibility}
                   >
                     {showPassword ? (
@@ -179,15 +179,15 @@ const Login = () => {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400 border-gray-300 dark:border-slate-600 rounded"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900 dark:text-white">
                   Remember me
                 </label>
               </div>
 
               <div className="text-sm">
-                <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
+                <Link to="/forgot-password" className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">
                   Forgot your password?
                 </Link>
               </div>
@@ -199,7 +199,7 @@ const Login = () => {
                 disabled={isLoading}
                 className={`group relative w-full flex justify-center py-2 px-4 border border-transparent rounded-md text-white ${
                   isLoading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition`}
+                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition`}
               >
                 {isLoading ? 'Signing in...' : 'Sign in'}
               </button>

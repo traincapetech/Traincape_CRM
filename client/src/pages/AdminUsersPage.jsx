@@ -186,10 +186,10 @@ const AdminUsersPage = () => {
         )}
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-black/25 p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                 Search Users
               </label>
               <input
@@ -198,18 +198,18 @@ const AdminUsersPage = () => {
                 placeholder="Search by name or email"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500"
               />
             </div>
             <div>
-              <label htmlFor="roleFilter" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="roleFilter" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                 Filter by Role
               </label>
               <select
                 id="roleFilter"
                 value={filterRole}
                 onChange={(e) => setFilterRole(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500"
               >
                 <option value="">All Roles</option>
                 <option value="Sales Person">Sales Person</option>
@@ -224,7 +224,7 @@ const AdminUsersPage = () => {
                   setSearchTerm("");
                   setFilterRole("");
                 }}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition"
+                className="px-4 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-400 rounded-md hover:bg-gray-50 dark:bg-slate-800 transition"
               >
                 Clear Filters
               </button>
@@ -238,49 +238,49 @@ const AdminUsersPage = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-black/25 overflow-hidden">
             {filteredUsers.length === 0 ? (
-              <div className="p-6 text-center text-gray-500">
+              <div className="p-6 text-center text-gray-500 dark:text-gray-500">
                 No users found. Try adjusting your filters.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-gray-50 dark:bg-slate-800">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                         Name
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                         Email
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                         Role
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                         Created
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out divide-y divide-gray-200 dark:divide-slate-700">
                     {filteredUsers.map((userItem) => (
-                      <tr key={userItem._id} className="hover:bg-gray-50">
+                      <tr key={userItem._id} className="hover:bg-gray-50 dark:bg-slate-800">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div className="h-10 w-10 flex-shrink-0 bg-gray-200 rounded-full flex items-center justify-center text-gray-500">
+                            <div className="h-10 w-10 flex-shrink-0 bg-gray-200 dark:bg-slate-600 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-500">
                               {userItem.fullName.charAt(0).toUpperCase()}
                             </div>
                             <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">{userItem.fullName}</div>
-                              <div className="text-sm text-gray-500">ID: {userItem._id}</div>
+                              <div className="text-sm font-medium text-gray-900 dark:text-white">{userItem.fullName}</div>
+                              <div className="text-sm text-gray-500 dark:text-gray-500">ID: {userItem._id}</div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{userItem.email}</div>
+                          <div className="text-sm text-gray-900 dark:text-white">{userItem.email}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -292,7 +292,7 @@ const AdminUsersPage = () => {
                             {userItem.role}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-500">
                           {formatDate(userItem.createdAt)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -313,7 +313,7 @@ const AdminUsersPage = () => {
                             </div>
                           )}
                           {userItem._id === user.id && (
-                            <span className="text-gray-500">Current User</span>
+                            <span className="text-gray-500 dark:text-gray-500">Current User</span>
                           )}
                         </td>
                       </tr>
@@ -329,7 +329,7 @@ const AdminUsersPage = () => {
       {/* Add User Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg max-w-md w-full">
+          <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out rounded-lg shadow-lg dark:shadow-black/25 max-w-md w-full">
             <div className="flex justify-between items-center bg-blue-600 text-white px-6 py-4 rounded-t-lg">
               <h3 className="text-lg font-medium">Add New User</h3>
               <button
@@ -341,7 +341,7 @@ const AdminUsersPage = () => {
             </div>
             <form onSubmit={handleCreateUser} className="px-6 py-4">
               <div className="mb-4">
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                   Full Name
                 </label>
                 <input
@@ -350,12 +350,12 @@ const AdminUsersPage = () => {
                   name="fullName"
                   value={newUser.fullName}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                   Email
                 </label>
                 <input
@@ -364,12 +364,12 @@ const AdminUsersPage = () => {
                   name="email"
                   value={newUser.email}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                   Password
                 </label>
                 <input
@@ -378,14 +378,14 @@ const AdminUsersPage = () => {
                   name="password"
                   value={newUser.password}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500"
                   required
                   minLength={6}
                 />
-                <p className="text-xs text-gray-500 mt-1">Password must be at least 6 characters</p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Password must be at least 6 characters</p>
               </div>
               <div className="mb-4">
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                   Role
                 </label>
                 <select
@@ -393,7 +393,7 @@ const AdminUsersPage = () => {
                   name="role"
                   value={newUser.role}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500"
                   required
                 >
                   <option value="Sales Person">Sales Person</option>
@@ -401,13 +401,13 @@ const AdminUsersPage = () => {
                   <option value="Manager">Manager</option>
                   <option value="Admin">Admin</option>
                 </select>
-                <p className="text-xs text-gray-500 mt-1">Note: Only admins can create admin users. New admin accounts will require approval.</p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Note: Only admins can create admin users. New admin accounts will require approval.</p>
               </div>
               <div className="mt-6 flex justify-end space-x-2">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition"
+                  className="px-4 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-400 rounded-md hover:bg-gray-50 dark:bg-slate-800 transition"
                 >
                   Cancel
                 </button>
@@ -426,7 +426,7 @@ const AdminUsersPage = () => {
       {/* Edit User Modal */}
       {showEditModal && editUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg max-w-md w-full">
+          <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out rounded-lg shadow-lg dark:shadow-black/25 max-w-md w-full">
             <div className="flex justify-between items-center bg-blue-600 text-white px-6 py-4 rounded-t-lg">
               <h3 className="text-lg font-medium">Edit User</h3>
               <button
@@ -438,7 +438,7 @@ const AdminUsersPage = () => {
             </div>
             <form onSubmit={handleUpdateUser} className="px-6 py-4">
               <div className="mb-4">
-                <label htmlFor="editFullName" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="editFullName" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                   Full Name
                 </label>
                 <input
@@ -447,12 +447,12 @@ const AdminUsersPage = () => {
                   name="fullName"
                   value={editUser.fullName}
                   onChange={handleEditInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="editEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="editEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                   Email
                 </label>
                 <input
@@ -461,12 +461,12 @@ const AdminUsersPage = () => {
                   name="email"
                   value={editUser.email}
                   onChange={handleEditInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="editPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="editPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                   Password
                 </label>
                 <input
@@ -475,14 +475,14 @@ const AdminUsersPage = () => {
                   name="password"
                   value={editUser.password}
                   onChange={handleEditInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500"
                   placeholder="Leave blank to keep current password"
                   minLength={editUser.password ? 6 : 0}
                 />
-                <p className="text-xs text-gray-500 mt-1">Leave blank to keep current password. New password must be at least 6 characters.</p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Leave blank to keep current password. New password must be at least 6 characters.</p>
               </div>
               <div className="mb-4">
-                <label htmlFor="editRole" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="editRole" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                   Role
                 </label>
                 <select
@@ -490,7 +490,7 @@ const AdminUsersPage = () => {
                   name="role"
                   value={editUser.role}
                   onChange={handleEditInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500"
                   required
                 >
                   <option value="Sales Person">Sales Person</option>
@@ -503,7 +503,7 @@ const AdminUsersPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition"
+                  className="px-4 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-400 rounded-md hover:bg-gray-50 dark:bg-slate-800 transition"
                 >
                   Cancel
                 </button>
@@ -522,13 +522,13 @@ const AdminUsersPage = () => {
       {/* Delete Confirmation Modal */}
       {confirmDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+          <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out rounded-lg shadow-lg dark:shadow-black/25 max-w-md w-full p-6">
             <h3 className="text-lg font-medium mb-4">Confirm Delete</h3>
             <p className="mb-4">Are you sure you want to delete user <span className="font-semibold">{confirmDelete.fullName}</span>? This action cannot be undone.</p>
             <div className="flex justify-end space-x-2">
               <button
                 onClick={() => setConfirmDelete(null)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition"
+                className="px-4 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-400 rounded-md hover:bg-gray-50 dark:bg-slate-800 transition"
               >
                 Cancel
               </button>

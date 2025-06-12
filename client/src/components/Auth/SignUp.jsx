@@ -67,13 +67,13 @@ const SignUp = () => {
 
   return (
     <Layout>
-      <div className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
-        <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
+      <div className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-slate-800">
+        <div className="max-w-md w-full space-y-8 bg-white dark:bg-slate-900 transition-all duration-200 ease-out p-8 rounded-lg shadow-md dark:shadow-black/25">
           <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
               Create a new account
             </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
+            <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
               Or{" "}
               <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
                 sign in to your existing account
@@ -90,7 +90,7 @@ const SignUp = () => {
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div className="rounded-md -space-y-px">
               <div className="mb-4">
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                   Full Name
                 </label>
                 <input
@@ -99,7 +99,7 @@ const SignUp = () => {
                   type="text"
                   autoComplete="name"
                   required
-                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500 focus:z-10 sm:text-sm"
                   placeholder="Full Name"
                   value={formData.fullName}
                   onChange={handleChange}
@@ -107,7 +107,7 @@ const SignUp = () => {
               </div>
               
               <div className="mb-4">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                   Email address
                 </label>
                 <input
@@ -116,7 +116,7 @@ const SignUp = () => {
                   type="email"
                   autoComplete="email"
                   required
-                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500 focus:z-10 sm:text-sm"
                   placeholder="Email address"
                   value={formData.email}
                   onChange={handleChange}
@@ -124,7 +124,7 @@ const SignUp = () => {
               </div>
               
               <div className="mb-4">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                   Password
                 </label>
                 <input
@@ -133,7 +133,7 @@ const SignUp = () => {
                   type="password"
                   autoComplete="new-password"
                   required
-                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500 focus:z-10 sm:text-sm"
                   placeholder="Password"
                   value={formData.password}
                   onChange={handleChange}
@@ -141,7 +141,7 @@ const SignUp = () => {
               </div>
               
               <div className="mb-4">
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                   Confirm Password
                 </label>
                 <input
@@ -150,7 +150,7 @@ const SignUp = () => {
                   type="password"
                   autoComplete="new-password"
                   required
-                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500 focus:z-10 sm:text-sm"
                   placeholder="Confirm Password"
                   value={formData.confirmPassword}
                   onChange={handleChange}
@@ -158,13 +158,13 @@ const SignUp = () => {
               </div>
               
               <div>
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
                   Role
                 </label>
                 <select
                   id="role"
                   name="role"
-                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500 focus:z-10 sm:text-sm"
                   value={formData.role}
                   onChange={handleChange}
                 >
@@ -174,7 +174,7 @@ const SignUp = () => {
                   <option value="Admin">Admin</option>
                   <option value="Customer">Customer</option>
                 </select>
-                <p className="text-xs text-gray-500 mt-1">For initial setup, you can create an Admin account. This option will be removed in production.</p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">For initial setup, you can create an Admin account. This option will be removed in production.</p>
               </div>
             </div>
 
@@ -184,7 +184,7 @@ const SignUp = () => {
                 disabled={isLoading}
                 className={`group relative w-full flex justify-center py-2 px-4 border border-transparent rounded-md text-white ${
                   isLoading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition`}
+                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition`}
               >
                 {isLoading ? 'Creating Account...' : 'Create Account'}
               </button>

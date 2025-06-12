@@ -46,11 +46,11 @@ const CurrencySelector = ({ darkMode = true }) => {
   const [lastUpdated, setLastUpdated] = useState(null);
   
   // Text colors based on mode
-  const textColor = darkMode ? 'text-white' : 'text-gray-700';
-  const subTextColor = darkMode ? 'text-blue-200' : 'text-gray-500';
+  const textColor = darkMode ? 'text-white' : 'text-gray-700 dark:text-gray-300 dark:text-gray-400';
+  const subTextColor = darkMode ? 'text-blue-200' : 'text-gray-500 dark:text-gray-400';
   const errorTextColor = darkMode ? 'text-yellow-200' : 'text-yellow-600';
-  const bgColor = darkMode ? 'bg-blue-700' : 'bg-white';
-  const borderColor = darkMode ? 'border-blue-600' : 'border-gray-300';
+  const bgColor = darkMode ? 'bg-blue-700' : 'bg-white dark:bg-slate-900';
+  const borderColor = darkMode ? 'border-blue-600' : 'border-gray-300 dark:border-slate-600';
 
   // Fetch latest exchange rates from our backend API
   useEffect(() => {
@@ -257,7 +257,7 @@ const CurrencySelector = ({ darkMode = true }) => {
           id="currency-selector"
           value={currentCurrency}
           onChange={handleCurrencyChange}
-          className={`text-sm border ${borderColor} rounded p-1 focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${bgColor} ${textColor} font-medium`}
+          className={`text-sm border ${borderColor} rounded p-1 focus:outline-none focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 ${bgColor} ${textColor} font-medium`}
           style={{ 
             WebkitAppearance: 'menulist', // For Safari
             MozAppearance: 'menulist',    // For Firefox

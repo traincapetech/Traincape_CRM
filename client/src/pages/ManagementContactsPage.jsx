@@ -2,6 +2,7 @@ import React from "react";
 import Layout from "../components/Layout/Layout";
 import { FaEnvelope, FaPhoneAlt, FaLinkedin, FaUser, FaUserTie, FaCode, FaHeadset } from "react-icons/fa";
 
+import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 const ManagementContactsPage = () => {
   // Management contacts data
   const contacts = [
@@ -63,14 +64,14 @@ const ManagementContactsPage = () => {
           {contacts.map((contact) => (
             <div 
               key={contact.id} 
-              className="bg-white rounded-lg shadow-lg overflow-hidden transform transition-transform hover:-translate-y-1 hover:shadow-xl"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out-transform hover:-translate-y-1 hover:shadow-xl shadow-sm"
             >
-              <div className="bg-gray-100 p-6 flex justify-center">
+              <div className="bg-gray-100 dark:bg-slate-700 p-6 flex justify-center">
                 {contact.image ? (
                   <img 
                     src={contact.image} 
                     alt={contact.name} 
-                    className="h-32 w-32 rounded-full object-cover border-4 border-white shadow-md"
+                    className="h-32 w-32 rounded-full object-cover border-4 border-white shadow-md dark:shadow-black/25"
                   />
                 ) : (
                   <div className="h-32 w-32 rounded-full bg-blue-100 flex items-center justify-center">
@@ -80,7 +81,7 @@ const ManagementContactsPage = () => {
               </div>
               
               <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-800">{contact.name}</h3>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">{contact.name}</h3>
                 <p className="text-blue-600 font-medium mb-4">{contact.position}</p>
                 
                 <div className="space-y-3">
@@ -88,7 +89,7 @@ const ManagementContactsPage = () => {
                     <FaEnvelope className="text-blue-600 mr-3" />
                     <a 
                       href={`mailto:${contact.email}`} 
-                      className="text-gray-700 hover:text-blue-600 transition"
+                      className="text-slate-700 dark:text-slate-300 hover:text-blue-600 transition"
                     >
                       {contact.email}
                     </a>
@@ -97,7 +98,7 @@ const ManagementContactsPage = () => {
                     <FaPhoneAlt className="text-blue-600 mr-3" />
                     <a 
                       href={`tel:${contact.phone}`} 
-                      className="text-gray-700 hover:text-blue-600 transition"
+                      className="text-slate-700 dark:text-slate-300 hover:text-blue-600 transition"
                     >
                       {contact.phone}
                     </a>
@@ -108,7 +109,7 @@ const ManagementContactsPage = () => {
                       href={contact.linkedin} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="text-gray-700 hover:text-blue-600 transition"
+                      className="text-slate-700 dark:text-slate-300 hover:text-blue-600 transition"
                     >
                       LinkedIn Profile
                     </a>
@@ -119,37 +120,36 @@ const ManagementContactsPage = () => {
           ))}
         </div>
 
-        <div className="mt-16 bg-white rounded-lg shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">General Contact Information</h2>
+        <div className="mt-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-lg dark:shadow-lg p-8 shadow-sm">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">General Contact Information</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <h3 className="text-lg font-bold text-gray-700 mb-3">Main Office</h3>
-              <p className="text-gray-600 mb-1">123 Tech Boulevard</p>
-              <p className="text-gray-600 mb-1">Suite 456</p>
-              <p className="text-gray-600 mb-1">San Francisco, CA 94105</p>
-              <p className="text-gray-600">United States</p>
+              <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-3">Main Office</h3>
+              <p className="text-gray-600 dark:text-gray-500 mb-1">Khandolia Plaza, 118C, Dabri - Palam Rd, Vaishali, Vaishali Colony, Dashrath Puri</p>
+              <p className="text-gray-600 dark:text-gray-500 mb-1">New Delhi, Delhi, 110045</p>
+              <p className="text-gray-600 dark:text-gray-500">India</p>
             </div>
             
             <div>
-              <h3 className="text-lg font-bold text-gray-700 mb-3">Contact Details</h3>
-              <p className="text-gray-600 mb-1">
-                <span className="font-medium">General Inquiries:</span> info@traincapetech.com
+              <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-3">Contact Details</h3>
+              <p className="text-gray-600 dark:text-gray-500 mb-1">
+                <span className="font-medium">General Inquiries:</span> sales@traincapetech.in
               </p>
-              <p className="text-gray-600 mb-1">
-                <span className="font-medium">Customer Support:</span> support@traincapetech.com
+              <p className="text-gray-600 dark:text-gray-500 mb-1">
+                <span className="font-medium">Customer Support:</span> sales@traincapetech.in
               </p>
-              <p className="text-gray-600 mb-1">
-                <span className="font-medium">Phone:</span> +1 (123) 456-7800
+              <p className="text-gray-600 dark:text-gray-500 mb-1">
+                <span className="font-medium">Phone:</span> +91 6280281505
               </p>
-              <p className="text-gray-600">
-                <span className="font-medium">Working Hours:</span> Monday-Friday, 9AM-6PM PST
+              <p className="text-gray-600 dark:text-gray-500">
+                <span className="font-medium">Working Hours:</span> Monday-Saturday, 11AM-7PM IST
               </p>
             </div>
           </div>
           
           <div className="mt-8">
-            <h3 className="text-lg font-bold text-gray-700 mb-3">Send Us a Message</h3>
+            <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-3">Send Us a Message</h3>
             <div className="bg-blue-50 border-l-4 border-blue-500 p-4">
               <p className="text-blue-700">
                 For any questions or inquiries, please feel free to reach out to our team through the contact information provided above.

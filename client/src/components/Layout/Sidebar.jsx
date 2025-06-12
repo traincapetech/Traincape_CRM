@@ -9,11 +9,11 @@ const Sidebar = () => {
   const { user, logout } = useAuth();
 
   return (
-    <div className="h-screen bg-gray-800 dark:bg-gray-900 text-white w-64 flex-shrink-0 hidden md:block transition-colors duration-300">
+    <div className="h-screen bg-slate-800 dark:bg-slate-900 text-white w-64 flex-shrink-0 hidden md:block transition-all duration-200 ease-out border-r border-slate-700 dark:border-slate-700">
       <div className="flex flex-col h-full">
         <div className="px-4 py-6">
           <h1 className="text-2xl font-bold">CRM Dashboard</h1>
-          <p className="text-sm text-gray-400 mt-1">Welcome, {user?.name}</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Welcome, {user?.name}</p>
         </div>
         
         <nav className="flex-1 px-2 py-4">
@@ -24,14 +24,14 @@ const Sidebar = () => {
                 className={`${
                   location.pathname === '/'
                     ? 'bg-gray-900 text-white'
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
                 } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
               >
                 <FaHome
                   className={`${
                     location.pathname === '/'
-                      ? 'text-gray-300'
-                      : 'text-gray-400 group-hover:text-gray-300'
+                      ? 'text-gray-300 dark:text-gray-400'
+                      : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
                   } mr-3 flex-shrink-0 h-6 w-6`}
                 />
                 Home
@@ -46,14 +46,14 @@ const Sidebar = () => {
                   className={`${
                     location.pathname === '/manager'
                       ? 'bg-gray-900 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
                   } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
                 >
                   <FaUserCog
                     className={`${
                       location.pathname === '/manager'
-                        ? 'text-gray-300'
-                        : 'text-gray-400 group-hover:text-gray-300'
+                        ? 'text-gray-300 dark:text-gray-400'
+                        : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
                     } mr-3 flex-shrink-0 h-6 w-6`}
                   />
                   Manager Dashboard
@@ -69,14 +69,14 @@ const Sidebar = () => {
                   className={`${
                     location.pathname === '/leads'
                       ? 'bg-gray-900 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
                   } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
                 >
                   <FaClipboardList
                     className={`${
                       location.pathname === '/leads'
-                        ? 'text-gray-300'
-                        : 'text-gray-400 group-hover:text-gray-300'
+                        ? 'text-gray-300 dark:text-gray-400'
+                        : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
                     } mr-3 flex-shrink-0 h-6 w-6`}
                   />
                   Leads
@@ -92,14 +92,14 @@ const Sidebar = () => {
                   className={`${
                     location.pathname === '/sales'
                       ? 'bg-gray-900 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
                   } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
                 >
                   <FaChartBar
                     className={`${
                       location.pathname === '/sales'
-                        ? 'text-gray-300'
-                        : 'text-gray-400 group-hover:text-gray-300'
+                        ? 'text-gray-300 dark:text-gray-400'
+                        : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
                     } mr-3 flex-shrink-0 h-6 w-6`}
                   />
                   Sales
@@ -115,14 +115,14 @@ const Sidebar = () => {
                   className={`${
                     location.pathname === '/create-sale'
                       ? 'bg-gray-900 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
                   } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
                 >
                   <FaChartLine
                     className={`${
                       location.pathname === '/create-sale'
-                        ? 'text-gray-300'
-                        : 'text-gray-400 group-hover:text-gray-300'
+                        ? 'text-gray-300 dark:text-gray-400'
+                        : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
                     } mr-3 flex-shrink-0 h-6 w-6`}
                   />
                   Create Sale for Lead
@@ -138,14 +138,14 @@ const Sidebar = () => {
                   className={`${
                     location.pathname === '/tasks'
                       ? 'bg-gray-900 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
                   } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
                 >
                   <FaCalendarCheck
                     className={`${
                       location.pathname === '/tasks'
-                        ? 'text-gray-300'
-                        : 'text-gray-400 group-hover:text-gray-300'
+                        ? 'text-gray-300 dark:text-gray-400'
+                        : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
                     } mr-3 flex-shrink-0 h-6 w-6`}
                   />
                   Task Management
@@ -161,14 +161,14 @@ const Sidebar = () => {
                   className={`${
                     location.pathname === '/lead-sales-sheet'
                       ? 'bg-gray-900 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
                   } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
                 >
                   <FaChartLine
                     className={`${
                       location.pathname === '/lead-sales-sheet'
-                        ? 'text-gray-300'
-                        : 'text-gray-400 group-hover:text-gray-300'
+                        ? 'text-gray-300 dark:text-gray-400'
+                        : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
                     } mr-3 flex-shrink-0 h-6 w-6`}
                   />
                   My Sales Sheet
@@ -184,14 +184,14 @@ const Sidebar = () => {
                   className={`${
                     location.pathname === '/update-sales'
                       ? 'bg-gray-900 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
                   } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
                 >
                   <FaChartBar
                     className={`${
                       location.pathname === '/update-sales'
-                        ? 'text-gray-300'
-                        : 'text-gray-400 group-hover:text-gray-300'
+                        ? 'text-gray-300 dark:text-gray-400'
+                        : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
                     } mr-3 flex-shrink-0 h-6 w-6`}
                   />
                   Update Sales
@@ -206,14 +206,14 @@ const Sidebar = () => {
                 className={`${
                   location.pathname === '/profile'
                     ? 'bg-gray-900 text-white'
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
                 } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
               >
                 <FaUser
                   className={`${
                     location.pathname === '/profile'
-                      ? 'text-gray-300'
-                      : 'text-gray-400 group-hover:text-gray-300'
+                      ? 'text-gray-300 dark:text-gray-400'
+                      : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
                   } mr-3 flex-shrink-0 h-6 w-6`}
                 />
                 Profile
@@ -224,7 +224,7 @@ const Sidebar = () => {
             {user?.role === 'Admin' && (
               <>
                 <li className="mt-8 mb-2">
-                  <h3 className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <h3 className="px-3 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                     Admin
                   </h3>
                 </li>
@@ -234,14 +234,14 @@ const Sidebar = () => {
                     className={`${
                       location.pathname === '/admin/users'
                         ? 'bg-gray-900 text-white'
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                        : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
                     } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
                   >
                     <FaUsers
                       className={`${
                         location.pathname === '/admin/users'
-                          ? 'text-gray-300'
-                          : 'text-gray-400 group-hover:text-gray-300'
+                          ? 'text-gray-300 dark:text-gray-400'
+                          : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
                       } mr-3 flex-shrink-0 h-6 w-6`}
                     />
                     Users
@@ -253,14 +253,14 @@ const Sidebar = () => {
                     className={`${
                       location.pathname === '/admin/import'
                         ? 'bg-gray-900 text-white'
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                        : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
                     } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
                   >
                     <FaFileImport
                       className={`${
                         location.pathname === '/admin/import'
-                          ? 'text-gray-300'
-                          : 'text-gray-400 group-hover:text-gray-300'
+                          ? 'text-gray-300 dark:text-gray-400'
+                          : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
                       } mr-3 flex-shrink-0 h-6 w-6`}
                     />
                     Import Data
@@ -272,14 +272,14 @@ const Sidebar = () => {
                     className={`${
                       location.pathname === '/admin/activity'
                         ? 'bg-gray-900 text-white'
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                        : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
                     } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
                   >
                     <FaClock
                       className={`${
                         location.pathname === '/admin/activity'
-                          ? 'text-gray-300'
-                          : 'text-gray-400 group-hover:text-gray-300'
+                          ? 'text-gray-300 dark:text-gray-400'
+                          : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
                       } mr-3 flex-shrink-0 h-6 w-6`}
                     />
                     Activity Dashboard
@@ -291,14 +291,14 @@ const Sidebar = () => {
                     className={`${
                       location.pathname === '/admin'
                         ? 'bg-gray-900 text-white'
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                        : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
                     } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
                   >
                     <FaCog
                       className={`${
                         location.pathname === '/admin'
-                          ? 'text-gray-300'
-                          : 'text-gray-400 group-hover:text-gray-300'
+                          ? 'text-gray-300 dark:text-gray-400'
+                          : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
                       } mr-3 flex-shrink-0 h-6 w-6`}
                     />
                     Settings
@@ -311,7 +311,7 @@ const Sidebar = () => {
             {user?.role === 'Manager' && (
               <>
                 <li className="mt-8 mb-2">
-                  <h3 className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <h3 className="px-3 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                     Management
                   </h3>
                 </li>
@@ -321,14 +321,14 @@ const Sidebar = () => {
                     className={`${
                       location.pathname === '/admin/activity'
                         ? 'bg-gray-900 text-white'
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                        : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
                     } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
                   >
                     <FaClock
                       className={`${
                         location.pathname === '/admin/activity'
-                          ? 'text-gray-300'
-                          : 'text-gray-400 group-hover:text-gray-300'
+                          ? 'text-gray-300 dark:text-gray-400'
+                          : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
                       } mr-3 flex-shrink-0 h-6 w-6`}
                     />
                     Activity Dashboard
@@ -347,7 +347,7 @@ const Sidebar = () => {
           
           <button
             onClick={logout}
-            className="w-full flex items-center px-4 py-2 text-sm text-gray-300 rounded-md hover:bg-gray-700"
+            className="w-full flex items-center px-4 py-2 text-sm text-gray-300 dark:text-gray-500 rounded-md hover:bg-gray-700"
           >
             <svg
               className="mr-3 h-4 w-4"

@@ -7,6 +7,7 @@ import * as XLSX from 'xlsx';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 
+import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 const LeadSalesSheet = () => {
   const [sales, setSales] = useState([]);
   const [filteredSales, setFilteredSales] = useState([]);
@@ -363,8 +364,8 @@ const LeadSalesSheet = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Lead Sales Sheet</h1>
-            <p className="text-sm text-gray-600 mt-1">
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Lead Sales Sheet</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-500 mt-1">
               This page shows sales where you are the Lead Person. 
               Sales created by Sales Persons who select you as the Lead Person will appear here.
             </p>
@@ -396,18 +397,18 @@ const LeadSalesSheet = () => {
         </div>
         
         {/* Date Filter Controls */}
-        <div className="mb-6 p-4 bg-white rounded-lg shadow-md">
+        <div className="mb-6 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-2xl shadow-sm">
           <h3 className="text-lg font-semibold mb-3 flex items-center">
             <FaFilter className="mr-2 text-blue-500" /> Filter Sales by Date
           </h3>
           <div className="flex flex-wrap items-center gap-4">
             <div>
-              <label htmlFor="month" className="block text-sm font-medium text-gray-600 mb-1">Month</label>
+              <label htmlFor="month" className="block text-sm font-medium text-gray-600 dark:text-gray-500 mb-1">Month</label>
               <select
                 id="month"
                 value={filterMonth}
                 onChange={handleMonthChange}
-                className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="border border-slate-300 dark:border-slate-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                 disabled={showCurrentMonth}
               >
                 {months.map(month => (
@@ -419,12 +420,12 @@ const LeadSalesSheet = () => {
             </div>
             
             <div>
-              <label htmlFor="year" className="block text-sm font-medium text-gray-600 mb-1">Year</label>
+              <label htmlFor="year" className="block text-sm font-medium text-gray-600 dark:text-gray-500 mb-1">Year</label>
               <select
                 id="year"
                 value={filterYear}
                 onChange={handleYearChange}
-                className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="border border-slate-300 dark:border-slate-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
                 disabled={showCurrentMonth}
               >
                 {years.map(year => (
@@ -446,9 +447,9 @@ const LeadSalesSheet = () => {
                     setShowAllSales(false); // Disable show all when showing current month
                   }
                 }}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 border-slate-300 dark:border-slate-600 rounded"
               />
-              <label htmlFor="currentMonth" className="ml-2 block text-sm text-gray-700">
+              <label htmlFor="currentMonth" className="ml-2 block text-sm text-slate-700 dark:text-slate-300">
                 Show Current Month Only
               </label>
             </div>
@@ -465,22 +466,22 @@ const LeadSalesSheet = () => {
                     setShowCurrentMonth(false);
                   }
                 }}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 focus:ring-offset-2 border-slate-300 dark:border-slate-600 rounded"
               />
-              <label htmlFor="showAllSales" className="ml-2 block text-sm text-gray-700 font-semibold text-blue-600">
+              <label htmlFor="showAllSales" className="ml-2 block text-sm text-slate-700 dark:text-slate-300 font-semibold text-blue-600">
                 Show All Sales (No Date Filter)
               </label>
             </div>
             
             <button
               onClick={handleResetToCurrentMonth}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-md ml-auto transition duration-300 flex items-center"
+              className="bg-gray-200 dark:bg-slate-600 hover:bg-gray-300 text-gray-800 dark:text-gray-200 py-2 px-4 rounded-md ml-auto transition duration-300 flex items-center"
             >
               <FaCalendar className="mr-2" /> Reset to Current Month
             </button>
           </div>
           
-          <div className="mt-3 text-sm text-gray-500">
+          <div className="mt-3 text-sm text-slate-500 dark:text-gray-400">
             {showAllSales ? (
               <p>Showing all sales regardless of date: {sales.length} total records</p>
             ) : showCurrentMonth ? (
@@ -504,9 +505,9 @@ const LeadSalesSheet = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full bg-white border border-gray-200">
+            <table className="min-w-full bg-white dark:bg-slate-900 transition-all duration-200 ease-out border border-slate-200 dark:border-slate-700">
               <thead>
-                <tr className="bg-gray-100">
+                <tr className="bg-gray-100 dark:bg-slate-700">
                   <th className="border px-4 py-2">DATE</th>
                   <th className="border px-4 py-2">NAME</th>
                   <th className="border px-4 py-2">COURSE</th>
@@ -525,8 +526,8 @@ const LeadSalesSheet = () => {
                   <tr>
                     <td colSpan="11" className="border px-4 py-2 text-center">
                       <div className="py-6">
-                        <p className="text-gray-600 mb-2">No sales data found for you as a Lead Person.</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-gray-600 dark:text-gray-500 mb-2">No sales data found for you as a Lead Person.</p>
+                        <p className="text-sm text-slate-500 dark:text-gray-400">
                           When Sales Persons create sales and select you as the Lead Person, they will appear here.
                           <br />
                           Ask Sales Persons to make sure they select your name in the Lead Person dropdown when creating sales.
@@ -536,7 +537,7 @@ const LeadSalesSheet = () => {
                   </tr>
                 ) : (
                   filteredSales.map(sale => (
-                    <tr key={sale._id} className="hover:bg-gray-50">
+                    <tr key={sale._id} className="hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800 transition-all duration-200 ease-out">
                       {editingSaleId === sale._id ? (
                         // Edit mode
                         <>
@@ -712,7 +713,7 @@ const LeadSalesSheet = () => {
                           <td className="border px-4 py-2 flex justify-center">
                             <button
                               onClick={() => handleEdit(sale)}
-                              className="px-2 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                              className="px-2 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 shadow-sm dark:shadow-xl hover:shadow-md transition-all duration-200"
                             >
                               <FaEdit />
                             </button>

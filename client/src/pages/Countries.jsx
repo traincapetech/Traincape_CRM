@@ -80,19 +80,19 @@ const LeadPermissionPage = () => {
 
       <div className="flex gap-4">
         <button
-          className={`px-4 py-2 rounded-xl ${filter === "all" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+          className={`px-4 py-2 rounded-xl ${filter === "all" ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-slate-600"}`}
           onClick={() => setFilter("all")}
         >
           All
         </button>
         <button
-          className={`px-4 py-2 rounded-xl ${filter === "allowed" ? "bg-green-600 text-white" : "bg-gray-200"}`}
+          className={`px-4 py-2 rounded-xl ${filter === "allowed" ? "bg-green-600 text-white" : "bg-gray-200 dark:bg-slate-600"}`}
           onClick={() => setFilter("allowed")}
         >
           Allowed ✅
         </button>
         <button
-          className={`px-4 py-2 rounded-xl ${filter === "blocked" ? "bg-red-600 text-white" : "bg-gray-200"}`}
+          className={`px-4 py-2 rounded-xl ${filter === "blocked" ? "bg-red-600 text-white" : "bg-gray-200 dark:bg-slate-600"}`}
           onClick={() => setFilter("blocked")}
         >
           Blocked ❌
@@ -101,11 +101,11 @@ const LeadPermissionPage = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredCountries.map((country) => (
-          <Card key={country.code} className="rounded-2xl shadow-md">
+          <Card key={country.code} className="rounded-2xl shadow-md dark:shadow-black/25">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-semibold">{country.name}</h2>
-                <p className="text-sm text-gray-500">Code: {country.code}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-500">Code: {country.code}</p>
               </div>
               {country.status === "allowed" ? (
                 <CheckCircle className="text-green-500 w-6 h-6" />

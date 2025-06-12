@@ -4,6 +4,7 @@ import { leadsAPI, authAPI } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 
+import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 const AdminLeadsPage = () => {
   const { user } = useAuth();
   const [leads, setLeads] = useState([]);
@@ -204,7 +205,7 @@ const AdminLeadsPage = () => {
           <h1 className="text-3xl font-bold">Admin Leads Management</h1>
           <Link
             to="/leads"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 shadow-sm dark:shadow-xl hover:shadow-md transition-all duration-200 text-white rounded-md transition"
           >
             Standard Leads View
           </Link>
@@ -217,7 +218,7 @@ const AdminLeadsPage = () => {
         )}
 
         {/* Advanced Filters */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-2xl p-6 mb-6 shadow-sm">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-medium">Advanced Filters</h2>
             <button
@@ -231,7 +232,7 @@ const AdminLeadsPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Search Field */}
             <div>
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="search" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Search
               </label>
               <input
@@ -241,13 +242,13 @@ const AdminLeadsPage = () => {
                 placeholder="Search name, email, phone..."
                 value={filters.search}
                 onChange={handleFilterChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
               />
             </div>
             
             {/* Status Filter */}
             <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="status" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Status
               </label>
               <select
@@ -255,7 +256,7 @@ const AdminLeadsPage = () => {
                 name="status"
                 value={filters.status}
                 onChange={handleFilterChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
               >
                 <option value="">All Statuses</option>
                 {statusOptions.map(status => (
@@ -266,7 +267,7 @@ const AdminLeadsPage = () => {
             
             {/* Country Filter */}
             <div>
-              <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="country" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Country
               </label>
               <select
@@ -274,7 +275,7 @@ const AdminLeadsPage = () => {
                 name="country"
                 value={filters.country}
                 onChange={handleFilterChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
               >
                 <option value="">All Countries</option>
                 {filterOptions.countries.map(country => (
@@ -285,7 +286,7 @@ const AdminLeadsPage = () => {
             
             {/* Course Filter */}
             <div>
-              <label htmlFor="course" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="course" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Course
               </label>
               <select
@@ -293,7 +294,7 @@ const AdminLeadsPage = () => {
                 name="course"
                 value={filters.course}
                 onChange={handleFilterChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
               >
                 <option value="">All Courses</option>
                 {filterOptions.courses.map(course => (
@@ -304,7 +305,7 @@ const AdminLeadsPage = () => {
             
             {/* Source Filter */}
             <div>
-              <label htmlFor="source" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="source" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Source
               </label>
               <select
@@ -312,7 +313,7 @@ const AdminLeadsPage = () => {
                 name="source"
                 value={filters.source}
                 onChange={handleFilterChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
               >
                 <option value="">All Sources</option>
                 {filterOptions.sources.map(source => (
@@ -323,7 +324,7 @@ const AdminLeadsPage = () => {
             
             {/* Date Range - From */}
             <div>
-              <label htmlFor="dateFrom" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="dateFrom" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Date From
               </label>
               <input
@@ -332,13 +333,13 @@ const AdminLeadsPage = () => {
                 name="dateFrom"
                 value={filters.dateFrom}
                 onChange={handleFilterChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
               />
             </div>
             
             {/* Date Range - To */}
             <div>
-              <label htmlFor="dateTo" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="dateTo" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Date To
               </label>
               <input
@@ -347,13 +348,13 @@ const AdminLeadsPage = () => {
                 name="dateTo"
                 value={filters.dateTo}
                 onChange={handleFilterChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
               />
             </div>
             
             {/* Assigned To Filter */}
             <div>
-              <label htmlFor="assignedTo" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="assignedTo" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Assigned To
               </label>
               <select
@@ -361,7 +362,7 @@ const AdminLeadsPage = () => {
                 name="assignedTo"
                 value={filters.assignedTo}
                 onChange={handleFilterChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
               >
                 <option value="">All Sales Persons</option>
                 {filterOptions.salesPersons.map(salesPerson => (
@@ -374,7 +375,7 @@ const AdminLeadsPage = () => {
             
             {/* Lead Person Filter */}
             <div>
-              <label htmlFor="leadPerson" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="leadPerson" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Lead Person
               </label>
               <select
@@ -382,7 +383,7 @@ const AdminLeadsPage = () => {
                 name="leadPerson"
                 value={filters.leadPerson}
                 onChange={handleFilterChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 focus:ring-offset-2 focus:border-blue-500"
               >
                 <option value="">All Lead Persons</option>
                 {filterOptions.leadPersons.map(leadPerson => (
@@ -401,57 +402,57 @@ const AdminLeadsPage = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-2xl overflow-hidden shadow-sm">
+            <div className="p-4 bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
               <h3 className="text-lg font-medium">{filteredLeads.length} Leads Found</h3>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-slate-500 dark:text-gray-400">
                 Showing filtered results from a total of {leads.length} leads
               </div>
             </div>
             
             {filteredLeads.length === 0 ? (
-              <div className="p-6 text-center text-gray-500">
+              <div className="p-6 text-center text-slate-500 dark:text-gray-400">
                 No leads found matching your filters. Try adjusting your criteria.
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                  <thead className="bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                         Name
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                         Contact
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                         Course
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                         Status
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                         Country
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                         Assigned To
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                         Lead By
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                         Date
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out divide-y divide-slate-200 dark:divide-slate-700">
                     {filteredLeads.map((lead) => (
-                      <tr key={lead._id} className="hover:bg-gray-50">
+                      <tr key={lead._id} className="hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800 transition-all duration-200 ease-out">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
                             {lead.name}
                             {lead.isRepeatCustomer && (
                               <span 
@@ -462,16 +463,16 @@ const AdminLeadsPage = () => {
                               </span>
                             )}
                           </div>
-                          <div className="text-sm text-gray-500">{lead.pseudoId}</div>
+                          <div className="text-sm text-slate-500 dark:text-gray-400">{lead.pseudoId}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{lead.email}</div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-slate-900 dark:text-slate-100">{lead.email}</div>
+                          <div className="text-sm text-slate-500 dark:text-gray-400">
                             {lead.countryCode} {lead.phone}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{lead.course}</div>
+                          <div className="text-sm text-slate-900 dark:text-slate-100">{lead.course}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
@@ -480,25 +481,25 @@ const AdminLeadsPage = () => {
                             lead.status === 'Question' ? 'bg-purple-100 text-purple-800' :
                             lead.status === 'Future Promise' ? 'bg-red-100 text-red-800' :
                             lead.status === 'Payment' ? 'bg-green-100 text-green-800' :
-                            lead.status === 'Analysis' ? 'bg-gray-100 text-gray-800' :
-                            'bg-gray-100 text-gray-800'}
+                            lead.status === 'Analysis' ? 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200' :
+                            'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'}
                           `}>
                             {lead.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-gray-400">
                           {lead.country}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-gray-400">
                           {lead.assignedTo ? lead.assignedTo.fullName : 'N/A'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-gray-400">
                           {lead.leadPerson ? lead.leadPerson.fullName : 'N/A'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-gray-400">
                           {formatDate(lead.createdAt)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-gray-400">
                           <Link
                             to={`/leads#${lead._id}`}
                             className="text-blue-600 hover:text-blue-900 mr-3"

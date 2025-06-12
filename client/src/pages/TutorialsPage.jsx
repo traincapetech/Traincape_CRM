@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../components/Layout/Layout";
 import { useAuth } from "../context/AuthContext";
-
+import Dashboard from "../assets/Dashboard.png";
+import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 const TutorialsPage = () => {
   const { user } = useAuth();
   const [activeTutorial, setActiveTutorial] = useState("getting-started");
@@ -22,7 +23,7 @@ const TutorialsPage = () => {
             "Update your profile information",
             "Explore the main navigation menu for your role-specific features"
           ],
-          image: "dashboard.png",
+          image: Dashboard,
           tip: "Your role determines which features you can access. The system has four roles: Admin, Manager, Lead Person, and Sales Person."
         },
         {
@@ -474,22 +475,22 @@ const TutorialsPage = () => {
     const tutorial = tutorials[activeTutorial];
     
     return (
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-2xl p-6 shadow-sm">
         <div className="flex items-center mb-6">
           <span className="text-3xl mr-3">{tutorial.icon}</span>
-          <h2 className="text-2xl font-bold text-gray-800">{tutorial.title}</h2>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{tutorial.title}</h2>
         </div>
         
         <div className="space-y-8">
           {tutorial.content.map((section, index) => (
-            <div key={index} className="border-b border-gray-200 pb-6 last:border-0">
+            <div key={index} className="border-b border-slate-200 dark:border-slate-700 pb-6 last:border-0">
               <h3 className="text-xl font-semibold text-blue-700 mb-3">{section.heading}</h3>
-              <p className="text-gray-700 mb-4">{section.description}</p>
+              <p className="text-slate-700 dark:text-slate-300 mb-4">{section.description}</p>
               
               {section.steps && (
                 <div className="mb-4">
-                  <h4 className="font-medium text-gray-800 mb-2">Steps:</h4>
-                  <ol className="list-decimal list-inside space-y-1 text-gray-700">
+                  <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-2">Steps:</h4>
+                  <ol className="list-decimal list-inside space-y-1 text-slate-700 dark:text-slate-300">
                     {section.steps.map((step, stepIndex) => (
                       <li key={stepIndex} className="ml-2">{step}</li>
                     ))}
@@ -498,11 +499,14 @@ const TutorialsPage = () => {
               )}
               
               {section.image && (
-                <div className="my-4 border border-gray-200 rounded-md p-2 bg-gray-50 text-center">
-                  <div className="bg-gray-200 h-40 flex items-center justify-center text-gray-500">
-                    [Image: {section.image}]
-                  </div>
-                  <p className="text-sm text-gray-500 mt-1">Screenshot reference</p>
+                <div className="my-4 border border-slate-200 dark:border-slate-700 rounded-md p-2 bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out text-center">
+                  <img 
+                    src={section.image} 
+                    alt={section.heading}
+                    className="max-w-full h-auto rounded-md shadow-sm mx-auto"
+                    style={{ maxHeight: '400px' }}
+                  />
+                  <p className="text-sm text-slate-500 dark:text-gray-400 mt-2">Screenshot reference</p>
                 </div>
               )}
               
@@ -527,12 +531,12 @@ const TutorialsPage = () => {
   
   return (
     <Layout>
-      <div className="bg-gray-50 min-h-screen py-8">
+      <div className="bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out min-h-screen py-8">
         <div className="container mx-auto px-4">
           {/* Header */}
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">CRM Tutorials</h1>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">CRM Tutorials</h1>
+            <p className="text-gray-600 dark:text-gray-500 max-w-2xl mx-auto">
               Learn how to use TrainCape CRM effectively with these step-by-step tutorials.
               Select a category below to get started.
             </p>
@@ -542,8 +546,8 @@ const TutorialsPage = () => {
           <div className="flex flex-col md:flex-row gap-6">
             {/* Tutorial Navigation Sidebar */}
             <div className="md:w-1/4">
-              <div className="bg-white rounded-lg shadow-md p-4">
-                <h3 className="font-bold text-lg mb-4 text-gray-800">Tutorial Topics</h3>
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-2xl p-4 shadow-sm">
+                <h3 className="font-bold text-lg mb-4 text-gray-800 dark:text-gray-200">Tutorial Topics</h3>
                 <nav>
                   <ul className="space-y-2">
                     {Object.keys(tutorials).map((key) => (
@@ -553,7 +557,7 @@ const TutorialsPage = () => {
                           className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
                             activeTutorial === key
                               ? "bg-blue-50 text-blue-700 font-medium"
-                              : "text-gray-700 hover:bg-gray-100"
+                              : "text-gray-700 dark:text-gray-300 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-slate-700"
                           }`}
                         >
                           <span className="mr-2">{tutorials[key].icon}</span>
@@ -565,9 +569,9 @@ const TutorialsPage = () => {
                 </nav>
                 
                 {/* Role-specific tutorials notice */}
-                <div className="mt-6 border-t border-gray-200 pt-4">
-                  <h4 className="font-medium text-gray-800 mb-2">Your Role</h4>
-                  <p className="text-sm text-gray-600">
+                <div className="mt-6 border-t border-slate-200 dark:border-slate-700 pt-4">
+                  <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-2">Your Role</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-500">
                     {user ? (
                       <>
                         You are logged in as: <span className="font-medium">{user.role}</span>
@@ -584,12 +588,12 @@ const TutorialsPage = () => {
               </div>
               
               {/* Quick Help */}
-              <div className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white p-5 rounded-lg shadow-md mt-4">
+              <div className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white p-5 rounded-lg shadow-md dark:shadow-black/25 mt-4">
                 <h3 className="font-bold text-lg mb-2">Need Help?</h3>
                 <p className="text-sm mb-3">
                   Can't find what you're looking for? Contact our support team for assistance.
                 </p>
-                <Link to="/support" className="inline-block bg-white text-purple-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition">
+                <Link to="/support" className="inline-block bg-white dark:bg-slate-900 transition-all duration-200 ease-out">
                   Contact Support
                 </Link>
               </div>
@@ -612,7 +616,7 @@ const TutorialsPage = () => {
                   disabled={Object.keys(tutorials).indexOf(activeTutorial) === 0}
                   className={`px-4 py-2 flex items-center rounded-md ${
                     Object.keys(tutorials).indexOf(activeTutorial) === 0
-                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      ? "bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-gray-500 dark:text-gray-400 cursor-not-allowed"
                       : "bg-blue-50 text-blue-700 hover:bg-blue-100"
                   }`}
                 >
@@ -633,7 +637,7 @@ const TutorialsPage = () => {
                   disabled={Object.keys(tutorials).indexOf(activeTutorial) === Object.keys(tutorials).length - 1}
                   className={`px-4 py-2 flex items-center rounded-md ${
                     Object.keys(tutorials).indexOf(activeTutorial) === Object.keys(tutorials).length - 1
-                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      ? "bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-gray-500 dark:text-gray-400 cursor-not-allowed"
                       : "bg-blue-50 text-blue-700 hover:bg-blue-100"
                   }`}
                 >
@@ -648,11 +652,11 @@ const TutorialsPage = () => {
           
           {/* Additional Resources */}
           <div className="mt-12">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Additional Resources</h2>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 text-center">Additional Resources</h2>
             <div className="grid md:grid-cols-3 gap-6">
-              <div className="bg-white p-5 rounded-lg shadow-md border-t-4 border-blue-500">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out p-5 rounded-lg shadow-md dark:shadow-2xl border-t-4 border-blue-500 shadow-sm">
                 <h3 className="font-bold text-lg mb-2">Video Tutorials</h3>
-                <p className="text-gray-600 mb-4">Watch step-by-step demonstrations of key CRM features.</p>
+                <p className="text-gray-600 dark:text-gray-500 mb-4">Watch step-by-step demonstrations of key CRM features.</p>
                 <a href="#" className="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center">
                   Watch now
                   <svg className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -661,9 +665,9 @@ const TutorialsPage = () => {
                 </a>
               </div>
               
-              <div className="bg-white p-5 rounded-lg shadow-md border-t-4 border-green-500">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out p-5 rounded-lg shadow-md dark:shadow-2xl border-t-4 border-green-500 shadow-sm">
                 <h3 className="font-bold text-lg mb-2">FAQ Database</h3>
-                <p className="text-gray-600 mb-4">Find answers to commonly asked questions about the CRM.</p>
+                <p className="text-gray-600 dark:text-gray-500 mb-4">Find answers to commonly asked questions about the CRM.</p>
                 <a href="#" className="text-green-600 hover:text-green-800 font-medium inline-flex items-center">
                   View FAQs
                   <svg className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -672,9 +676,9 @@ const TutorialsPage = () => {
                 </a>
               </div>
               
-              <div className="bg-white p-5 rounded-lg shadow-md border-t-4 border-purple-500">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out p-5 rounded-lg shadow-md dark:shadow-2xl border-t-4 border-purple-500 shadow-sm">
                 <h3 className="font-bold text-lg mb-2">Feature Updates</h3>
-                <p className="text-gray-600 mb-4">Stay informed about the latest CRM features and enhancements.</p>
+                <p className="text-gray-600 dark:text-gray-500 mb-4">Stay informed about the latest CRM features and enhancements.</p>
                 <a href="#" className="text-purple-600 hover:text-purple-800 font-medium inline-flex items-center">
                   Read changelog
                   <svg className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
