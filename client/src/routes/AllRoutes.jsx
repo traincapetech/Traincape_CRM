@@ -31,6 +31,8 @@ import ManagerDashboard from '../pages/ManagerDashboard';
 import TestNotificationsPage from '../pages/TestNotificationsPage';
 import CustomerDashboard from "../pages/CustomerDashboard";
 import ProspectsPage from '../pages/ProspectsPage';
+import EmployeeManagementPage from '../pages/EmployeeManagementPage';
+import DocumentManagementPage from '../pages/DocumentManagementPage';
 
 // Removed Router wrapper so it can be used at a higher level
 const AllRoutes = () => {
@@ -134,7 +136,7 @@ const AllRoutes = () => {
       <Route
         path="/profile"
         element={
-          <ProtectedRoute allowedRoles={["Sales Person", "Lead Person", "Manager", "Admin", "Customer"]}>
+          <ProtectedRoute allowedRoles={["Sales Person", "Lead Person", "Manager", "Admin", "Customer", "HR", "Employee"]}>
             <ProfilePage />
           </ProtectedRoute>
         }
@@ -244,6 +246,26 @@ const AllRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={['Sales Person', 'Manager', 'Admin']}>
             <ProspectsPage />
+          </ProtectedRoute>
+        } 
+      />
+      
+      {/* Employee Management - HR, Manager, Admin only */}
+      <Route 
+        path="/employees" 
+        element={
+          <ProtectedRoute allowedRoles={['HR', 'Manager', 'Admin']}>
+            <EmployeeManagementPage />
+          </ProtectedRoute>
+        } 
+      />
+      
+      {/* Document Management - All authenticated users */}
+      <Route 
+        path="/documents" 
+        element={
+          <ProtectedRoute allowedRoles={['Sales Person', 'Lead Person', 'Manager', 'Admin', 'HR', 'Employee']}>
+            <DocumentManagementPage />
           </ProtectedRoute>
         } 
       />

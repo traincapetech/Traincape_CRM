@@ -10,6 +10,7 @@ import FloatingAIButton from "./components/AI/FloatingAIButton";
 import ChatWindow from "./components/Chat/ChatWindow";
 import ChatDebug from "./components/Chat/ChatDebug";
 import notificationService from "./services/notificationService";
+import DocumentationPage from './pages/DocumentationPage';
 
 // Component to handle notification service initialization
 const NotificationHandler = () => {
@@ -36,6 +37,9 @@ const NotificationHandler = () => {
 };
 
 const App = () => {
+  useEffect(() => {
+    document.title = 'Traincape Technology CRM';
+  }, []);
   return (
     <Router>
       <AuthProvider>

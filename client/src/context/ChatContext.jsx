@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useRef } from 'r
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
+import notificationService from '../services/notificationService';
 
 const ChatContext = createContext();
 
@@ -24,6 +25,13 @@ export const ChatProvider = ({ children }) => {
   const [unreadCounts, setUnreadCounts] = useState({});
   const [typingUsers, setTypingUsers] = useState({});
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [notificationPreferences, setNotificationPreferences] = useState({
+    enableSounds: true,
+    messageSound: 'message',
+    volume: 0.3,
+    enableBrowserNotifications: true,
+    enableToastNotifications: true
+  });
   
   const socketRef = useRef(null);
   const typingTimeoutRef = useRef({});
@@ -103,6 +111,8 @@ export const ChatProvider = ({ children }) => {
 
       // Handle new messages
       newSocket.on('newMessage', (message) => {
+        console.log('📨 New message received:', message);
+        
         setMessages(prev => ({
           ...prev,
           [message.chatId]: [...(prev[message.chatId] || []), message]
@@ -124,75 +134,176 @@ export const ChatProvider = ({ children }) => {
         ));
       });
 
-      // Handle message notifications
+      // Handle message notifications - integrated with notification service
       newSocket.on('messageNotification', (notification) => {
-        if (!isChatOpen) {
-          toast.info(`New message from ${notification.senderName}: ${notification.content.substring(0, 50)}...`);
+        console.log('🔔 Message notification received:', notification);
+        
+        // The notification service will handle this automatically
+        // But we can also add local logic here if needed
+        
+        // Only show local toast if chat window is not open or not focused on sender
+        if (!isChatOpen || (activeChat && activeChat.otherUser._id !== notification.senderId)) {
+          
+          // Check user preferences before showing notifications
+          if (notificationPreferences.enableToastNotifications) {
+            const message = notification.isGuest 
+              ? `👤 ${notification.senderName}: ${notification.content.substring(0, 50)}${notification.content.length > 50 ? '...' : ''}`
+              : `💬 ${notification.senderName}: ${notification.content.substring(0, 50)}${notification.content.length > 50 ? '...' : ''}`;
+
+            toast(message, {
+              icon: notification.isGuest ? '👤' : '💬',
+              duration: 5000,
+              position: 'top-right',
+              style: {
+                background: notification.isGuest ? '#fef3c7' : '#f3f4f6',
+                color: notification.isGuest ? '#92400e' : '#1f2937',
+                border: notification.isGuest ? '1px solid #d97706' : '1px solid #d1d5db'
+              },
+              onClick: () => {
+                // Find and start chat with sender
+                if (notification.senderId) {
+                  const sender = onlineUsers.find(u => u._id === notification.senderId);
+                  if (sender) {
+                    startChat(sender);
+                  }
+                }
+              }
+            });
+          }
         }
       });
 
       // Handle user status updates
       newSocket.on('userStatusUpdate', (statusUpdate) => {
+        console.log('👤 User status update received:', statusUpdate);
+        
         setOnlineUsers(prev => prev.map(user => 
           user._id === statusUpdate.userId 
-            ? { ...user, chatStatus: statusUpdate.status, lastSeen: statusUpdate.lastSeen }
+            ? { ...user, status: statusUpdate.status, lastSeen: statusUpdate.lastSeen }
             : user
-        ));
-
-        setChatRooms(prev => prev.map(room => 
-          room.otherUser._id === statusUpdate.userId
-            ? { ...room, otherUser: { ...room.otherUser, chatStatus: statusUpdate.status, lastSeen: statusUpdate.lastSeen }}
-            : room
         ));
       });
 
       // Handle typing indicators
-      newSocket.on('userTyping', (typingData) => {
-        const { senderId, isTyping } = typingData;
+      newSocket.on('typing', (typingData) => {
+        console.log('✍️ Typing indicator received:', typingData);
         
         setTypingUsers(prev => ({
           ...prev,
-          [senderId]: isTyping
+          [typingData.senderId]: typingData.isTyping
         }));
 
-        // Clear typing indicator after 3 seconds
-        if (isTyping) {
-          if (typingTimeoutRef.current[senderId]) {
-            clearTimeout(typingTimeoutRef.current[senderId]);
-          }
-          
-          typingTimeoutRef.current[senderId] = setTimeout(() => {
+        // Clear typing indicator after timeout
+        if (typingData.isTyping) {
+          setTimeout(() => {
             setTypingUsers(prev => ({
               ...prev,
-              [senderId]: false
+              [typingData.senderId]: false
             }));
           }, 3000);
         }
       });
 
-      // Handle message delivery confirmation
-      newSocket.on('messageDelivered', (confirmation) => {
-        console.log('Message delivered:', confirmation);
+      // Handle message delivery confirmations
+      newSocket.on('messageDelivered', (deliveryData) => {
+        console.log('✅ Message delivered:', deliveryData);
+        
+        // Update message status in local state
+        setMessages(prev => {
+          const updated = { ...prev };
+          Object.keys(updated).forEach(chatId => {
+            updated[chatId] = updated[chatId].map(msg => 
+              msg._id === deliveryData._id 
+                ? { ...msg, delivered: true, isOptimistic: false }
+                : msg
+            );
+          });
+          return updated;
+        });
       });
 
       // Handle message errors
-      newSocket.on('messageError', (error) => {
-        toast.error(`Failed to send message: ${error.error}`);
+      newSocket.on('messageError', (errorData) => {
+        console.error('❌ Message error:', errorData);
+        
+        toast.error(`Failed to send message: ${errorData.error}`);
+        
+        // Remove optimistic message from state
+        setMessages(prev => {
+          const updated = { ...prev };
+          Object.keys(updated).forEach(chatId => {
+            updated[chatId] = updated[chatId].filter(msg => !msg.isOptimistic);
+          });
+          return updated;
+        });
       });
 
       setSocket(newSocket);
       socketRef.current = newSocket;
 
       return () => {
+        console.log('🔌 Cleaning up socket connection');
         newSocket.close();
         setSocket(null);
         socketRef.current = null;
-        setIsConnected(false);
       };
     }
   }, [user, token]);
 
-  // Send message
+  // Clean up typing timeouts on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(typingTimeoutRef.current).forEach(clearTimeout);
+    };
+  }, []);
+
+  // Listen for focus chat window events from notification service
+  useEffect(() => {
+    const handleFocusChatWindow = () => {
+      setIsChatOpen(true);
+    };
+
+    window.addEventListener('focusChatWindow', handleFocusChatWindow);
+    
+    return () => {
+      window.removeEventListener('focusChatWindow', handleFocusChatWindow);
+    };
+  }, []);
+
+  // Load notification preferences from localStorage
+  useEffect(() => {
+    const loadPreferences = () => {
+      try {
+        const saved = localStorage.getItem('chatNotificationPreferences');
+        if (saved) {
+          const preferences = JSON.parse(saved);
+          setNotificationPreferences(prev => ({ ...prev, ...preferences }));
+        }
+      } catch (error) {
+        console.warn('Error loading chat notification preferences:', error);
+      }
+    };
+
+    loadPreferences();
+  }, []);
+
+  // Save notification preferences to localStorage
+  const saveNotificationPreferences = (preferences) => {
+    try {
+      localStorage.setItem('chatNotificationPreferences', JSON.stringify(preferences));
+      setNotificationPreferences(prev => ({ ...prev, ...preferences }));
+      
+      // Update notification service preferences
+      notificationService.updatePreferences(preferences);
+      
+      toast.success('Notification preferences saved');
+    } catch (error) {
+      console.error('Error saving chat notification preferences:', error);
+      toast.error('Failed to save notification preferences');
+    }
+  };
+
+  // Send message with enhanced feedback
   const sendMessage = (recipientId, content, messageType = 'text') => {
     if (socket && user) {
       const messageData = {
@@ -202,6 +313,7 @@ export const ChatProvider = ({ children }) => {
         messageType
       };
 
+      console.log('📤 Sending message:', messageData);
       socket.emit('sendMessage', messageData);
 
       // Optimistically add message to local state
@@ -215,13 +327,19 @@ export const ChatProvider = ({ children }) => {
         messageType,
         timestamp: new Date(),
         isRead: false,
-        isOptimistic: true
+        isOptimistic: true,
+        delivered: false
       };
 
       setMessages(prev => ({
         ...prev,
         [chatId]: [...(prev[chatId] || []), optimisticMessage]
       }));
+
+      // Play success sound for sent messages
+      if (notificationPreferences.enableSounds) {
+        notificationService.playNotificationSound('success');
+      }
     }
   };
 
@@ -330,6 +448,8 @@ export const ChatProvider = ({ children }) => {
 
   // Start chat with user
   const startChat = async (otherUser) => {
+    console.log('🚀 Starting chat with:', otherUser.fullName);
+    
     setActiveChat({
       chatId: [user._id, otherUser._id].sort().join('_'),
       otherUser
@@ -337,12 +457,28 @@ export const ChatProvider = ({ children }) => {
     
     await fetchMessages(otherUser._id);
     setIsChatOpen(true);
+
+    // Clear unread count for this user
+    setUnreadCounts(prev => ({
+      ...prev,
+      [otherUser._id]: 0
+    }));
   };
 
   // Close chat
   const closeChat = () => {
     setActiveChat(null);
     setIsChatOpen(false);
+  };
+
+  // Test notification sound
+  const testNotificationSound = (type = 'message') => {
+    notificationService.testNotificationSound(type);
+  };
+
+  // Get total unread count
+  const getTotalUnreadCount = () => {
+    return Object.values(unreadCounts).reduce((sum, count) => sum + count, 0);
   };
 
   const value = {
@@ -355,6 +491,7 @@ export const ChatProvider = ({ children }) => {
     unreadCounts,
     typingUsers,
     isChatOpen,
+    notificationPreferences,
     sendMessage,
     sendTypingIndicator,
     updateUserStatus,
@@ -363,7 +500,10 @@ export const ChatProvider = ({ children }) => {
     fetchAllUsers,
     startChat,
     closeChat,
-    setIsChatOpen
+    setIsChatOpen,
+    saveNotificationPreferences,
+    testNotificationSound,
+    getTotalUnreadCount
   };
 
   return (

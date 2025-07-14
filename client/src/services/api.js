@@ -60,6 +60,11 @@ export const authAPI = {
       'Content-Type': 'multipart/form-data',
     },
   }),
+  updateProfilePicture: (formData) => api.put('/auth/profile-picture', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
   // Forgot Password Functions
   sendOTP: (email) => api.post('/auth/sendOTPToEmail', { email }),
   verifyOTP: (data) => api.post('/auth/verifyOtp', data),
@@ -69,7 +74,17 @@ export const authAPI = {
     return api.get(url);
   },
   createUser: (userData) => api.post('/auth/users', userData),
+  createUserWithDocuments: (formData) => api.post('/auth/users/with-documents', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
   updateUser: (id, userData) => api.put(`/auth/users/${id}`, userData),
+  updateUserWithDocuments: (id, formData) => api.put(`/auth/users/${id}/with-documents`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
   deleteUser: (id) => api.delete(`/auth/users/${id}`),
 };
 
@@ -254,6 +269,36 @@ export const activityAPI = {
     return api.get(url);
   },
   getStatistics: (days = 7) => api.get(`/activity/statistics?days=${days}`),
+};
+
+// Payroll API
+export const payrollAPI = {
+  getAll: (filters = {}) => {
+    const params = new URLSearchParams();
+    
+    // Add filters to params
+    Object.keys(filters).forEach(key => {
+      if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
+        params.append(key, filters[key]);
+      }
+    });
+    
+    const queryString = params.toString();
+    const url = queryString ? `/payroll?${queryString}` : '/payroll';
+    
+    return api.get(url);
+  },
+  getById: (id) => api.get(`/payroll/${id}`),
+  generate: (payrollData) => api.post('/payroll/generate', payrollData),
+  update: (id, payrollData) => api.put(`/payroll/${id}`, payrollData),
+  delete: (id) => api.delete(`/payroll/${id}`),
+  approve: (id) => api.put(`/payroll/${id}/approve`),
+  generateSalarySlip: (id) => api.get(`/payroll/${id}/salary-slip`, {
+    responseType: 'blob'
+  }),
+  downloadSalarySlip: (id) => api.get(`/payroll/${id}/download`, {
+    responseType: 'blob'
+  }),
 };
 
 export default api;

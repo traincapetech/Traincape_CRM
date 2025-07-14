@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import CurrencySelector from "./CurrencySelector";
 import ThemeToggle from "./ThemeToggle";
 import ActivityTimer from "./ActivityTimer/ActivityTimer";
+import logo from '../assets/traincape-logo.jpg';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -23,7 +24,10 @@ const Navbar = () => {
   return (
     <header className="bg-blue-600 dark:bg-slate-900 text-white py-4 shadow-md dark:shadow-black/25 transition-all duration-200 ease-out border-b border-transparent dark:border-slate-700">
       <nav className="container mx-auto flex justify-between items-center">
-        <a href="/"> <h1 className="text-xl font-bold">My CRM</h1></a>
+        <a href="/" className="flex items-center space-x-3">
+          <img src={logo} alt="Traincape Technology Logo" className="h-10 w-10 rounded" />
+          <span className="text-xl font-bold tracking-wide">Traincape Technology</span>
+        </a>
         <button 
           className="text-white md:hidden" 
           onClick={toggleMenu}

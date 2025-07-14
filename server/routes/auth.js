@@ -1,10 +1,32 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, getMe, getAllUsers, updateUser, deleteUser, updateProfilePicture, createUser } = require('../controllers/auth');
+const { register, login, getMe, getAllUsers, updateUser, deleteUser, updateProfilePicture, createUser, createUserWithDocuments, updateUserWithDocuments } = require('../controllers/auth');
+const path = require('path');
+const fs = require('fs');
 const { protect, authorize } = require('../middleware/auth');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const UserModel = require('../models/User.js');
+const { upload, storageType, getFileUrl, deleteFile } = require('../config/storage');
+
+// Document upload middleware using centralized storage config
+const uploadDocuments = upload.fields([
+  { name: 'photograph', maxCount: 1 },
+  { name: 'tenthMarksheet', maxCount: 1 },
+  { name: 'twelfthMarksheet', maxCount: 1 },
+  { name: 'bachelorDegree', maxCount: 1 },
+  { name: 'postgraduateDegree', maxCount: 1 },
+  { name: 'aadharCard', maxCount: 1 },
+  { name: 'panCard', maxCount: 1 },
+  { name: 'pcc', maxCount: 1 },
+  { name: 'resume', maxCount: 1 },
+  { name: 'offerLetter', maxCount: 1 }
+]);
+
+// Profile picture upload middleware using centralized storage config
+const uploadProfilePicture = upload.fields([
+  { name: 'profilePicture', maxCount: 1 }
+]);
 
 
 // Register all routes
@@ -25,13 +47,139 @@ console.log('GET /api/auth/users registered');
 router.post('/users', protect, authorize('Admin', 'Manager'), createUser);
 console.log('POST /api/auth/users registered');
 
+router.post('/users/with-documents', protect, authorize('Admin', 'Manager'), uploadDocuments, createUserWithDocuments);
+console.log('POST /api/auth/users/with-documents registered');
+
 router.put('/users/:id', protect, authorize('Admin', 'Manager'), updateUser);
 console.log('PUT /api/auth/users/:id registered');
+
+// Handle document uploads optionally for user updates
+router.put('/users/:id/with-documents', protect, authorize('Admin', 'Manager'), (req, res, next) => {
+  // Use uploadDocuments middleware but handle errors gracefully
+  uploadDocuments(req, res, (err) => {
+    if (err) {
+      console.log('File upload error (continuing without files):', err.message);
+      // Continue without files if upload fails
+      req.files = {};
+    }
+    next();
+  });
+}, updateUserWithDocuments);
+console.log('PUT /api/auth/users/:id/with-documents registered');
+
+// Serve documents with proper authentication and storage-agnostic support
+router.get('/documents/:filename', protect, async (req, res) => {
+  try {
+    const { filename } = req.params;
+    
+    if (storageType === 's3') {
+      // For S3 storage, generate signed URL for secure access
+      const AWS = require('aws-sdk');
+      const s3 = new AWS.S3({
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        region: process.env.AWS_REGION
+      });
+      
+      const params = {
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: `documents/${filename}`,
+        Expires: 3600 // 1 hour expiry
+      };
+      
+      try {
+        const signedUrl = s3.getSignedUrl('getObject', params);
+        return res.redirect(signedUrl);
+      } catch (s3Error) {
+        console.error('S3 signed URL error:', s3Error);
+        return res.status(404).json({
+          success: false,
+          message: 'Document not found'
+        });
+      }
+    } else {
+      // For local storage, serve files directly
+      const { currentConfig } = require('../config/storage');
+      const filePath = path.join(currentConfig.destination, filename);
+      
+      // Check if file exists
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({
+          success: false,
+          message: 'Document not found'
+        });
+      }
+      
+      // Get file stats
+      const stats = fs.statSync(filePath);
+      
+      // Set appropriate headers based on file extension
+      const ext = path.extname(filename).toLowerCase();
+      let contentType = 'application/octet-stream';
+      
+      switch (ext) {
+        case '.pdf':
+          contentType = 'application/pdf';
+          break;
+        case '.jpg':
+        case '.jpeg':
+          contentType = 'image/jpeg';
+          break;
+        case '.png':
+          contentType = 'image/png';
+          break;
+        case '.gif':
+          contentType = 'image/gif';
+          break;
+        case '.doc':
+          contentType = 'application/msword';
+          break;
+        case '.docx':
+          contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+          break;
+        default:
+          contentType = 'application/octet-stream';
+      }
+      
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Length', stats.size);
+      res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+      res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+      res.setHeader('Expires', '-1');
+      res.setHeader('Pragma', 'no-cache');
+      
+      // Stream the file
+      const fileStream = fs.createReadStream(filePath);
+      
+      fileStream.on('error', (error) => {
+        console.error('File stream error:', error);
+        if (!res.headersSent) {
+          res.status(500).json({
+            success: false,
+            message: 'Error reading file'
+          });
+        }
+      });
+      
+      fileStream.pipe(res);
+    }
+    
+  } catch (error) {
+    console.error('Error serving document:', error);
+    if (!res.headersSent) {
+      res.status(500).json({
+        success: false,
+        message: 'Error serving document'
+      });
+    }
+  }
+});
+console.log('GET /api/auth/documents/:filename registered');
 
 router.delete('/users/:id', protect, authorize('Admin', 'Manager'), deleteUser);
 console.log('DELETE /api/auth/users/:id registered');
 
-router.put('/profile-picture', protect, updateProfilePicture);
+router.put('/profile-picture', protect, uploadProfilePicture, updateProfilePicture);
 console.log('PUT /api/auth/profile-picture registered');
 
 router.post("/sendOTPToEmail", async (req, res) => {

@@ -152,12 +152,16 @@ const SalesTrackingPage = () => {
   
   // Apply filters when sales or filters change
   useEffect(() => {
+    console.log(`Sales data changed: ${sales.length} sales available`);
+    console.log('Current filter states:', { showAllSales, showCurrentMonth, filterMonth, filterYear });
+    
     if (sales.length > 0) {
       applyAllFilters();
       extractFilterOptions();
     } else {
       // If no sales, clear filtered sales
       setFilteredSales([]);
+      console.log('No sales data available, clearing filtered sales');
     }
   }, [sales, filters, filterMonth, filterYear, showCurrentMonth, showAllSales]);
   
@@ -181,8 +185,9 @@ const SalesTrackingPage = () => {
     let filtered = [...sales];
     
     // Apply date filters first
-    if ((user?.role === 'Manager' || user?.role === 'Admin') && showAllSales) {
-      // Show all sales regardless of date for admins/managers when showAllSales is true
+    if (showAllSales) {
+      // Show all sales regardless of date when showAllSales is true
+      console.log('Showing all sales - no date filtering applied');
     } else if (showCurrentMonth) {
       // Show current month data
       const currentMonth = new Date().getMonth() + 1; // 1-12
@@ -195,6 +200,7 @@ const SalesTrackingPage = () => {
         const saleYear = saleDate.getFullYear();
         return saleMonth === currentMonth && saleYear === currentYear;
       });
+      console.log(`Filtered to current month (${currentMonth}/${currentYear}): ${filtered.length} sales`);
     } else {
       // Show selected month/year data
       filtered = filtered.filter(sale => {
@@ -204,6 +210,7 @@ const SalesTrackingPage = () => {
         const saleYear = saleDate.getFullYear();
         return saleMonth === filterMonth && saleYear === filterYear;
       });
+      console.log(`Filtered to selected month (${filterMonth}/${filterYear}): ${filtered.length} sales`);
     }
     
     // Apply advanced filters
@@ -300,6 +307,7 @@ const SalesTrackingPage = () => {
       );
     }
     
+    console.log(`Final filtered sales count: ${filtered.length} out of ${sales.length} total sales`);
     setFilteredSales(filtered);
   };
   
@@ -367,101 +375,195 @@ const SalesTrackingPage = () => {
   const fetchSales = async () => {
     try {
       setLoading(true);
+      setError(null);
       
-      // For debugging purposes - log token
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError("Authentication token not found. Please log in again.");
-        return;
-      }
+      console.log('Fetching sales data...');
       
-      // Use direct axios for more reliable data fetching
+      // Use the salesAPI service first
       try {
-        const isDevelopment = import.meta.env.DEV && import.meta.env.MODE !== 'production';
-        const apiUrl = isDevelopment ? 'http://localhost:8080' : 'https://crm-backend-o36v.onrender.com/api';
-        const response = await axios.get(`${apiUrl}${isDevelopment ? '/api' : ''}/sales?full=true&nocache=${new Date().getTime()}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        const response = await salesAPI.getAllForced();
         
-        if (response.data && response.data.success) {
-          // Initialize sales with additional fields we want to track
-          const processedSales = response.data.data.map(sale => {
-            // Create a properly formatted sale object with consistent fields
-            const formattedSale = {
-              ...sale,
-              _id: sale._id,
-              // Convert ObjectId to string if needed 
-              salesPerson: typeof sale.salesPerson === 'object' ? 
-                           (sale.salesPerson._id || sale.salesPerson) : 
-                           sale.salesPerson,
-              // Ensure all financial fields exist
-              amount: parseFloat(sale.totalCost || 0),
-              token: parseFloat(sale.tokenAmount || 0),
-              pending: sale.status === 'Completed' ? 0 : parseFloat(sale.totalCost || 0) - parseFloat(sale.tokenAmount || 0),
-              // Ensure we have product info
-              product: sale.course || sale.product || 'Unknown',
-              // Ensure we have a status
-              status: sale.status || 'Pending',
-              // Ensure login credentials are preserved
-              loginId: sale.loginId || '',
-              password: sale.password || '',
-              leadBy: sale.leadBy || '',
-              // Ensure currency is preserved
-              currency: sale.currency || 'USD',
-              // Ensure date is properly captured
-              date: sale.date || sale.createdAt
-            };
+                  console.log('Sales API response:', response);
+          
+                          if (response.data && response.data.success && response.data.data) {
+          try {
+            // Add extra safety checks for data structure
+            if (!Array.isArray(response.data.data)) {
+              console.error('Sales data is not an array:', response.data.data);
+              setError("Invalid data format received from server");
+              return;
+            }
             
-            return formattedSale;
+            // Filter out null/undefined values and items without _id before processing
+            const validSales = response.data.data.filter(sale => {
+              try {
+                // More robust filtering
+                return sale && 
+                       typeof sale === 'object' && 
+                       sale._id !== null && 
+                       sale._id !== undefined && 
+                       sale._id !== '';
+              } catch (filterError) {
+                console.error('Error filtering sale:', filterError, sale);
+                return false;
+              }
+            });
+            
+            console.log(`Original array length: ${response.data.data.length}, Valid sales: ${validSales.length}`);
+            
+            if (response.data.data.length !== validSales.length) {
+              console.log(`Filtered out ${response.data.data.length - validSales.length} null/invalid sales from ${response.data.data.length} total`);
+            }
+          
+          const processedSales = validSales.map(sale => {
+            try {
+              // Final safety check in case somehow a null value got through
+              if (!sale || !sale._id) {
+                console.error('Null sale in processing:', sale);
+                return null;
+              }
+              
+              const formattedSale = {
+                ...sale,
+                _id: sale._id,
+                // Convert ObjectId to string if needed 
+                salesPerson: typeof sale.salesPerson === 'object' ? 
+                             (sale.salesPerson._id || sale.salesPerson) : 
+                             sale.salesPerson,
+                // Ensure all financial fields exist
+                amount: parseFloat(sale.totalCost || sale.amount || 0),
+                token: parseFloat(sale.tokenAmount || sale.token || 0),
+                pending: sale.status === 'Completed' ? 0 : parseFloat(sale.totalCost || sale.amount || 0) - parseFloat(sale.tokenAmount || sale.token || 0),
+                // Ensure we have product info
+                product: sale.course || sale.product || 'Unknown',
+                // Ensure we have a status
+                status: sale.status || 'Pending',
+                // Ensure login credentials are preserved
+                loginId: sale.loginId || '',
+                password: sale.password || '',
+                leadBy: sale.leadBy || '',
+                // Ensure currency is preserved
+                currency: sale.currency || sale.totalCostCurrency || 'USD',
+                // Ensure date is properly captured
+                date: sale.date || sale.createdAt
+              };
+              
+              return formattedSale;
+            } catch (processError) {
+              console.error('Error processing sale:', processError, sale);
+              return null;
+            }
           });
           
-          // Set sales data
-          setSales(processedSales);
-        } else {
-          setError("Failed to load sales data: " + (response.data?.message || "Unknown error"));
-        }
-      } catch (axiosError) {
-        // Fall back to using the API service
-        try {
-          const fallbackResponse = await salesAPI.getAllForced();
+          // Filter out any null values that might have been returned by the map function
+          const finalSales = processedSales.filter(sale => sale !== null);
           
-          if (fallbackResponse.data && fallbackResponse.data.success) {
-            // Process sales data
-            const processedSales = fallbackResponse.data.data.map(sale => ({
+          console.log(`Successfully loaded ${finalSales.length} sales (${processedSales.length} processed)`);
+          setSales(finalSales);
+          
+          if (finalSales.length === 0) {
+            console.log('No sales found in the database');
+          }
+          } catch (dataProcessingError) {
+            console.error('Error processing sales data:', dataProcessingError);
+            setError("Error processing sales data. Please try again.");
+          }
+        } else {
+          console.error('Invalid response format:', response.data);
+          setError("Failed to load sales data: Invalid response format");
+        }
+      } catch (apiError) {
+        console.error('Sales API error:', apiError);
+        
+        // Fall back to direct axios call
+        try {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            setError("Authentication token not found. Please log in again.");
+            return;
+          }
+          
+          const isDevelopment = import.meta.env.DEV && import.meta.env.MODE !== 'production';
+          const apiUrl = isDevelopment ? 'http://localhost:8080/api' : 'https://crm-backend-o36v.onrender.com/api';
+          
+          console.log('Trying direct axios call to:', `${apiUrl}/sales?full=true`);
+          
+          const axiosResponse = await axios.get(`${apiUrl}/sales?full=true&nocache=${new Date().getTime()}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+                      console.log('Axios response:', axiosResponse);
+            
+                      if (axiosResponse.data && axiosResponse.data.success && axiosResponse.data.data) {
+            // Add extra safety checks for data structure
+            if (!Array.isArray(axiosResponse.data.data)) {
+              console.error('Axios sales data is not an array:', axiosResponse.data.data);
+              setError("Invalid data format received from server");
+              return;
+            }
+            
+            // Filter out null/undefined values and items without _id before processing
+            const validSales = axiosResponse.data.data.filter(sale => {
+              // More robust filtering
+              return sale && 
+                     typeof sale === 'object' && 
+                     sale._id !== null && 
+                     sale._id !== undefined && 
+                     sale._id !== '';
+            });
+            
+            console.log(`Axios original array length: ${axiosResponse.data.data.length}, Valid sales: ${validSales.length}`);
+            
+            if (axiosResponse.data.data.length !== validSales.length) {
+              console.log(`Filtered out ${axiosResponse.data.data.length - validSales.length} null/invalid sales from ${axiosResponse.data.data.length} total`);
+            }
+          
+                    const processedSales = validSales.map(sale => {
+            // Final safety check in case somehow a null value got through
+            if (!sale || !sale._id) {
+              console.error('Null sale in axios processing:', sale);
+              return null;
+            }
+            
+            return {
               ...sale,
               _id: sale._id,
               salesPerson: typeof sale.salesPerson === 'object' ? 
                            (sale.salesPerson._id || sale.salesPerson) : 
                            sale.salesPerson,
-              amount: parseFloat(sale.totalCost || 0),
-              token: parseFloat(sale.tokenAmount || 0),
-              pending: sale.status === 'Completed' ? 0 : parseFloat(sale.totalCost || 0) - parseFloat(sale.tokenAmount || 0),
+              amount: parseFloat(sale.totalCost || sale.amount || 0),
+              token: parseFloat(sale.tokenAmount || sale.token || 0),
+              pending: sale.status === 'Completed' ? 0 : parseFloat(sale.totalCost || sale.amount || 0) - parseFloat(sale.tokenAmount || sale.token || 0),
               product: sale.course || sale.product || 'Unknown',
               status: sale.status || 'Pending',
               loginId: sale.loginId || '',
               password: sale.password || '',
               leadBy: sale.leadBy || '',
-              currency: sale.currency || 'USD',
+              currency: sale.currency || sale.totalCostCurrency || 'USD',
               date: sale.date || sale.createdAt
-            }));
+            };
+          });
             
-            setSales(processedSales);
+            // Filter out any null values that might have been returned by the map function
+            const finalSales = processedSales.filter(sale => sale !== null);
+            
+            console.log(`Successfully loaded ${finalSales.length} sales via axios (${processedSales.length} processed)`);
+            setSales(finalSales);
           } else {
-            setError("Failed to load sales data. Please try again.");
+            console.error('Axios response invalid:', axiosResponse.data);
+            setError("Failed to load sales data: " + (axiosResponse.data?.message || "No data received"));
           }
-        } catch (fallbackError) {
-          setError("Failed to load sales data. Please try again.");
+        } catch (axiosError) {
+          console.error('Axios fallback failed:', axiosError);
+          setError("Failed to load sales data: " + (axiosError.response?.data?.message || axiosError.message || "Network error"));
         }
       }
     } catch (err) {
-      if (err.response) {
-        setError("Failed to load sales data. Please try again.");
-      } else {
-        setError("Failed to load sales data. Please try again.");
-      }
+      console.error('Unexpected error in fetchSales:', err);
+      setError("Unexpected error loading sales data. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -976,6 +1078,18 @@ const SalesTrackingPage = () => {
               }
               return sale;
             }));
+            
+            // Handle email notifications
+            if (response.data.emailNotifications && response.data.emailNotifications.length > 0) {
+              response.data.emailNotifications.forEach(notification => {
+                if (notification.success) {
+                  toast.success(`✅ ${notification.message}`);
+                } else {
+                  toast.warning(`⚠️ ${notification.message}`);
+                }
+              });
+            }
+            
             toast.success("Sale updated successfully");
             setEditingSale(null);
             
@@ -1077,6 +1191,18 @@ const SalesTrackingPage = () => {
           }
           return sale;
         }));
+        
+        // Handle email notifications
+        if (response.data.emailNotifications && response.data.emailNotifications.length > 0) {
+          response.data.emailNotifications.forEach(notification => {
+            if (notification.success) {
+              toast.success(`✅ ${notification.message}`);
+            } else {
+              toast.warning(`⚠️ ${notification.message}`);
+            }
+          });
+        }
+        
         toast.success("Sale updated successfully");
         setEditingSale(null);
         
@@ -1387,9 +1513,38 @@ const SalesTrackingPage = () => {
       const timestamp = new Date().getTime();
       const response = await salesAPI.getAll();
       
-      if (response.data && response.data.success) {
+                    if (response.data && response.data.success) {
         // Initialize sales with additional fields we want to track
-        const processedSales = response.data.data.map(sale => {
+        // Add extra safety checks for data structure
+        if (!Array.isArray(response.data.data)) {
+          console.error('RefreshData: Sales data is not an array:', response.data.data);
+          toast.error("Invalid data format received from server");
+          return;
+        }
+        
+        // Filter out null/undefined values and items without _id before processing
+        const validSales = response.data.data.filter(sale => {
+          // More robust filtering
+          return sale && 
+                 typeof sale === 'object' && 
+                 sale._id !== null && 
+                 sale._id !== undefined && 
+                 sale._id !== '';
+        });
+        
+        console.log(`RefreshData: Original array length: ${response.data.data.length}, Valid sales: ${validSales.length}`);
+        
+        if (response.data.data.length !== validSales.length) {
+          console.log(`RefreshData: Filtered out ${response.data.data.length - validSales.length} null/invalid sales from ${response.data.data.length} total`);
+        }
+       
+        const processedSales = validSales.map(sale => {
+          // Final safety check in case somehow a null value got through
+          if (!sale || !sale._id) {
+            console.error('Null sale in refreshData processing:', sale);
+            return null;
+          }
+          
           // Create a properly formatted sale object with consistent fields
           const formattedSale = {
             ...sale,
@@ -1419,8 +1574,11 @@ const SalesTrackingPage = () => {
           return formattedSale;
         });
         
+        // Filter out any null values that might have been returned by the map function
+        const finalSales = processedSales.filter(sale => sale !== null);
+        
         // Update the sales state
-        setSales(processedSales);
+        setSales(finalSales);
       } else {
         toast.error("Failed to refresh sales data. Please try again.");
       }
@@ -1463,6 +1621,29 @@ const SalesTrackingPage = () => {
            safeGet(sale, 'leadId.name') || 
            safeGet(sale, 'leadId.NAME') || 
            'Unknown Customer';
+  };
+
+  // Add a formatter for sales person name that handles different field formats
+  const formatSalesPersonName = (sale) => {
+    if (!sale) return 'N/A';
+    
+    // If salesPerson is an object with fullName or name
+    if (typeof sale.salesPerson === 'object' && sale.salesPerson) {
+      return sale.salesPerson.fullName || sale.salesPerson.name || sale.salesPerson.email || 'Unknown Sales Person';
+    }
+    
+    // If salesPerson is just an ID, try to find the name in filterOptions
+    if (typeof sale.salesPerson === 'string' && filterOptions.salesPersons) {
+      const salesPersonData = filterOptions.salesPersons.find(sp => sp._id === sale.salesPerson);
+      return salesPersonData ? (salesPersonData.fullName || salesPersonData.name || salesPersonData.email) : 'Unknown Sales Person';
+    }
+    
+    // If we have a direct salesPersonName field
+    if (sale.salesPersonName) {
+      return sale.salesPersonName;
+    }
+    
+    return 'N/A';
   };
 
   // Render a small tooltip with permission info, shown on hover
@@ -1659,6 +1840,17 @@ const SalesTrackingPage = () => {
         {!editingSale === sale._id && (sale.leadPerson && typeof sale.leadPerson === 'object' && sale.leadPerson.fullName) && (
           <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
             Lead Person: {sale.leadPerson.fullName}
+          </div>
+        )}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="text-sm text-gray-900 dark:text-white">
+          {formatSalesPersonName(sale)}
+        </div>
+        {/* Show sales person role if available */}
+        {(sale.salesPerson && typeof sale.salesPerson === 'object' && sale.salesPerson.role) && (
+          <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+            Role: {sale.salesPerson.role}
           </div>
         )}
       </td>
@@ -1867,18 +2059,38 @@ const SalesTrackingPage = () => {
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold">Sales Tracking</h2>
-          <button
-            onClick={handleAddSaleClick}
-            className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition duration-300"
-          >
-            Add New Sale
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={fetchSales}
+              className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-300"
+              disabled={loading}
+            >
+              {loading ? 'Loading...' : 'Refresh'}
+            </button>
+            <button
+              onClick={handleAddSaleClick}
+              className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition duration-300"
+            >
+              Add New Sale
+            </button>
+          </div>
         </div>
         
         {/* Error message */}
         {error && (
           <div className="mb-4 p-3 bg-red-50 text-red-700 border border-red-200 rounded-md">
             {error}
+          </div>
+        )}
+        
+        {/* Debug information */}
+        {!loading && (
+          <div className="mb-4 p-3 bg-blue-50 text-blue-700 border border-blue-200 rounded-md text-sm">
+            <strong>Debug Info:</strong> Total Sales: {sales.length} | 
+            Filtered Sales: {filteredSales.length} | 
+            Show All: {showAllSales ? 'Yes' : 'No'} | 
+            Show Current Month: {showCurrentMonth ? 'Yes' : 'No'} | 
+            Filter Month/Year: {filterMonth}/{filterYear}
           </div>
         )}
         
@@ -2299,6 +2511,7 @@ const SalesTrackingPage = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Lead</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Contact/Login</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Product</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Sales Person</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Amount</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Token</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Pending</th>
@@ -2311,7 +2524,7 @@ const SalesTrackingPage = () => {
                     filteredSales.map(sale => renderSaleRow(sale))
                   ) : (
                     <tr>
-                      <td colSpan="9" className="px-6 py-4 text-center text-gray-500 dark:text-gray-500">
+                      <td colSpan="10" className="px-6 py-4 text-center text-gray-500 dark:text-gray-500">
                         {Object.values(filters).some(filter => filter !== "") ? 
                           "No sales found matching your filters. Try adjusting your criteria or reset filters." :
                           "No sales found for the selected period. Try another date range or add a new sale."

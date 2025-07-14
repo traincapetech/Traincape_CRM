@@ -52,9 +52,19 @@ const AdminDashboardPage = () => {
     try {
       setLoading(true);
       
-      // Fetch leads data
-      const leadsResponse = await leadsAPI.getAll();
-      const leads = leadsResponse.data.success ? leadsResponse.data.data : [];
+      // Fetch leads data based on user role
+      let leads = [];
+      if (user?.role === 'Sales Person') {
+        // For Sales Persons, fetch only their assigned leads
+        const leadsResponse = await leadsAPI.getAssigned();
+        leads = leadsResponse.data.success ? leadsResponse.data.data : [];
+        console.log(`Sales Person assigned leads:`, leads.length);
+      } else {
+        // For other roles, fetch all leads
+        const leadsResponse = await leadsAPI.getAll();
+        leads = leadsResponse.data.success ? leadsResponse.data.data : [];
+        console.log(`All leads fetched:`, leads.length);
+      }
       
       // Initialize variables
       let salesCount = 0;
@@ -77,6 +87,12 @@ const AdminDashboardPage = () => {
         console.error("Error fetching sales data:", salesError);
       }
       
+      // Debug logging for sales data structure
+      if (sales.length > 0) {
+        console.log("Sales Data Sample:", sales[0]);
+        console.log("Sales Data Fields:", Object.keys(sales[0]));
+      }
+      
       // Fetch users data
       const usersResponse = await authAPI.getUsers();
       const users = usersResponse.data.success ? usersResponse.data.data : [];
@@ -85,15 +101,35 @@ const AdminDashboardPage = () => {
       const totalRevenue = sales.reduce((sum, sale) => 
         sum + parseFloat(sale.amount || sale.totalCost || 0), 0);
       
-      // Get recent leads (last 5)
+      // Get recent leads (last 5) - sorted by creation date DESCENDING for most recent first
       const recentLeads = [...leads]
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 5);
       
-      // Get recent sales (last 5)
+      // Debug logging for leads dates - More detailed debugging
+      if (recentLeads.length > 0) {
+        console.log("Recent leads date analysis:");
+        recentLeads.forEach((lead, index) => {
+          const createdDate = new Date(lead.createdAt);
+          console.log(`Lead ${index + 1}: ${lead.name}`);
+          console.log(`  - Raw createdAt: ${lead.createdAt}`);
+          console.log(`  - Parsed Date: ${createdDate}`);
+          console.log(`  - Formatted: ${createdDate.toLocaleDateString()}`);
+          console.log(`  - Is valid date: ${!isNaN(createdDate.getTime())}`);
+          console.log(`  - Lead Person: ${lead.leadPerson?.fullName || lead.leadPerson?.name || 'N/A'}`);
+          console.log('---');
+        });
+      }
+      
+      // Get recent sales (last 5) - sorted by creation date DESCENDING for most recent first
       const recentSales = [...sales]
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 5);
+      
+      // Debug logging for sales data
+      if (recentSales.length > 0) {
+        console.log("Recent sales sample:", recentSales[0]);
+      }
       
       // Count users by role
       const userCounts = {
@@ -142,8 +178,13 @@ const AdminDashboardPage = () => {
     try {
       let leads = allLeads;
       if (!leads) {
-        const leadsResponse = await leadsAPI.getAll();
-        leads = leadsResponse.data.success ? leadsResponse.data.data : [];
+        if (user?.role === 'Sales Person') {
+          const leadsResponse = await leadsAPI.getAssigned();
+          leads = leadsResponse.data.success ? leadsResponse.data.data : [];
+        } else {
+          const leadsResponse = await leadsAPI.getAll();
+          leads = leadsResponse.data.success ? leadsResponse.data.data : [];
+        }
       }
       
       const filteredLeads = leads.filter(lead => lead.status === stage);
@@ -171,7 +212,8 @@ const AdminDashboardPage = () => {
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">
-            {user?.role === 'Lead Person' ? 'Lead Person Dashboard' : 'Admin Dashboard'}
+            {user?.role === 'Lead Person' ? 'Lead Person Dashboard' : 
+             user?.role === 'Sales Person' ? 'Sales Person Dashboard' : 'Admin Dashboard'}
           </h1>
           <div className="text-sm text-gray-600 dark:text-gray-500">Last updated: {new Date().toLocaleString()}</div>
         </div>
@@ -459,7 +501,9 @@ const AdminDashboardPage = () => {
               {/* Recent Leads */}
               <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out border border-slate-200 dark:border-slate-700 rounded-lg shadow shadow-sm dark:shadow-black/25">
                 <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
-                  <h2 className="text-lg font-medium">Recent Leads</h2>
+                  <h2 className="text-lg font-medium">
+                    {user?.role === 'Sales Person' ? 'My Assigned Leads' : 'Recent Leads'}
+                  </h2>
                 </div>
                 <div className="p-6">
                   {stats.recentLeads.length === 0 ? (
@@ -472,6 +516,9 @@ const AdminDashboardPage = () => {
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Name</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Course</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Date</th>
+                            {user?.role === 'Sales Person' && (
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Lead Person</th>
+                            )}
                           </tr>
                         </thead>
                         <tbody>
@@ -480,6 +527,11 @@ const AdminDashboardPage = () => {
                               <td className="px-4 py-3 whitespace-nowrap">{lead.name}</td>
                               <td className="px-4 py-3 whitespace-nowrap">{lead.course}</td>
                               <td className="px-4 py-3 whitespace-nowrap">{formatDate(lead.createdAt)}</td>
+                              {user?.role === 'Sales Person' && (
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-500">
+                                  {lead.leadPerson?.fullName || lead.leadPerson?.name || 'N/A'}
+                                </td>
+                              )}
                             </tr>
                           ))}
                         </tbody>
@@ -488,7 +540,7 @@ const AdminDashboardPage = () => {
                   )}
                   <div className="mt-4 text-right">
                     <Link to="/leads" className="text-sm text-blue-600 hover:underline">
-                      View all leads
+                      {user?.role === 'Sales Person' ? 'View all my leads' : 'View all leads'}
                     </Link>
                   </div>
                 </div>
@@ -515,9 +567,15 @@ const AdminDashboardPage = () => {
                         <tbody>
                           {stats.recentSales.map((sale) => (
                             <tr key={sale._id} className="hover:bg-slate-50 dark:hover:bg-slate-800">
-                              <td className="px-4 py-3 whitespace-nowrap">{sale.leadId?.name || 'N/A'}</td>
-                              <td className="px-4 py-3 whitespace-nowrap">{sale.product}</td>
-                              <td className="px-4 py-3 whitespace-nowrap">{formatCurrency(sale.amount)}</td>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                {sale.leadId?.name || sale.leadId?.NAME || sale.customerName || sale.leadName || 'N/A'}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                {sale.product || sale.course || sale.productName || 'N/A'}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                {formatCurrency(sale.amount || sale.totalCost || sale.price || 0)}
+                              </td>
                             </tr>
                           ))}
                         </tbody>

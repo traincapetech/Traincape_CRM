@@ -1,5 +1,6 @@
 const Sale = require('../models/Sale');
 const User = require('../models/User');
+const { sendPaymentConfirmationEmail, sendServiceDeliveryEmail } = require('../services/emailService');
 
 // @desc    Get all sales
 // @route   GET /api/sales
@@ -84,6 +85,24 @@ exports.getSales = async (req, res) => {
     // Executing query
     const sales = await query;
 
+    // Ensure currency fields are consistent for paginated sales
+    const processedSales = sales.map(sale => {
+      const saleObj = sale.toObject();
+      
+      // Ensure currency fields are properly set
+      if (!saleObj.totalCostCurrency) {
+        saleObj.totalCostCurrency = saleObj.currency || 'USD';
+      }
+      if (!saleObj.tokenAmountCurrency) {
+        saleObj.tokenAmountCurrency = saleObj.currency || 'USD';
+      }
+      if (!saleObj.currency) {
+        saleObj.currency = saleObj.totalCostCurrency || 'USD';
+      }
+      
+      return saleObj;
+    });
+
     // Pagination result
     const pagination = {};
 
@@ -130,18 +149,36 @@ exports.getSales = async (req, res) => {
         .populate('salesPerson leadPerson', 'fullName email')
         .sort('-date');
       
+      // Ensure currency fields are consistent for all sales
+      const processedSales = allSales.map(sale => {
+        const saleObj = sale.toObject();
+        
+        // Ensure currency fields are properly set
+        if (!saleObj.totalCostCurrency) {
+          saleObj.totalCostCurrency = saleObj.currency || 'USD';
+        }
+        if (!saleObj.tokenAmountCurrency) {
+          saleObj.tokenAmountCurrency = saleObj.currency || 'USD';
+        }
+        if (!saleObj.currency) {
+          saleObj.currency = saleObj.totalCostCurrency || 'USD';
+        }
+        
+        return saleObj;
+      });
+      
       return res.status(200).json({
         success: true,
-        count: allSales.length,
-        data: allSales
+        count: processedSales.length,
+        data: processedSales
       });
     }
 
     res.status(200).json({
       success: true,
-      count: sales.length,
+      count: processedSales.length,
       pagination,
-      data: sales
+      data: processedSales
     });
   } catch (err) {
     res.status(500).json({
@@ -166,18 +203,28 @@ exports.getSale = async (req, res) => {
     }
 
     // Check if user can access this sale
-    if (req.user.role === 'Sales Person' && sale.salesPerson.toString() !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to access this sale'
-      });
+    if (req.user.role === 'Sales Person') {
+      const salesPersonId = sale.salesPerson?._id?.toString() || sale.salesPerson?.toString();
+      const userId = req.user._id?.toString() || req.user.id?.toString();
+      
+      if (salesPersonId !== userId) {
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to access this sale'
+        });
+      }
     }
 
-    if (req.user.role === 'Lead Person' && sale.leadPerson.toString() !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to access this sale'
-      });
+    if (req.user.role === 'Lead Person') {
+      const leadPersonId = sale.leadPerson?._id?.toString() || sale.leadPerson?.toString();
+      const userId = req.user._id?.toString() || req.user.id?.toString();
+      
+      if (leadPersonId !== userId) {
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to access this sale'
+        });
+      }
     }
 
     res.status(200).json({
@@ -244,7 +291,7 @@ exports.createSale = async (req, res) => {
 // @access  Private
 exports.updateSale = async (req, res) => {
   try {
-    let sale = await Sale.findById(req.params.id);
+    let sale = await Sale.findById(req.params.id).populate('salesPerson leadPerson', 'fullName email');
 
     if (!sale) {
       return res.status(404).json({
@@ -253,10 +300,18 @@ exports.updateSale = async (req, res) => {
       });
     }
 
+    // Store original values for comparison
+    const originalStatus = sale.status;
+    const originalTokenAmount = sale.tokenAmount;
+    const originalTotalCost = sale.totalCost;
+
     // Check permissions
     if (req.user.role === 'Sales Person') {
       // Sales person can only update their own sales
-      if (sale.salesPerson.toString() !== req.user.id) {
+      const salesPersonId = sale.salesPerson?._id?.toString() || sale.salesPerson?.toString();
+      const userId = req.user._id?.toString() || req.user.id?.toString();
+      
+      if (salesPersonId !== userId) {
         return res.status(403).json({
           success: false,
           message: 'Not authorized to update this sale'
@@ -264,7 +319,10 @@ exports.updateSale = async (req, res) => {
       }
     } else if (req.user.role === 'Lead Person') {
       // Lead person can only update sales where they are the lead person
-      if (sale.leadPerson.toString() !== req.user.id) {
+      const leadPersonId = sale.leadPerson?._id?.toString() || sale.leadPerson?.toString();
+      const userId = req.user._id?.toString() || req.user.id?.toString();
+      
+      if (leadPersonId !== userId) {
         return res.status(403).json({
           success: false,
           message: 'Not authorized to update this sale'
@@ -281,9 +339,65 @@ exports.updateSale = async (req, res) => {
       runValidators: true
     }).populate('salesPerson leadPerson', 'fullName email');
 
+    // Email logic - send emails when certain conditions are met
+    let emailResults = [];
+
+    // 1. Send payment confirmation email when token amount is updated (and customer has email)
+    if (req.body.tokenAmount && req.body.tokenAmount !== originalTokenAmount && req.body.tokenAmount > 0) {
+      if (sale.email) {
+        try {
+          const paymentResult = await sendPaymentConfirmationEmail(sale, sale.salesPerson?.email);
+          emailResults.push({
+            type: 'payment_confirmation',
+            success: paymentResult.success,
+            message: paymentResult.success ? 'Payment confirmation email sent' : paymentResult.message
+          });
+        } catch (emailError) {
+          emailResults.push({
+            type: 'payment_confirmation',
+            success: false,
+            message: 'Failed to send payment confirmation email'
+          });
+        }
+      } else {
+        emailResults.push({
+          type: 'payment_confirmation',
+          success: false,
+          message: 'Email unavailable - cannot send payment confirmation'
+        });
+      }
+    }
+
+    // 2. Send service delivery email when status changes to "Completed"
+    if (req.body.status === 'Completed' && originalStatus !== 'Completed') {
+      if (sale.email) {
+        try {
+          const deliveryResult = await sendServiceDeliveryEmail(sale, sale.salesPerson?.email);
+          emailResults.push({
+            type: 'service_delivery',
+            success: deliveryResult.success,
+            message: deliveryResult.success ? 'Service delivery email sent' : deliveryResult.message
+          });
+        } catch (emailError) {
+          emailResults.push({
+            type: 'service_delivery',
+            success: false,
+            message: 'Failed to send service delivery email'
+          });
+        }
+      } else {
+        emailResults.push({
+          type: 'service_delivery',
+          success: false,
+          message: 'Email unavailable - cannot send service delivery confirmation'
+        });
+      }
+    }
+
     res.status(200).json({
       success: true,
-      data: sale
+      data: sale,
+      emailNotifications: emailResults.length > 0 ? emailResults : undefined
     });
   } catch (err) {
     if (err.name === 'ValidationError') {
@@ -317,12 +431,15 @@ exports.deleteSale = async (req, res) => {
 
     // Check permissions - only sales person who created it, manager, or admin can delete
     if (req.user.role === 'Sales Person') {
-      if (sale.salesPerson.toString() !== req.user.id) {
-      return res.status(403).json({
-        success: false,
+      const salesPersonId = sale.salesPerson?._id?.toString() || sale.salesPerson?.toString();
+      const userId = req.user._id?.toString() || req.user.id?.toString();
+      
+      if (salesPersonId !== userId) {
+        return res.status(403).json({
+          success: false,
           message: 'Not authorized to delete this sale'
-      });
-    }
+        });
+      }
     } else if (req.user.role === 'Lead Person') {
       // Lead persons cannot delete sales
       return res.status(403).json({

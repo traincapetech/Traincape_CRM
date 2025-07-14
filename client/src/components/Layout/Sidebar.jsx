@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { FaHome, FaUser, FaUsers, FaChartLine, FaClipboardList, FaChartBar, FaCog, FaFileImport, FaCalendarCheck, FaUserCog, FaClock } from 'react-icons/fa';
+import { FaHome, FaUser, FaUsers, FaChartLine, FaClipboardList, FaChartBar, FaCog, FaFileImport, FaCalendarCheck, FaUserCog, FaClock, FaUserTie, FaFileAlt } from 'react-icons/fa';
 import ThemeToggle from '../ThemeToggle';
 
 const Sidebar = () => {
@@ -199,6 +199,52 @@ const Sidebar = () => {
               </li>
             )}
             
+            {/* Employee Management - Only visible to HR, Manager, and Admin */}
+            {(user?.role === 'HR' || user?.role === 'Manager' || user?.role === 'Admin') && (
+              <li>
+                <Link
+                  to="/employees"
+                  className={`${
+                    location.pathname === '/employees'
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
+                  } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
+                >
+                  <FaUserTie
+                    className={`${
+                      location.pathname === '/employees'
+                        ? 'text-gray-300 dark:text-gray-400'
+                        : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
+                    } mr-3 flex-shrink-0 h-6 w-6`}
+                  />
+                  Employee Management
+                </Link>
+              </li>
+            )}
+
+            {/* Document Management - Visible to Employees only (Admin/Manager can use Employee Management) */}
+            {user && user.role === 'Employee' && (
+              <li>
+                <Link
+                  to="/documents"
+                  className={`${
+                    location.pathname === '/documents'
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
+                  } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
+                >
+                  <FaFileAlt
+                    className={`${
+                      location.pathname === '/documents'
+                        ? 'text-gray-300 dark:text-gray-400'
+                        : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
+                    } mr-3 flex-shrink-0 h-6 w-6`}
+                  />
+                  My Documents
+                </Link>
+              </li>
+            )}
+
             {/* Profile - Visible to all */}
             <li>
               <Link

@@ -35,6 +35,12 @@ const testExamRoutes = require('./routes/testExamNotifications');
 const chatRoutes = require('./routes/chat');
 const prospectRoutes = require('./routes/prospects');
 const activityRoutes = require('./routes/activity');
+const employeeRoutes = require('./routes/employees');
+const leaveRoutes = require('./routes/leaves');
+const attendanceRoutes = require('./routes/attendance');
+const payrollRoutes = require('./routes/payroll');
+const incentivesRoutes = require('./routes/incentives');
+const documentationRoutes = require('./routes/documentation');
 const app = express();
 const server = http.createServer(app);
 
@@ -268,6 +274,9 @@ app.use(ensureCorsHeaders);
 // Add a specific route for CORS preflight that always succeeds
 app.options('/api/*', handleOptions);
 
+// Serve static files from uploads directory
+app.use('/uploads', express.static('uploads'));
+
 // Mount routers
 app.use('/api/auth', authRoutes);
 app.use('/api/leads', leadRoutes);
@@ -281,6 +290,12 @@ app.use('/api/test-exam', testExamRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/prospects', prospectRoutes);
 app.use('/api/activity', activityRoutes);
+app.use('/api/employees', employeeRoutes);
+app.use('/api/leaves', leaveRoutes);
+app.use('/api/attendance', attendanceRoutes);
+app.use('/api/payroll', payrollRoutes);
+app.use('/api/incentives', incentivesRoutes);
+app.use('/api/documentation', documentationRoutes);
 
 // Basic route for testing
 app.get('/', (req, res) => {
