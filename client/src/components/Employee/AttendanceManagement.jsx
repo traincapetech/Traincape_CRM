@@ -4,8 +4,8 @@ import employeeAPI from '../../services/employeeAPI';
 
 // Office location coordinates (update these with your actual office coordinates)
 const OFFICE_LOCATION = {
-  latitude: 28.3627 ,   // UPDATE: Replace with your actual office latitude
-  longitude: 77.454,  // UPDATE: Replace with your actual office longitude
+  latitude: 28.607407 ,   // UPDATE: Replace with your actual office latitude
+  longitude: 77.081754,  // UPDATE: Replace with your actual office longitude
   allowedRadius: 20    // 20 meters radius (you can adjust this)
 };
 
@@ -554,7 +554,7 @@ const AttendanceManagement = ({ employeeId, userRole }) => {
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
               className="border border-gray-300 dark:border-gray-600 rounded px-3 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
-              {[2023, 2024, 2025].map(year => (
+              {[2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030].map(year => (
                 <option key={year} value={year}>{year}</option>
               ))}
             </select>
