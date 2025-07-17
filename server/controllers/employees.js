@@ -5,15 +5,12 @@ const User = require('../models/User');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { UPLOAD_PATHS } = require('../config/storage');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const uploadPath = 'uploads/employees/';
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-    cb(null, uploadPath);
+    cb(null, UPLOAD_PATHS.EMPLOYEES);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -352,16 +349,26 @@ exports.deleteEmployee = async (req, res) => {
   }
 };
 
-// @desc    Get departments
+// @desc    Get all departments
 // @route   GET /api/employees/departments
 // @access  Private
 exports.getDepartments = async (req, res) => {
   try {
-    const departments = await Department.find({ isActive: true }).sort('name');
+    // Find all active departments
+    const departments = await Department.find({ isActive: true });
+    
+    // If no departments exist, create a default one
+    if (departments.length === 0) {
+      const defaultDepartment = await Department.create({
+        name: 'General',
+        description: 'General Department',
+        isActive: true
+      });
+      departments.push(defaultDepartment);
+    }
 
     res.status(200).json({
       success: true,
-      count: departments.length,
       data: departments
     });
   } catch (err) {
@@ -400,16 +407,43 @@ exports.createDepartment = async (req, res) => {
   }
 };
 
-// @desc    Get roles
+// @desc    Get all roles
 // @route   GET /api/employees/roles
 // @access  Private
 exports.getRoles = async (req, res) => {
   try {
-    const roles = await Role.find({ isActive: true }).sort('name');
+    // Find all active roles
+    const roles = await Role.find({ isActive: true });
+    
+    // If no roles exist, create default ones
+    if (roles.length === 0) {
+      const defaultRoles = await Role.insertMany([
+        {
+          name: 'Sales Person',
+          description: 'Sales Person Role',
+          isActive: true
+        },
+        {
+          name: 'Lead Person',
+          description: 'Lead Person Role',
+          isActive: true
+        },
+        {
+          name: 'Manager',
+          description: 'Manager Role',
+          isActive: true
+        },
+        {
+          name: 'Employee',
+          description: 'General Employee Role',
+          isActive: true
+        }
+      ]);
+      roles.push(...defaultRoles);
+    }
 
     res.status(200).json({
       success: true,
-      count: roles.length,
       data: roles
     });
   } catch (err) {
@@ -461,3 +495,86 @@ exports.uploadEmployeeFiles = upload.fields([
   { name: 'resume', maxCount: 1 },
   { name: 'offerLetter', maxCount: 1 }
 ]); 
+
+// @desc    Get employee document
+// @route   GET /api/employees/documents/:filename
+// @access  Private
+exports.getDocument = async (req, res) => {
+  try {
+    const { filename } = req.params;
+    
+    // Validate filename
+    if (!filename) {
+      return res.status(400).json({
+        success: false,
+        message: 'Filename is required'
+      });
+    }
+
+    // Construct possible file paths (check both direct path and nested path)
+    const possiblePaths = [
+      path.join(UPLOAD_PATHS.EMPLOYEES, filename),
+      path.join(UPLOAD_PATHS.DOCUMENTS, filename),
+      path.join(UPLOAD_PATHS.DOCUMENTS, 'employees', filename)
+    ];
+
+    // Find the first path that exists
+    let filePath = null;
+    for (const path of possiblePaths) {
+      if (fs.existsSync(path)) {
+        filePath = path;
+        break;
+      }
+    }
+
+    // If no file found in any location
+    if (!filePath) {
+      console.error('Document not found in paths:', possiblePaths);
+      return res.status(404).json({
+        success: false,
+        message: 'Document not found'
+      });
+    }
+
+    // Get file stats
+    const stats = fs.statSync(filePath);
+    if (!stats.isFile()) {
+      return res.status(404).json({
+        success: false,
+        message: 'Document not found'
+      });
+    }
+
+    // Set appropriate headers
+    const ext = path.extname(filename).toLowerCase();
+    const contentType = ext === '.pdf' ? 'application/pdf' : 
+                       ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' :
+                       ext === '.png' ? 'image/png' :
+                       'application/octet-stream';
+
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Length', stats.size);
+    res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+
+    // Stream the file
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+
+    // Handle stream errors
+    fileStream.on('error', (err) => {
+      console.error('Error streaming file:', err);
+      if (!res.headersSent) {
+        res.status(500).json({
+          success: false,
+          message: 'Error streaming document'
+        });
+      }
+    });
+  } catch (err) {
+    console.error('Error serving document:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Server Error'
+    });
+  }
+}; 

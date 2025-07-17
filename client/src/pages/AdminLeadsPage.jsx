@@ -420,6 +420,9 @@ const AdminLeadsPage = () => {
                   <thead className="bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out">
                     <tr>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
+                        #
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                         Name
                       </th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
@@ -449,8 +452,11 @@ const AdminLeadsPage = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out divide-y divide-slate-200 dark:divide-slate-700">
-                    {filteredLeads.map((lead) => (
+                    {filteredLeads.map((lead, index) => (
                       <tr key={lead._id} className="hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800 transition-all duration-200 ease-out">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-gray-400">
+                          {index + 1}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
                             {lead.name}

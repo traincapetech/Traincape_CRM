@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { leadsAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { authAPI } from '../../services/api';
+import LoggingService from '../../services/loggingService'; // Add LoggingService import
 
 const LeadForm = ({ lead = null, onSuccess }) => {
   const navigate = useNavigate();
@@ -226,11 +227,25 @@ const LeadForm = ({ lead = null, onSuccess }) => {
         console.log('Calling API to update existing lead:', lead._id);
         response = await leadsAPI.update(lead._id, dataToSubmit);
         console.log('Update API response received:', response);
+        
+        // Log the lead update
+        try {
+          await LoggingService.logLeadUpdate(lead._id, dataToSubmit);
+        } catch (logError) {
+          console.error('Error logging lead update:', logError);
+        }
       } else {
         // Create new lead
         console.log('Calling API to create new lead');
         response = await leadsAPI.create(dataToSubmit);
         console.log('Create API response received:', response);
+        
+        // Log the lead creation
+        try {
+          await LoggingService.logLeadCreate(response.data.data);
+        } catch (logError) {
+          console.error('Error logging lead creation:', logError);
+        }
       }
       
       console.log('Full API response data:', response.data);

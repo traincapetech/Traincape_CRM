@@ -49,38 +49,28 @@ const Login = () => {
 
     try {
       setIsLoading(true);
-      // Send login data to backend
-      const credentials = {
-        email: formData.email,
-        password: formData.password
-      };
-
-      const response = await login(credentials);
+      const response = await login(formData);
       
-      // Log successful login
-      console.log('Login successful. Token:', response.token ? 'Present' : 'Not present');
-      
-      // Double-check token is in localStorage
-      setTimeout(() => {
-        const storedToken = localStorage.getItem('token');
-        console.log('Stored token check:', storedToken ? 'Present' : 'Not present');
-      }, 500);
-      
-      // Redirect based on role
-      switch(response.user.role) {
-        case "Lead Person":
-        case "Manager":
-        case "Admin":
-          navigate("/leads");
-          break;
-        case "Sales Person":
-          navigate("/sales");
-          break;
-        case "Customer":
-          navigate("/customer");
-          break;
-        default:
-          navigate("/");
+      if (response.success) {
+        // Redirect based on user role
+        const userData = response.data;
+        switch(userData.role) {
+          case "Lead Person":
+          case "Manager":
+          case "Admin":
+            navigate("/leads");
+            break;
+          case "Sales Person":
+            navigate("/sales");
+            break;
+          case "Customer":
+            navigate("/customer");
+            break;
+          default:
+            navigate("/");
+        }
+      } else {
+        setFormError(response.message || "Invalid credentials. Please try again.");
       }
     } catch (err) {
       setFormError(err.response?.data?.message || "Invalid credentials. Please try again.");

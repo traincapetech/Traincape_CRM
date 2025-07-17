@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { FaHome, FaUser, FaUsers, FaChartLine, FaClipboardList, FaChartBar, FaCog, FaFileImport, FaCalendarCheck, FaUserCog, FaClock, FaUserTie, FaFileAlt } from 'react-icons/fa';
+import { FaHome, FaUser, FaUsers, FaChartLine, FaClipboardList, FaChartBar, FaCog, FaFileImport, FaCalendarCheck, FaUserCog, FaClock, FaUserTie, FaFileAlt, FaHistory } from 'react-icons/fa';
 import ThemeToggle from '../ThemeToggle';
 
 const Sidebar = () => {
@@ -276,6 +276,25 @@ const Sidebar = () => {
                 </li>
                 <li>
                   <Link
+                    to="/admin/dashboard"
+                    className={`${
+                      location.pathname === '/admin/dashboard'
+                        ? 'bg-gray-900 text-white'
+                        : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
+                    } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
+                  >
+                    <FaChartLine
+                      className={`${
+                        location.pathname === '/admin/dashboard'
+                          ? 'text-gray-300 dark:text-gray-400'
+                          : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
+                      } mr-3 flex-shrink-0 h-6 w-6`}
+                    />
+                    Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     to="/admin/users"
                     className={`${
                       location.pathname === '/admin/users'
@@ -291,6 +310,44 @@ const Sidebar = () => {
                       } mr-3 flex-shrink-0 h-6 w-6`}
                     />
                     Users
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/admin/leads"
+                    className={`${
+                      location.pathname === '/admin/leads'
+                        ? 'bg-gray-900 text-white'
+                        : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
+                    } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
+                  >
+                    <FaClipboardList
+                      className={`${
+                        location.pathname === '/admin/leads'
+                          ? 'text-gray-300 dark:text-gray-400'
+                          : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
+                      } mr-3 flex-shrink-0 h-6 w-6`}
+                    />
+                    Leads
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/admin/activity-logs"
+                    className={`${
+                      location.pathname === '/admin/activity-logs'
+                        ? 'bg-gray-900 text-white'
+                        : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
+                    } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
+                  >
+                    <FaHistory
+                      className={`${
+                        location.pathname === '/admin/activity-logs'
+                          ? 'text-gray-300 dark:text-gray-400'
+                          : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
+                      } mr-3 flex-shrink-0 h-6 w-6`}
+                    />
+                    Activity Logs
                   </Link>
                 </li>
                 <li>

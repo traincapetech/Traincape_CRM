@@ -9,6 +9,7 @@ import PhoneInput from 'react-phone-input-2';
 import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 import 'react-phone-input-2/lib/style.css';
 import api from "../services/api"; // Import the api instance to access baseURL
+import LoggingService from "../services/loggingService"; // Add LoggingService import
 
 const SalesTrackingPage = () => {
   // Custom styles for PhoneInput
@@ -733,6 +734,13 @@ const SalesTrackingPage = () => {
         // Add new sale to the list
         setSales(prev => [response.data.data, ...prev]);
         
+        // Log the sale creation
+        try {
+          await LoggingService.logSaleCreate(response.data.data);
+        } catch (logError) {
+          console.error('Error logging sale creation:', logError);
+        }
+        
         // Close modal and reset form
         setShowAddModal(false);
         setNewSale({
@@ -841,12 +849,6 @@ const SalesTrackingPage = () => {
   // Handle saving edits
   const handleSave = async (saleId) => {
     try {
-      // Validate remarks
-      if (!editValues.remarks?.trim()) {
-        toast.error('Please add remarks when updating the sale');
-        return;
-      }
-
       // Find the original sale for data we don't want to change
       const originalSale = sales.find(sale => sale && sale._id === saleId);
       if (!originalSale) {
@@ -854,61 +856,31 @@ const SalesTrackingPage = () => {
         return;
       }
 
-      // Get fresh token
-      const token = localStorage.getItem('token');
-      
-      if (!token) {
-        setError("Authentication required. Please log in again.");
-        return;
-      }
-
-      // Round all numeric values to 2 decimal places
-      const amount = parseFloat(Number(editValues.amount).toFixed(2));
-      const tokenAmount = parseFloat(Number(editValues.token).toFixed(2));
-      const pending = editValues.status === 'Completed' ? 0 : parseFloat((amount - tokenAmount).toFixed(2));
-
       // Create update data matching the schema
       const updateData = {
         // Keep original customer info
         customerName: originalSale.customerName,
         country: originalSale.country,
-        course: editValues.product || originalSale.course || 'Unknown Course',
+        course: editValues.product || originalSale.course, // Update course/product
         countryCode: originalSale.countryCode,
         contactNumber: originalSale.contactNumber,
         email: originalSale.email,
         
-        // Date field
-        date: editValues.saleDate || originalSale.date || new Date(),
-        
-        // IDs
-        salesPerson: originalSale.salesPerson?._id || originalSale.salesPerson,
+        // Updated fields
+        salesPerson: editValues.salesPerson || originalSale.salesPerson?._id || originalSale.salesPerson,
         leadPerson: originalSale.leadPerson?._id || originalSale.leadPerson,
-        
-        // Login credentials
+        source: originalSale.source,
+        clientRemark: originalSale.clientRemark,
+        totalCost: parseFloat(editValues.amount) || originalSale.totalCost,
+        tokenAmount: parseFloat(editValues.token) || originalSale.tokenAmount,
+        currency: editValues.currency || originalSale.currency,
+        status: editValues.status || originalSale.status,
+        remarks: editValues.remarks || originalSale.remarks || '',
+        isReference: originalSale.isReference || false,
+        date: editValues.saleDate || originalSale.date,
         loginId: editValues.loginId || originalSale.loginId || '',
         password: editValues.password || originalSale.password || '',
         leadBy: editValues.leadBy || originalSale.leadBy || '',
-        
-        // Source info
-        source: originalSale.source,
-        clientRemark: originalSale.clientRemark,
-        
-        // Updated financial info with proper rounding
-        totalCost: amount,
-        tokenAmount: tokenAmount,
-        
-        // Currency info
-        currency: editValues.currency || originalSale.currency || 'USD',
-        
-        // Status info
-        pending: pending > 0,
-        status: editValues.status || originalSale.status || 'Pending',
-        
-        // Remarks - required for updates
-        remarks: editValues.remarks.trim(),
-        
-        // Flag to indicate if it's a reference sale
-        isReference: originalSale.isReference || false,
         
         // Update metadata
         updatedBy: user._id,
@@ -919,11 +891,15 @@ const SalesTrackingPage = () => {
       const response = await salesAPI.update(saleId, updateData);
       
       if (response.data && response.data.success) {
+        // Log the sale update
+        try {
+          await LoggingService.logSaleUpdate(saleId, updateData);
+        } catch (logError) {
+          console.error('Error logging sale update:', logError);
+        }
+        
         // Immediately update the local state with the new data
-        const updatedSale = {
-          ...response.data.data,
-          remarks: editValues.remarks.trim() // Ensure remarks are included
-        };
+        const updatedSale = response.data.data;
         
         setSales(prevSales => 
           prevSales.map(sale => 
@@ -1108,15 +1084,14 @@ const SalesTrackingPage = () => {
 
       setEditingSale(saleId);
       
-      // Create update object with remarks and all existing fields
-      const updatedSale = {
-        ...targetSale,
+      // Only send necessary fields for update
+      const updateData = {
         remarks: newRemarks,
         updatedBy: user.id
       };
 
       // Make API call to update remarks using salesAPI
-      const response = await salesAPI.update(saleId, updatedSale);
+      const response = await salesAPI.update(saleId, updateData);
       
       if (response.data.success) {
         // Update local state with new remarks
@@ -1158,16 +1133,15 @@ const SalesTrackingPage = () => {
       
       setEditingSale(saleId);
       
-      // Create update object with status and all existing fields
-      const updatedSale = {
-        ...targetSale,
+      // Only send necessary fields for update
+      const updateData = {
         status: newStatus,
-        updatedBy: user.id,
-        remarks: targetSale.remarks || '' // Preserve existing remarks
+        remarks: targetSale.remarks || '', // Preserve existing remarks
+        updatedBy: user.id
       };
 
       // Make API call to update status using salesAPI
-      const response = await salesAPI.update(saleId, updatedSale);
+      const response = await salesAPI.update(saleId, updateData);
       
       if (response.data.success) {
         // Update local state
@@ -1412,6 +1386,7 @@ const SalesTrackingPage = () => {
   // Render a sale row
   const renderSaleRow = (sale, index) => (
     <tr key={sale._id} className={index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}>
+      {/* Date Column */}
       <td className="px-6 py-4 whitespace-nowrap">
         {editingSale === sale._id ? (
           <div className="flex flex-col space-y-2">
@@ -1429,7 +1404,10 @@ const SalesTrackingPage = () => {
                 <FaCheck className="mr-1" /> Save
               </button>
               <button
-                onClick={() => setEditingSale(null)}
+                onClick={() => {
+                  setEditingSale(null);
+                  setEditValues({});
+                }}
                 className="text-red-600 hover:text-red-900 flex items-center text-xs px-2 py-1 bg-red-50 rounded"
               >
                 <FaTimes className="mr-1" /> Cancel
@@ -1438,7 +1416,9 @@ const SalesTrackingPage = () => {
           </div>
         ) : (
           <div className="flex flex-col space-y-2">
-            <div className="text-sm text-gray-900 dark:text-white">{formatDate(sale.date || sale.createdAt || new Date())}</div>
+            <div className="text-sm text-gray-900 dark:text-white">
+              {formatDate(sale.date || sale.createdAt || new Date())}
+            </div>
             {canEditSale(sale) && (
               <button
                 onClick={() => handleEdit(sale)}
@@ -1450,6 +1430,7 @@ const SalesTrackingPage = () => {
           </div>
         )}
       </td>
+      {/* Customer Column */}
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm font-medium text-gray-900 dark:text-white">
           {formatCustomerName(sale)}
@@ -1474,15 +1455,15 @@ const SalesTrackingPage = () => {
             </div>
           </div>
         )}
-        {editingSale !== sale._id && sale.leadBy && (
+        {!editingSale === sale._id && sale.leadBy && (
           <div className="text-xs text-gray-600 dark:text-gray-500 mt-1">
             Lead By: {sale.leadBy}
           </div>
         )}
       </td>
+      {/* Contact Column */}
       <td className="px-6 py-4">
         <div className="flex flex-col space-y-1">
-          {/* Show contact number - check both direct properties and leadId */}
           {(sale.contactNumber || safeGet(sale, 'leadId.phone')) && (
             <div className="flex items-center">
               <button 
@@ -1498,7 +1479,6 @@ const SalesTrackingPage = () => {
               </button>
             </div>
           )}
-          {/* Show email - check both direct properties and leadId */}
           {(sale.email || safeGet(sale, 'leadId.email')) && (
             <div className="flex items-center">
               <button 
@@ -1511,7 +1491,6 @@ const SalesTrackingPage = () => {
               </button>
             </div>
           )}
-          {/* Login Credentials */}
           {editingSale === sale._id && (
             <div className="mt-2 flex flex-col space-y-2">
               <input
@@ -1530,7 +1509,7 @@ const SalesTrackingPage = () => {
               />
             </div>
           )}
-          {editingSale !== sale._id && (sale.loginId || sale.password) && (
+          {!editingSale === sale._id && (sale.loginId || sale.password) && (
             <div className="mt-2 text-xs">
               {sale.loginId && <div>Login ID: {sale.loginId}</div>}
               {sale.password && <div>Password: {sale.password}</div>}
@@ -1538,6 +1517,7 @@ const SalesTrackingPage = () => {
           )}
         </div>
       </td>
+      {/* Product Column */}
       <td className="px-6 py-4 whitespace-nowrap">
         {editingSale === sale._id ? (
           <div>
@@ -1548,7 +1528,6 @@ const SalesTrackingPage = () => {
               className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               placeholder="Product or course name"
             />
-            {/* Display lead person info while editing */}
             {(sale.leadPerson && typeof sale.leadPerson === 'object' && sale.leadPerson.fullName) && (
               <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                 Lead Person: {sale.leadPerson.fullName}
@@ -1558,24 +1537,36 @@ const SalesTrackingPage = () => {
         ) : (
           <div className="text-sm text-gray-900 dark:text-white">{sale.product || safeGet(sale, 'course') || 'N/A'}</div>
         )}
-        {/* Show Lead Person if available */}
         {!editingSale === sale._id && (sale.leadPerson && typeof sale.leadPerson === 'object' && sale.leadPerson.fullName) && (
           <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
             Lead Person: {sale.leadPerson.fullName}
           </div>
         )}
       </td>
+      {/* Sales Person Column */}
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm text-gray-900 dark:text-white">
-          {formatSalesPersonName(sale)}
-        </div>
-        {/* Show sales person role if available */}
-        {(sale.salesPerson && typeof sale.salesPerson === 'object' && sale.salesPerson.role) && (
-          <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-            Role: {sale.salesPerson.role}
+        {editingSale === sale._id ? (
+          <div className="flex flex-col space-y-2">
+            <select
+              value={editValues.salesPerson || sale.salesPerson?._id || ''}
+              onChange={(e) => handleInputChange('salesPerson', e.target.value)}
+              className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            >
+              <option value="">Select Sales Person</option>
+              {filterOptions.salesPersons.map(sp => (
+                <option key={sp._id} value={sp._id}>
+                  {sp.fullName}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div className="text-sm text-gray-900 dark:text-white">
+            {sale.salesPerson?.fullName || 'N/A'}
           </div>
         )}
       </td>
+      {/* Amount Column */}
       <td className="px-6 py-4 whitespace-nowrap">
         {editingSale === sale._id ? (
           <div className="flex flex-col space-y-2">
@@ -1609,6 +1600,7 @@ const SalesTrackingPage = () => {
           </div>
         )}
       </td>
+      {/* Token Column */}
       <td className="px-6 py-4 whitespace-nowrap">
         {editingSale === sale._id ? (
           <div className="relative">
@@ -1629,6 +1621,7 @@ const SalesTrackingPage = () => {
           </div>
         )}
       </td>
+      {/* Pending Column */}
       <td className="px-6 py-4 whitespace-nowrap">
         {editingSale === sale._id ? (
           <div className="relative">
@@ -1655,6 +1648,7 @@ const SalesTrackingPage = () => {
           </div>
         )}
       </td>
+      {/* Status Column */}
       <td className="px-6 py-4 whitespace-nowrap">
         {editingSale === sale._id ? (
           <select
@@ -1701,20 +1695,10 @@ const SalesTrackingPage = () => {
                 </div>
               </div>
             )}
-            {editingSale === sale._id && (
-              <div className="absolute top-1/2 right-8 transform -translate-y-1/2">
-                <div className="animate-spin h-4 w-4 border-2 border-blue-500 rounded-full border-t-transparent"></div>
-              </div>
-            )}
-            {!canEditSale(sale) && editingSale === sale._id && (
-              <div className="text-red-500 text-xs mt-1">
-                {getPermissionMessage(sale, user?.role)}
-              </div>
-            )}
           </div>
         )}
       </td>
-      {/* Add Remarks Column */}
+      {/* Remarks Column */}
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
         {editingSale === sale._id ? (
           <div className="space-y-2">
@@ -1748,10 +1732,7 @@ const SalesTrackingPage = () => {
           )}
           {canDeleteSale(sale) && (
             <button
-              onClick={() => {
-                setDeletingSale(sale._id);
-                setConfirmDelete(true);
-              }}
+              onClick={() => handleDelete(sale._id)}
               className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-150"
               title="Delete sale"
             >
@@ -1777,6 +1758,29 @@ const SalesTrackingPage = () => {
   const getCurrencySymbol = (currencyCode = 'USD') => {
     const currency = currencyOptions.find(c => c.value === currencyCode) || currencyOptions[0];
     return currency.symbol;
+  };
+
+  // Add this function near other handler functions
+  const handleDelete = async (saleId) => {
+    try {
+      if (!window.confirm('Are you sure you want to delete this sale?')) {
+        return;
+      }
+
+      const response = await salesAPI.delete(saleId);
+      
+      if (response.data.success) {
+        // Remove the sale from both sales and filtered sales
+        setSales(prevSales => prevSales.filter(sale => sale._id !== saleId));
+        setFilteredSales(prevSales => prevSales.filter(sale => sale._id !== saleId));
+        toast.success('Sale deleted successfully');
+      } else {
+        toast.error('Failed to delete sale');
+      }
+    } catch (error) {
+      console.error('Error deleting sale:', error);
+      toast.error('Error deleting sale');
+    }
   };
 
   return (
@@ -2232,6 +2236,9 @@ const SalesTrackingPage = () => {
                               <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
                   <thead className="bg-gray-50 dark:bg-slate-800">
                   <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
+                      #
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Date</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Lead</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Contact/Login</th>
@@ -2252,7 +2259,368 @@ const SalesTrackingPage = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {filteredSales.map((sale, index) => renderSaleRow(sale, index))}
+                  {filteredSales.map((sale, index) => (
+                    <tr key={sale._id} className={index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {index + 1}
+                      </td>
+                      {/* Date Column */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {editingSale === sale._id ? (
+                          <div className="flex flex-col space-y-2">
+                            <input
+                              type="date"
+                              value={editValues.saleDate ? new Date(editValues.saleDate).toISOString().split('T')[0] : new Date(sale.date || sale.createdAt).toISOString().split('T')[0]}
+                              onChange={(e) => handleInputChange('saleDate', new Date(e.target.value))}
+                              className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                            />
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleSave(sale._id)}
+                                className="text-green-600 hover:text-green-900 flex items-center text-xs px-2 py-1 bg-green-50 rounded"
+                              >
+                                <FaCheck className="mr-1" /> Save
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setEditingSale(null);
+                                  setEditValues({});
+                                }}
+                                className="text-red-600 hover:text-red-900 flex items-center text-xs px-2 py-1 bg-red-50 rounded"
+                              >
+                                <FaTimes className="mr-1" /> Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col space-y-2">
+                            <div className="text-sm text-gray-900 dark:text-white">
+                              {formatDate(sale.date || sale.createdAt || new Date())}
+                            </div>
+                            {canEditSale(sale) && (
+                              <button
+                                onClick={() => handleEdit(sale)}
+                                className="text-blue-600 hover:text-blue-900 flex items-center text-xs px-2 py-1 bg-blue-50 rounded w-16"
+                              >
+                                <FaEdit className="mr-1" /> Edit
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </td>
+                      {/* Customer Column */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {formatCustomerName(sale)}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-500">
+                          {sale.product || safeGet(sale, 'leadId.course') || 'No product'}
+                        </div>
+                        {editingSale === sale._id && (
+                          <div className="mt-2">
+                            <input
+                              type="text"
+                              placeholder="Lead By (Optional)"
+                              value={editValues.leadBy || ''}
+                              onChange={(e) => handleInputChange('leadBy', e.target.value)}
+                              className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                            />
+                            <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 flex items-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-gray-400 dark:text-gray-400 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span>Name of person who led this sale</span>
+                            </div>
+                          </div>
+                        )}
+                        {!editingSale === sale._id && sale.leadBy && (
+                          <div className="text-xs text-gray-600 dark:text-gray-500 mt-1">
+                            Lead By: {sale.leadBy}
+                          </div>
+                        )}
+                      </td>
+                      {/* Contact Column */}
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col space-y-1">
+                          {(sale.contactNumber || safeGet(sale, 'leadId.phone')) && (
+                            <div className="flex items-center">
+                              <button 
+                                onClick={() => openWhatsApp(
+                                  sale.contactNumber || safeGet(sale, 'leadId.phone'), 
+                                  sale.countryCode || safeGet(sale, 'leadId.countryCode', '+91')
+                                )}
+                                className="text-sm text-gray-900 dark:text-white flex items-center hover:text-green-600"
+                                title="Open in WhatsApp"
+                              >
+                                <FaWhatsapp className="mr-1 text-green-500" /> 
+                                {sale.countryCode || safeGet(sale, 'leadId.countryCode', '+91')} {sale.contactNumber || safeGet(sale, 'leadId.phone')}
+                              </button>
+                            </div>
+                          )}
+                          {(sale.email || safeGet(sale, 'leadId.email')) && (
+                            <div className="flex items-center">
+                              <button 
+                                onClick={() => openEmail(sale.email || safeGet(sale, 'leadId.email'))}
+                                className="text-sm text-gray-500 dark:text-gray-500 flex items-center hover:text-blue-600"
+                                title="Send email"
+                              >
+                                <FaEnvelope className="mr-1 text-blue-500" /> 
+                                {sale.email || safeGet(sale, 'leadId.email')}
+                              </button>
+                            </div>
+                          )}
+                          {editingSale === sale._id && (
+                            <div className="mt-2 flex flex-col space-y-2">
+                              <input
+                                type="text"
+                                placeholder="Login ID (Optional)"
+                                value={editValues.loginId || ''}
+                                onChange={(e) => handleInputChange('loginId', e.target.value)}
+                                className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                              />
+                              <input
+                                type="text"
+                                placeholder="Password (Optional)"
+                                value={editValues.password || ''}
+                                onChange={(e) => handleInputChange('password', e.target.value)}
+                                className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                              />
+                            </div>
+                          )}
+                          {!editingSale === sale._id && (sale.loginId || sale.password) && (
+                            <div className="mt-2 text-xs">
+                              {sale.loginId && <div>Login ID: {sale.loginId}</div>}
+                              {sale.password && <div>Password: {sale.password}</div>}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      {/* Product Column */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {editingSale === sale._id ? (
+                          <div>
+                            <input
+                              type="text"
+                              value={editValues.product || ''}
+                              onChange={(e) => handleInputChange('product', e.target.value)}
+                              className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                              placeholder="Product or course name"
+                            />
+                            {(sale.leadPerson && typeof sale.leadPerson === 'object' && sale.leadPerson.fullName) && (
+                              <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                                Lead Person: {sale.leadPerson.fullName}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-sm text-gray-900 dark:text-white">{sale.product || safeGet(sale, 'course') || 'N/A'}</div>
+                        )}
+                        {!editingSale === sale._id && (sale.leadPerson && typeof sale.leadPerson === 'object' && sale.leadPerson.fullName) && (
+                          <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                            Lead Person: {sale.leadPerson.fullName}
+                          </div>
+                        )}
+                      </td>
+                      {/* Sales Person Column */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {editingSale === sale._id ? (
+                          <div className="flex flex-col space-y-2">
+                            <select
+                              value={editValues.salesPerson || sale.salesPerson?._id || ''}
+                              onChange={(e) => handleInputChange('salesPerson', e.target.value)}
+                              className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                            >
+                              <option value="">Select Sales Person</option>
+                              {filterOptions.salesPersons.map(sp => (
+                                <option key={sp._id} value={sp._id}>
+                                  {sp.fullName}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        ) : (
+                          <div className="text-sm text-gray-900 dark:text-white">
+                            {sale.salesPerson?.fullName || 'N/A'}
+                          </div>
+                        )}
+                      </td>
+                      {/* Amount Column */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {editingSale === sale._id ? (
+                          <div className="flex flex-col space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <div className="relative">
+                                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">
+                                  {getCurrencySymbol(editValues.currency)}
+                                </span>
+                                <input
+                                  id="amount"
+                                  type="number"
+                                  value={editValues.amount !== undefined ? editValues.amount.toString() : "0"}
+                                  onChange={(e) => handleInputChange('amount', e.target.value)}
+                                  className="w-24 px-2 pl-7 border border-gray-300 dark:border-slate-600 rounded"
+                                />
+                              </div>
+                              <select
+                                value={editValues.currency || 'USD'}
+                                onChange={(e) => handleInputChange('currency', e.target.value)}
+                                className="border border-gray-300 dark:border-slate-600 rounded p-1 text-xs"
+                              >
+                                {currencyOptions.map(option => (
+                                  <option key={option.value} value={option.value}>{option.label}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {formatCurrency(sale.amount || sale.totalCost || 0, sale.currency || 'USD')}
+                          </div>
+                        )}
+                      </td>
+                      {/* Token Column */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {editingSale === sale._id ? (
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">
+                              {getCurrencySymbol(editValues.currency)}
+                            </span>
+                            <input
+                              id="token"
+                              type="number"
+                              value={editValues.token !== undefined ? editValues.token.toString() : "0"}
+                              onChange={(e) => handleInputChange('token', e.target.value)}
+                              className="w-24 px-2 pl-7 border border-gray-300 dark:border-slate-600 rounded"
+                            />
+                          </div>
+                        ) : (
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {formatCurrency(sale.token || sale.tokenAmount || 0, sale.currency || 'USD')}
+                          </div>
+                        )}
+                      </td>
+                      {/* Pending Column */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {editingSale === sale._id ? (
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">
+                              {getCurrencySymbol(editValues.currency)}
+                            </span>
+                            <input
+                              id="pending"
+                              type="number"
+                              value={editValues.pending !== undefined ? editValues.pending.toString() : "0"}
+                              onChange={(e) => handleInputChange('pending', e.target.value)}
+                              className="w-24 px-2 pl-7 border border-gray-300 dark:border-slate-600 rounded"
+                              disabled={editValues.status === 'Completed'}
+                            />
+                          </div>
+                        ) : (
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {formatCurrency(
+                              sale.status === 'Completed' ? 0 : 
+                              sale.pending !== undefined ? sale.pending : 
+                              (sale.amount || sale.totalCost || 0) - (sale.token || sale.tokenAmount || 0),
+                              sale.currency || 'USD'
+                            )}
+                          </div>
+                        )}
+                      </td>
+                      {/* Status Column */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {editingSale === sale._id ? (
+                          <select
+                            value={editValues.status || sale.status}
+                            onChange={(e) => handleInputChange('status', e.target.value)}
+                            className={`text-sm px-2 py-1 rounded cursor-pointer ${
+                              sale.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                              sale.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                              sale.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'
+                            } border border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400`}
+                            disabled={!canEditSale(sale)}
+                          >
+                            {getAvailableStatusOptions(sale.status).map(status => (
+                              <option key={status} value={status}>{status}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <div className="relative">
+                            <select
+                              value={sale.status || 'Pending'}
+                              onChange={(e) => handleStatusChange(sale._id, e.target.value)}
+                              className={`text-sm px-2 py-1 rounded cursor-pointer appearance-none w-auto pr-8 ${
+                                sale.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                                sale.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                                sale.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'
+                              } border border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400`}
+                              disabled={!canEditSale(sale)}
+                            >
+                              {getAvailableStatusOptions(sale.status).map(status => (
+                                <option key={status} value={status}>{status}</option>
+                              ))}
+                            </select>
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-400">
+                              <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                              </svg>
+                            </div>
+                            {!canEditSale(sale) && (
+                              <div className="absolute left-0 -bottom-5 w-full">
+                                <div className="text-xs text-gray-500 dark:text-gray-500 italic">
+                                  {user?.role === 'Sales Person' ? "Can only update your own sales" : "No edit permission"}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </td>
+                      {/* Remarks Column */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {editingSale === sale._id ? (
+                          <div className="space-y-2">
+                            <textarea
+                              value={editValues.remarks || ''}
+                              onChange={(e) => handleInputChange('remarks', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                              placeholder="Enter remarks for this update"
+                              rows="2"
+                              required
+                            />
+                            <div className="text-xs text-red-500">* Required</div>
+                          </div>
+                        ) : (
+                          <div className="text-sm max-w-xs overflow-hidden">
+                            {sale.remarks || '-'}
+                          </div>
+                        )}
+                      </td>
+                      {/* Actions Column */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center space-x-2">
+                          {canEditSale(sale) && (
+                            <button
+                              onClick={() => handleEdit(sale)}
+                              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-150"
+                              title="Edit sale"
+                            >
+                              <FaEdit className="h-5 w-5" />
+                            </button>
+                          )}
+                          {canDeleteSale(sale) && (
+                            <button
+                              onClick={() => handleDelete(sale._id)}
+                              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-150"
+                              title="Delete sale"
+                            >
+                              <FaTrash className="h-5 w-5" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>

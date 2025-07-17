@@ -51,13 +51,15 @@ const EmployeeDetailsDialog = ({ employeeId, isOpen, onOpenChange }) => {
         return;
       }
 
-      // Extract the actual filename from the path (e.g., "photograph-1752049247609-674380165.jpg")
-      const actualFilename = docInfo.path ? docInfo.path.split('/').pop() : docInfo.filename;
+      // Get the document path from either filename or path
+      const documentPath = docInfo.path ? docInfo.path.split('/').pop() : docInfo.filename;
 
       // Use the API endpoint for downloading documents
-      const isDevelopment = import.meta.env.MODE === 'development';
-      const baseUrl = isDevelopment ? 'http://localhost:8080/api' : (import.meta.env.VITE_API_URL || 'https://crm-backend-o36v.onrender.com/api');
-      const fileUrl = `${baseUrl}/auth/documents/${actualFilename}`;
+      const isDevelopment = import.meta.env.DEV && import.meta.env.MODE !== 'production';
+      const baseUrl = isDevelopment 
+        ? 'http://localhost:8080/api' 
+        : (import.meta.env.VITE_API_URL || 'https://crm-backend-o36v.onrender.com/api');
+      const fileUrl = `${baseUrl}/employees/documents/${documentPath}`;
       const token = localStorage.getItem('token');
       
       // Fetch the file with authentication
@@ -104,13 +106,15 @@ const EmployeeDetailsDialog = ({ employeeId, isOpen, onOpenChange }) => {
         return;
       }
 
-      // Extract the actual filename from the path (e.g., "photograph-1752049247609-674380165.jpg")
-      const actualFilename = docInfo.path ? docInfo.path.split('/').pop() : docInfo.filename;
+      // Get the document path from either filename or path
+      const documentPath = docInfo.path ? docInfo.path.split('/').pop() : docInfo.filename;
 
       // Use the API endpoint for viewing documents
-      const isDevelopment = import.meta.env.MODE === 'development';
-      const baseUrl = isDevelopment ? 'http://localhost:8080/api' : (import.meta.env.VITE_API_URL || 'https://crm-backend-o36v.onrender.com/api');
-      const fileUrl = `${baseUrl}/auth/documents/${actualFilename}`;
+      const isDevelopment = import.meta.env.DEV && import.meta.env.MODE !== 'production';
+      const baseUrl = isDevelopment 
+        ? 'http://localhost:8080/api' 
+        : (import.meta.env.VITE_API_URL || 'https://crm-backend-o36v.onrender.com/api');
+      const fileUrl = `${baseUrl}/employees/documents/${documentPath}`;
       const token = localStorage.getItem('token');
       
       // Create a new window/tab with the authenticated URL

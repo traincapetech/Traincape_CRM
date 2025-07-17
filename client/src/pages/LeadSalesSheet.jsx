@@ -6,6 +6,7 @@ import { FaDownload, FaEdit, FaSave, FaTimesCircle, FaFilter, FaCalendar, FaSync
 import * as XLSX from 'xlsx';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import LoggingService from '../services/loggingService'; // Add LoggingService import
 
 import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 const LeadSalesSheet = () => {
@@ -282,6 +283,13 @@ const LeadSalesSheet = () => {
       
       const response = await salesAPI.update(editingSaleId, saleData);
       if (response.data && response.data.success) {
+        // Log the sale update
+        try {
+          await LoggingService.logSaleUpdate(editingSaleId, saleData);
+        } catch (logError) {
+          console.error('Error logging sale update:', logError);
+        }
+        
         console.log('Sale updated successfully:', response.data);
         console.log('Updated sale data from server:', response.data.data);
         toast.success("Sale updated successfully");

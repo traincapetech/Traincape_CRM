@@ -9,8 +9,10 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { FaEdit, FaTrash, FaFilter, FaPlus } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
+import LoggingService from '../services/loggingService'; // Add LoggingService import
 
 import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
+
 const LeadsPage = () => {
   const { user } = useAuth();
   const [leads, setLeads] = useState([]);
@@ -186,12 +188,20 @@ const LeadsPage = () => {
   }, [fetchLeads]);
   
   // Function to handle successful lead creation/update
-  const handleLeadSuccess = useCallback((lead) => {
+  const handleLeadSuccess = useCallback(async (lead) => {
     console.log('============= HANDLE LEAD SUCCESS =============');
     console.log('Lead success callback called with:', lead);
     
     if (selectedLead) {
       console.log('Lead updated successfully');
+      
+      // Log lead update
+      try {
+        await LoggingService.logLeadUpdate(lead._id, lead);
+      } catch (logError) {
+        console.error('Error logging lead update:', logError);
+      }
+      
       setSelectedLead(null);
       
       // Show success message immediately
@@ -203,6 +213,14 @@ const LeadsPage = () => {
     } else {
       // Add new lead
       console.log('Adding new lead to list');
+      
+      // Log lead creation
+      try {
+        await LoggingService.logLeadCreate(lead);
+      } catch (logError) {
+        console.error('Error logging lead creation:', logError);
+      }
+      
       setShowAddForm(false);
       fetchLeads();
       toast.success('Lead created successfully!');
@@ -293,6 +311,31 @@ const LeadsPage = () => {
     });
     
     return sortedRanges.slice(0, 3); // Top 3 date ranges
+  };
+
+  // Add logging for lead assignment if there's a function that handles it
+  const handleLeadAssign = async (leadId, newAssignee) => {
+    try {
+      const lead = leads.find(l => l._id === leadId);
+      const previousAssignee = lead?.assignedTo;
+      
+      const response = await leadsAPI.update(leadId, { assignedTo: newAssignee });
+      
+      if (response.data.success) {
+        // Log the lead assignment
+        try {
+          await LoggingService.logLeadAssign(leadId, newAssignee, previousAssignee);
+        } catch (logError) {
+          console.error('Error logging lead assignment:', logError);
+        }
+        
+        toast.success('Lead assigned successfully');
+        fetchLeads();
+      }
+    } catch (error) {
+      console.error('Error assigning lead:', error);
+      toast.error('Failed to assign lead');
+    }
   };
 
   return (

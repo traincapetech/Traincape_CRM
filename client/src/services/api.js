@@ -10,7 +10,7 @@ const API_URL = isDevelopment
 
 // Create axios instance
 const api = axios.create({
-  baseURL: API_URL, // Remove the extra /api
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -51,43 +51,18 @@ api.interceptors.response.use(
   }
 );
 
-// Auth API
+// Auth API endpoints
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
   register: (userData) => api.post('/auth/register', userData),
   getProfile: () => api.get('/auth/me'),
   updateProfile: (userData) => api.put('/auth/me', userData),
-  uploadProfilePicture: (formData) => api.post('/auth/profile-picture', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  }),
-  updateProfilePicture: (formData) => api.put('/auth/profile-picture', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  }),
-  // Forgot Password Functions
-  sendOTP: (email) => api.post('/auth/sendOTPToEmail', { email }),
-  verifyOTP: (data) => api.post('/auth/verifyOtp', data),
-  resetPassword: (data) => api.post('/auth/reset_password', data),
-  getUsers: (role = null) => {
-    const url = role ? `/auth/users?role=${role}` : '/auth/users';
-    return api.get(url);
-  },
+  getUsers: (role) => api.get(`/auth/users${role ? `?role=${role}` : ''}`),
   createUser: (userData) => api.post('/auth/users', userData),
-  createUserWithDocuments: (formData) => api.post('/auth/users/with-documents', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  }),
-  updateUser: (id, userData) => api.put(`/auth/users/${id}`, userData),
-  updateUserWithDocuments: (id, formData) => api.put(`/auth/users/${id}/with-documents`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  }),
-  deleteUser: (id) => api.delete(`/auth/users/${id}`),
+  updateUser: (userId, userData) => api.put(`/auth/users/${userId}`, userData),
+  deleteUser: (userId) => api.delete(`/auth/users/${userId}`),
+  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (token, password) => api.post('/auth/reset-password', { token, password })
 };
 
 // Leads API

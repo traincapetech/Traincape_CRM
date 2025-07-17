@@ -33,6 +33,7 @@ import CustomerDashboard from "../pages/CustomerDashboard";
 import ProspectsPage from '../pages/ProspectsPage';
 import EmployeeManagementPage from '../pages/EmployeeManagementPage';
 import DocumentManagementPage from '../pages/DocumentManagementPage';
+import AdminActivityLogsPage from '../pages/AdminActivityLogsPage';
 
 // Removed Router wrapper so it can be used at a higher level
 const AllRoutes = () => {
@@ -194,6 +195,16 @@ const AllRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={["Admin", "Manager"]}>
             <AdminActivityPage />
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* Admin Activity Logs Page - accessible to Admin */}
+      <Route
+        path="/admin/activity-logs"
+        element={
+          <ProtectedRoute allowedRoles={["Admin"]}>
+            <AdminActivityLogsPage />
           </ProtectedRoute>
         }
       />

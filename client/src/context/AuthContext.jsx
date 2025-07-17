@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { authAPI } from '../services/api';
+import LoggingService from '../services/loggingService';
 
 // Create auth context
 const AuthContext = createContext();
@@ -65,48 +66,74 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Login user
-  const login = async (credentials) => {
+  const login = async (formData) => {
     try {
-      setLoading(true);
-      const res = await authAPI.login(credentials);
+      const response = await authAPI.login(formData);
       
-      // Save token to localStorage and state
-      localStorage.setItem('token', res.data.token);
-      setToken(res.data.token);
+      if (response.data.success && response.data.token) {
+        // Save token first
+        localStorage.setItem('token', response.data.token);
+        
+        // Set user data
+        const userData = response.data.data;
+        setUser(userData);
+        
+        // Log the login action after user is set
+        try {
+          await LoggingService.logLogin(userData._id, true);
+        } catch (logError) {
+          console.error('Error logging login:', logError);
+          // Don't fail login if logging fails
+        }
+        
+        return {
+          success: true,
+          data: userData
+        };
+      }
       
-      // Set user data
-      setUser(res.data.user);
-      setError(null);
-      
-      console.log('✅ Login successful, token set:', !!res.data.token);
+      return { 
+        success: false, 
+        message: response.data.message || 'Invalid credentials'
+      };
+    } catch (error) {
+      // Log failed login attempt
+      try {
+        await LoggingService.logLogin(null, false);
+      } catch (logError) {
+        console.error('Error logging failed login:', logError);
+      }
       
       return {
-        ...res.data,
-        tokenStatus: res.data.token ? 'Valid' : 'Missing'
+        success: false,
+        message: error.response?.data?.message || 'Login failed'
       };
-    } catch (err) {
-      setError(err.response?.data?.message || 'Invalid credentials');
-      throw err;
-    } finally {
-      setLoading(false);
     }
   };
 
-  // Logout user
-  const logout = () => {
-    // Clear authentication data
-    localStorage.removeItem('token');
-    setToken(null);
-    setUser(null);
-    
-    // Clear activity tracking data
-    localStorage.removeItem('activitySessionStart');
-    localStorage.removeItem('activitySessionActive');
-    localStorage.removeItem('activityManuallyPaused');
-    localStorage.removeItem('activityPageHiddenTime');
-    
-    console.log('User logged out and activity session cleared');
+  const logout = async () => {
+    try {
+      const userId = user?._id;
+      if (userId) {
+        try {
+          await LoggingService.logLogout(userId);
+        } catch (logError) {
+          console.error('Error logging logout:', logError);
+        }
+      }
+      
+      // Clear user data and token
+      setUser(null);
+      localStorage.removeItem('token');
+      
+      // Clear any other session data
+      localStorage.removeItem('activitySessionStart');
+      localStorage.removeItem('activitySessionActive');
+      localStorage.removeItem('activityManuallyPaused');
+      localStorage.removeItem('activityPageHiddenTime');
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   };
 
   return (

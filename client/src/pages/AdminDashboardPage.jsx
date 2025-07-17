@@ -8,6 +8,7 @@ import axios from "axios";
 import { componentClasses, darkModeClasses } from '../utils/darkModeClasses';
 
 import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
+import { FaHistory } from 'react-icons/fa';
 const AdminDashboardPage = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState({
@@ -296,6 +297,27 @@ const AdminDashboardPage = () => {
                   <Link to="/admin/users" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">Manage users</Link>
                 </div>
               </div>
+            </div>
+
+            {/* Quick Access Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              {/* Existing quick access cards */}
+              
+              {/* Activity Logs Card */}
+              <Link
+                to="/admin/activity-logs"
+                className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
+              >
+                <div className="flex items-center">
+                  <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+                    <FaHistory className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Activity Logs</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Track all system activities</p>
+                  </div>
+                </div>
+              </Link>
             </div>
 
             {/* Activity Dashboard Card - Only show for Admins and Managers */}

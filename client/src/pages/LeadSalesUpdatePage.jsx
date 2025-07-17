@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout/Layout';
 import { FaPlus, FaTrash, FaEdit, FaSave, FaTimes } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import LoggingService from '../services/loggingService'; // Add LoggingService import
 
 import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 const LeadSalesUpdatePage = () => {
@@ -174,10 +175,26 @@ const LeadSalesUpdatePage = () => {
       if (editingSaleId) {
         // Update existing sale
         res = await leadPersonSalesAPI.update(editingSaleId, saleData);
+        
+        // Log the sale update
+        try {
+          await LoggingService.logSaleUpdate(editingSaleId, saleData);
+        } catch (logError) {
+          console.error('Error logging sale update:', logError);
+        }
+        
         toast.success('Sale updated successfully');
       } else {
         // Create new sale
         res = await leadPersonSalesAPI.create(saleData);
+        
+        // Log the sale creation
+        try {
+          await LoggingService.logSaleCreate(res.data.data);
+        } catch (logError) {
+          console.error('Error logging sale creation:', logError);
+        }
+        
         toast.success('Sale created successfully');
       }
       

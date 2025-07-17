@@ -296,6 +296,9 @@ const ProspectsPage = () => {
               <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
                 <thead className="bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out">
                   <tr>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
+                      #
+                    </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                       Contact Info
                     </th>
@@ -323,8 +326,11 @@ const ProspectsPage = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out divide-y divide-slate-200 dark:divide-slate-700">
-                  {prospects.map((prospect) => (
-                    <tr key={prospect._id} className="hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800 transition-all duration-200 ease-out">
+                  {prospects.map((prospect, index) => (
+                    <tr key={prospect._id} className={index % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50 dark:bg-slate-800'}>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-500 dark:text-gray-400">
+                        {index + 1}
+                      </td>
                       <td className="px-4 py-3">
                         <div className="max-w-xs">
                           <div className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
