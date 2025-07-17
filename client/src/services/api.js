@@ -4,11 +4,13 @@ import axios from 'axios';
 const isDevelopment = import.meta.env.DEV && import.meta.env.MODE !== 'production';
 
 // API URL configuration - use localhost for development, your Hostinger backend for production
-const API_URL = isDevelopment ? 'http://localhost:8080' : (import.meta.env.VITE_API_URL || 'https://crm-backend-o36v.onrender.com/api');
+const API_URL = isDevelopment 
+  ? 'http://localhost:8080/api' 
+  : (import.meta.env.VITE_API_URL || 'https://crm-backend-o36v.onrender.com/api');
 
 // Create axios instance
 const api = axios.create({
-  baseURL: isDevelopment ? `${API_URL}/api` : API_URL,
+  baseURL: API_URL, // Remove the extra /api
   headers: {
     'Content-Type': 'application/json',
   },
@@ -135,8 +137,28 @@ export const leadsAPI = {
 
 // Sales API
 export const salesAPI = {
-  getAll: () => api.get('/sales'),
-  getAllForced: () => api.get('/sales?full=true'),
+  getAll: async () => {
+    try {
+      console.log('Fetching all sales...');
+      const response = await api.get('/sales');
+      console.log('Sales API response:', response.data);
+      return response;
+    } catch (error) {
+      console.error('Error fetching sales:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+  getAllForced: async () => {
+    try {
+      console.log('Fetching all sales (forced)...');
+      const response = await api.get('/sales?full=true&nocache=' + new Date().getTime());
+      console.log('Forced sales API response:', response.data);
+      return response;
+    } catch (error) {
+      console.error('Error fetching sales (forced):', error.response?.data || error.message);
+      throw error;
+    }
+  },
   getById: (id) => api.get(`/sales/${id}`),
   create: (saleData) => {
     // Set isLeadPersonSale to true if leadPerson is specified

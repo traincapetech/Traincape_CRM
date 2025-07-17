@@ -68,7 +68,7 @@ const ProspectsPage = () => {
     source: '',
     priority: '',
     page: 1,
-    limit: 10
+    limit: 100
   });
 
   const [pagination, setPagination] = useState({});
@@ -532,19 +532,44 @@ const ProspectsPage = () => {
                   </div>
                   <div>
                     <nav className="relative z-0 inline-flex rounded-md shadow-sm dark:shadow-black/25 -space-x-px">
+                      {/* Previous Page Button */}
+                      <button
+                        onClick={() => handleFilterChange('page', Math.max(1, filters.page - 1))}
+                        disabled={filters.page === 1}
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"
+                      >
+                        <span className="sr-only">Previous</span>
+                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                          <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+
+                      {/* Page Numbers */}
                       {Array.from({ length: pagination.pages }, (_, i) => i + 1).map((page) => (
                         <button
                           key={page}
                           onClick={() => handleFilterChange('page', page)}
                           className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                             page === filters.page
-                              ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                              : 'bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-600 text-gray-500 dark:text-gray-400 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                              ? 'z-10 bg-blue-50 dark:bg-blue-900/20 border-blue-500 text-blue-600 dark:text-blue-400'
+                              : 'bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-600 text-gray-500 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                           }`}
                         >
                           {page}
                         </button>
                       ))}
+
+                      {/* Next Page Button */}
+                      <button
+                        onClick={() => handleFilterChange('page', Math.min(pagination.pages, filters.page + 1))}
+                        disabled={filters.page === pagination.pages}
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"
+                      >
+                        <span className="sr-only">Next</span>
+                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </button>
                     </nav>
                   </div>
                 </div>

@@ -25,7 +25,7 @@ const Navbar = () => {
     <header className="bg-blue-600 dark:bg-slate-900 text-white py-4 shadow-md dark:shadow-black/25 transition-all duration-200 ease-out border-b border-transparent dark:border-slate-700">
       <nav className="container mx-auto flex justify-between items-center">
         <a href="/" className="flex items-center space-x-3">
-          <img src={logo} alt="Traincape Technology Logo" className="h-10 w-10 rounded" />
+          <img src={logo} alt="Traincape Technology Logo" className="h-16 w-16 rounded" />
           <span className="text-xl font-bold tracking-wide">Traincape Technology</span>
         </a>
         <button 
@@ -39,7 +39,7 @@ const Navbar = () => {
         <ul className={`flex-col md:flex-row md:flex space-x-4 ${isMenuOpen ? 'flex' : 'hidden'} md:flex`}>
           {/* Home link accessible to all */}
           <li>
-            <Link to="/" className="hover:text-blue-300">Home</Link>
+            <Link to="/" className="hover:text-green-300">Home</Link>
           </li>
           
           {/* Management Contacts link accessible to all */}
@@ -57,14 +57,14 @@ const Navbar = () => {
           {/* Sales Person, Manager, and Admin can access Prospects page */}
           {user && (user.role === "Sales Person" || user.role === "Manager" || user.role === "Admin") && (
             <li>
-              <Link to="/prospects" className="hover:text-blue-300">Prospects</Link>
+              <Link to="/prospects" className="hover:text-green-300">Prospects</Link>
             </li>
           )}
 
           {/* Lead Person, Manager, and Admin can access Leads page */}
           {user && (user.role === "Lead Person" || user.role === "Manager" || user.role === "Admin") && (
             <li>
-              <Link to="/leads" className="hover:text-blue-300">Leads</Link>
+              <Link to="/leads" className="hover:text-green-300">Leads</Link>
             </li>
           )}
 
@@ -72,7 +72,7 @@ const Navbar = () => {
           {user && (user.role === "Lead Person" || user.role === "Manager" || user.role === "Admin") && (
             <>
               <li>
-                <Link to="/lead-sales-sheet" className="hover:text-blue-300">Lead Sales Sheet</Link>
+                <Link to="/lead-sales-sheet" className="hover:text-green-300">Lead Sales Sheet</Link>
               </li>
               {/* <li>
                 <Link to="/update-sales" className="hover:text-blue-300">Update Sales</Link>
@@ -83,14 +83,14 @@ const Navbar = () => {
           {/* Sales Person can access Sales page */}
           {user && user.role === "Sales Person" && (
             <li>
-              <Link to="/sales" className="hover:text-blue-300">My Leads</Link>
+              <Link to="/sales" className="hover:text-green-300">My Leads</Link>
             </li>
           )}
           
           {/* Sales Person, Manager, and Admin can access Sales Tracking */}
           {user && (user.role === "Sales Person" || user.role === "Manager" || user.role === "Admin") && (
             <li>
-              <Link to="/sales-tracking" className="hover:text-blue-300">Sales Tracking</Link>
+              <Link to="/sales-tracking" className="hover:text-green-300">Sales Tracking</Link>
             </li>
           )}
 
@@ -98,16 +98,16 @@ const Navbar = () => {
           {user && user.role === "Admin" && (
             <>
               <li>
-                <Link to="/admin" className="hover:text-blue-300">Admin Dashboard</Link>
+                <Link to="/admin" className="hover:text-green-300">Admin Dashboard</Link>
               </li>
               <li>
-                <Link to="/admin/users" className="hover:text-blue-300">Manage Users</Link>
+                <Link to="/admin/users" className="hover:text-green-300">Manage Users</Link>
               </li>
               <li>
-                <Link to="/admin/leads" className="hover:text-blue-300">Manage Leads</Link>
+                <Link to="/admin/leads" className="hover:text-green-300">Manage Leads</Link>
               </li>
               <li>
-                <Link to="/admin/import" className="hover:text-blue-300">Import Data</Link>
+                <Link to="/admin/import" className="hover:text-green-300">Import Data</Link>
               </li>
             </>
           )}
@@ -131,7 +131,7 @@ const Navbar = () => {
           {user ? (
             <>
               <li>
-                <Link to="/profile" className="hover:text-blue-300">Profile</Link>
+                <Link to="/profile" className="hover:text-green-300">Profile</Link>
               </li>
               <li>
                 <button 
@@ -144,7 +144,7 @@ const Navbar = () => {
             </>
           ) : (
             <li>
-              <Link to="/login" className="hover:text-blue-300">Login</Link>
+              <Link to="/login" className="hover:text-green-300">Login</Link>
             </li>
           )}
         </ul>
