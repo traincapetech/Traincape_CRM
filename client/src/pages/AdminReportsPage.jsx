@@ -387,25 +387,25 @@ const AdminReportsPage = () => {
   // Helper function to convert amount to selected currency
   const convertAmountToSelectedCurrency = (amount, fromCurrency) => {
     if (!amount) return 0;
-    
+
+    // Defensive: ensure exchangeRates is always an object
+    const rates = (exchangeRates && typeof exchangeRates === 'object') ? exchangeRates : {};
+
     // If currencies match, no conversion needed
     if (fromCurrency === selectedCurrency) return amount;
-    
-    // Get exchange rates
-    const rates = exchangeRates || getCurrencySettings().exchangeRates;
-    
+
     // Convert to USD first (if not already USD)
     let amountInUSD;
     if (fromCurrency === 'USD') {
       amountInUSD = amount;
     } else {
       // If rate is available, use it, otherwise use a default 1:1 rate
-      const fromRate = rates[fromCurrency] || 1;
+      const fromRate = (rates[fromCurrency] !== undefined && !isNaN(rates[fromCurrency])) ? rates[fromCurrency] : 1;
       amountInUSD = amount / fromRate;
     }
-    
+
     // Then convert from USD to selected currency
-    const toRate = rates[selectedCurrency] || 1;
+    const toRate = (rates[selectedCurrency] !== undefined && !isNaN(rates[selectedCurrency])) ? rates[selectedCurrency] : 1;
     return amountInUSD * toRate;
   };
   
@@ -542,24 +542,24 @@ const AdminReportsPage = () => {
   
   // Format course data for chart display
   const formatCourseDataForChart = () => {
-    const courseData = calculateCourseMetrics();
-    
-    // Only show top 10 courses for readability
-    const topCourses = courseData.slice(0, 10);
-    
-    // Labels (course names)
-    const labels = topCourses.map(course => course.name);
-    
-    // Dataset for count
-    const countData = topCourses.map(course => course.count);
-    
-    // Dataset for revenue
-    const revenueData = topCourses.map(course => course.totalRevenue);
-    
+    if (!courseAnalysisData || !courseAnalysisData.courseAnalysis) {
+      return { labels: [], countData: [], revenueData: [] };
+    }
+    const courseEntries = Object.entries(courseAnalysisData.courseAnalysis).map(([course, periods]) => {
+      let totalSales = 0;
+      let totalRevenue = 0;
+      Object.values(periods).forEach(periodData => {
+        totalSales += periodData.totalSales || 0;
+        totalRevenue += periodData.totalRevenue || 0;
+      });
+      return { name: course, count: totalSales, totalRevenue };
+    });
+    // Sort by sales count descending, but do NOT slice to top 10
+    const sortedCourses = courseEntries.sort((a, b) => b.count - a.count);
     return {
-      labels,
-      countData,
-      revenueData,
+      labels: sortedCourses.map(c => c.name),
+      countData: sortedCourses.map(c => c.count),
+      revenueData: sortedCourses.map(c => c.totalRevenue),
     };
   };
   
@@ -606,6 +606,7 @@ const AdminReportsPage = () => {
   const [selectedRevenueFilter, setSelectedRevenueFilter] = useState('1month');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('1month');
   const [selectedStatus, setSelectedStatus] = useState(null);
+  const [courseChartMode, setCourseChartMode] = useState('count');
 
   useEffect(() => {
     loadAllReports();
@@ -1096,7 +1097,72 @@ const AdminReportsPage = () => {
               ))}
             </select>
           </div>
-          {renderCourseAnalysisTable()}
+          {/* Toggle for Sales Count / Revenue */}
+          <div className="flex items-center mb-4">
+            <label className="mr-2 font-medium">Show:</label>
+            <select
+              value={courseChartMode}
+              onChange={e => setCourseChartMode(e.target.value)}
+              className="border border-slate-300 dark:border-slate-600 rounded-md px-2 py-1 text-sm"
+            >
+              <option value="count">Sales Count</option>
+              <option value="revenue">Revenue</option>
+            </select>
+          </div>
+          {/* Chart rendering */}
+          {(() => {
+            const chartData = formatCourseDataForChart();
+            return (
+              <>
+                {chartData.labels.length > 20 && (
+                  <div className="text-xs text-gray-500 mb-2">Too many courses to fit: scroll horizontally to see all.</div>
+                )}
+                <div className="w-full overflow-x-auto">
+                  <Bar data={{
+                    labels: chartData.labels,
+                    datasets: [
+                      {
+                        label: courseChartMode === 'count' ? 'Sales Count' : 'Revenue',
+                        data: courseChartMode === 'count' ? chartData.countData : chartData.revenueData,
+                        backgroundColor: 'rgba(37, 99, 235, 0.7)',
+                        borderColor: 'rgba(37, 99, 235, 1)',
+                        borderWidth: 1,
+                      },
+                    ],
+                  }} options={{
+                    responsive: true,
+                    plugins: {
+                      legend: { display: false },
+                      title: { display: false },
+                      tooltip: {
+                        callbacks: {
+                          label: function(context) {
+                            if (courseChartMode === 'revenue') {
+                              return `Revenue: $${context.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                            } else {
+                              return `Sales: ${context.parsed.y}`;
+                            }
+                          }
+                        }
+                      }
+                    },
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                        ticks: {
+                          callback: function(value) {
+                            return courseChartMode === 'revenue' ? `$${value}` : value;
+                          }
+                        }
+                      }
+                    }
+                  }} height={300} />
+                </div>
+              </>
+            );
+          })()}
+          {/* Table removed: replaced with chart above */}
+          {/* {renderCourseAnalysisTable()} */}
         </div>
 
         {/* Revenue Analysis Section */}

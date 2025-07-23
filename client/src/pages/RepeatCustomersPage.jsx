@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Layout from "../components/Layout/Layout";
 import { leadsAPI } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 const RepeatCustomersPage = () => {
@@ -82,7 +83,13 @@ const RepeatCustomersPage = () => {
         {/* Loading Indicator */}
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <LoadingSpinner 
+              size={55}
+              text="Loading repeat customers..."
+              particleCount={2}
+              speed={1.4}
+              hueRange={[240, 300]}
+            />
           </div>
         ) : (
           <>

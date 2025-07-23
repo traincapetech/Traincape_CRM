@@ -75,12 +75,12 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', response.data.token);
         
         // Set user data
-        const userData = response.data.data;
+        const userData = response.data.user;
         setUser(userData);
         
         // Log the login action after user is set
         try {
-          await LoggingService.logLogin(userData._id, true);
+          await LoggingService.logLogin(userData.id, true);
         } catch (logError) {
           console.error('Error logging login:', logError);
           // Don't fail login if logging fails

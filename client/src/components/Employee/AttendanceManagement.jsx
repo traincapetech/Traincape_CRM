@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaClock, FaCalendarCheck, FaSignInAlt, FaSignOutAlt, FaChartBar, FaMapMarkerAlt, FaDownload, FaFilter, FaSpinner } from 'react-icons/fa';
 import employeeAPI from '../../services/employeeAPI';
+import LoadingSpinner from '../ui/LoadingSpinner';
 
 // Office location coordinates (update these with your actual office coordinates)
 const OFFICE_LOCATION = {
@@ -59,11 +60,22 @@ const AttendanceManagement = ({ employeeId, userRole }) => {
   }, []);
 
   useEffect(() => {
+    // Initial fetch
     if (employeeId) {
       fetchAttendance();
       fetchTodayAttendance();
     }
-  }, [employeeId, selectedMonth, selectedYear]);
+
+    // Set up interval to refresh data every minute
+    const interval = setInterval(() => {
+      if (employeeId) {
+        fetchAttendance();
+        fetchTodayAttendance();
+      }
+    }, 60000); // 60000 ms = 1 minute
+
+    return () => clearInterval(interval);
+  }, [employeeId]);
 
   const fetchAttendance = async () => {
     try {
@@ -107,7 +119,7 @@ const AttendanceManagement = ({ employeeId, userRole }) => {
       // const response = await employeeAPI.getTodayAttendance(employeeId);
       // setTodayAttendance(response.data);
       
-      // Mock data for today
+      // Get today's date
       const today = new Date().toISOString().split('T')[0];
       const existingToday = attendance.find(att => att.date === today);
       
@@ -577,7 +589,13 @@ const AttendanceManagement = ({ employeeId, userRole }) => {
         
         {loading ? (
           <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            <LoadingSpinner 
+              size={45}
+              text="Loading attendance..."
+              particleCount={1}
+              speed={1.2}
+              hueRange={[180, 240]}
+            />
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -601,7 +619,7 @@ const AttendanceManagement = ({ employeeId, userRole }) => {
                   </tr>
                 ) : (
                   getFilteredAttendance().map((record) => (
-                    <tr key={record._id} className="hover:bg-gray-50 dark:hover:bg-slate-800">
+                    <tr key={`${record.date}-${record._id || Date.now()}`} className="hover:bg-gray-50 dark:hover:bg-slate-800">
                       <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
                         {new Date(record.date).toLocaleDateString()}
                       </td>

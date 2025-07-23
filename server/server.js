@@ -10,6 +10,13 @@ const socketIo = require('socket.io');
 // Load env vars
 dotenv.config();
 
+// Debug environment variables
+console.log('Environment:', {
+  NODE_ENV: process.env.NODE_ENV,
+  JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not set',
+  JWT_EXPIRE: process.env.JWT_EXPIRE
+});
+
 // Set DEBUG_CORS in development for testing
 if (process.env.NODE_ENV === 'development') {
   process.env.DEBUG_CORS = 'true';
@@ -30,7 +37,6 @@ const leadSalesRoutes = require('./routes/leadSalesRoute');
 const leadPersonSalesRoutes = require('./routes/leadPersonSales');
 const currencyRoutes = require('./routes/currency');
 const taskRoutes = require('./routes/taskRoutes');
-const geminiRoutes = require('./routes/gemini');
 const testExamRoutes = require('./routes/testExamNotifications');
 const chatRoutes = require('./routes/chat');
 const prospectRoutes = require('./routes/prospects');
@@ -286,7 +292,6 @@ app.use('/api/lead-sales', leadSalesRoutes);
 app.use('/api/lead-person-sales', leadPersonSalesRoutes);
 app.use('/api/currency', currencyRoutes);
 app.use('/api/tasks', taskRoutes);
-app.use('/api/gemini', geminiRoutes);
 app.use('/api/test-exam', testExamRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/prospects', prospectRoutes);

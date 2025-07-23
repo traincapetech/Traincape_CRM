@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaCalendarPlus, FaCalendarCheck, FaClock, FaExclamationTriangle, FaCheckCircle, FaTimes } from 'react-icons/fa';
-import leaveAPI from '../../services/leaveAPI';
+import { leaveAPI } from '../../services/leaveAPI';
 
-const LeaveManagement = ({ employeeId, userRole }) => {
+const LeaveManagement = () => {
   const [leaveData, setLeaveData] = useState({
     leaveType: 'casual',
     startDate: '',
@@ -11,7 +11,7 @@ const LeaveManagement = ({ employeeId, userRole }) => {
     isHalfDay: false,
     halfDaySession: 'morning'
   });
-  
+
   const [myLeaves, setMyLeaves] = useState([]);
   const [leaveBalance, setLeaveBalance] = useState({});
   const [loading, setLoading] = useState(false);
@@ -24,11 +24,7 @@ const LeaveManagement = ({ employeeId, userRole }) => {
     { value: 'casual', label: 'Casual Leave', icon: '🏖️' },
     { value: 'sick', label: 'Sick Leave', icon: '🤒' },
     { value: 'annual', label: 'Annual Leave', icon: '✈️' },
-    { value: 'emergency', label: 'Emergency Leave', icon: '🚨' },
-    { value: 'personal', label: 'Personal Leave', icon: '👤' },
-    { value: 'maternity', label: 'Maternity Leave', icon: '🤱' },
-    { value: 'paternity', label: 'Paternity Leave', icon: '👨‍👶' },
-    { value: 'bereavement', label: 'Bereavement Leave', icon: '🙏' }
+    { value: 'emergency', label: 'Emergency Leave', icon: '🚨' }
   ];
 
   const statusColors = {
@@ -55,9 +51,10 @@ const LeaveManagement = ({ employeeId, userRole }) => {
       setLoading(true);
       const response = await leaveAPI.getMyLeaves();
       setMyLeaves(response.data.data || []);
+      setError('');
     } catch (error) {
-      setError('Failed to fetch leave history');
       console.error('Error fetching leaves:', error);
+      setError('Failed to fetch leave history');
     } finally {
       setLoading(false);
     }
@@ -67,8 +64,10 @@ const LeaveManagement = ({ employeeId, userRole }) => {
     try {
       const response = await leaveAPI.getLeaveBalance();
       setLeaveBalance(response.data.data || {});
+      setError('');
     } catch (error) {
       console.error('Error fetching leave balance:', error);
+      setError('Failed to fetch leave balance');
     }
   };
 
@@ -125,8 +124,18 @@ const LeaveManagement = ({ employeeId, userRole }) => {
     try {
       setSubmitting(true);
       setError('');
+
+      // Format data to match backend model
+      const submitData = {
+        leaveType: leaveData.leaveType,
+        startDate: leaveData.startDate,
+        endDate: leaveData.isHalfDay ? leaveData.startDate : leaveData.endDate,
+        reason: leaveData.reason,
+        isHalfDay: leaveData.isHalfDay,
+        halfDaySession: leaveData.isHalfDay ? leaveData.halfDaySession : undefined
+      };
       
-      await leaveAPI.applyLeave(leaveData);
+      await leaveAPI.createLeave(submitData);
       
       setSuccess('Leave application submitted successfully!');
       setLeaveData({
@@ -137,11 +146,11 @@ const LeaveManagement = ({ employeeId, userRole }) => {
         isHalfDay: false,
         halfDaySession: 'morning'
       });
-      
+
       // Refresh data
       fetchMyLeaves();
       fetchLeaveBalance();
-      
+
       // Switch to history tab to see the new application
       setTimeout(() => {
         setActiveTab('history');
@@ -149,26 +158,10 @@ const LeaveManagement = ({ employeeId, userRole }) => {
       }, 2000);
       
     } catch (error) {
+      console.error('Error applying for leave:', error);
       setError(error.response?.data?.message || 'Failed to submit leave application');
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handleCancelLeave = async (leaveId) => {
-    if (!window.confirm('Are you sure you want to cancel this leave application?')) {
-      return;
-    }
-
-    try {
-      await leaveAPI.cancelLeave(leaveId);
-      setSuccess('Leave cancelled successfully');
-      fetchMyLeaves();
-      fetchLeaveBalance();
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (error) {
-      setError(error.response?.data?.message || 'Failed to cancel leave');
-      setTimeout(() => setError(''), 3000);
     }
   };
 
@@ -217,17 +210,6 @@ const LeaveManagement = ({ employeeId, userRole }) => {
             >
               <FaCalendarCheck className="mr-2" />
               Leave History
-            </button>
-            <button
-              onClick={() => setActiveTab('balance')}
-              className={`${
-                activeTab === 'balance'
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
-            >
-              <FaClock className="mr-2" />
-              Leave Balance
             </button>
           </nav>
         </div>
@@ -449,75 +431,12 @@ const LeaveManagement = ({ employeeId, userRole }) => {
                               <p className="text-sm text-red-700 dark:text-red-300 mt-1">{leave.rejectionReason}</p>
                             </div>
                           )}
-                          
-                          {leave.approvedBy && leave.status === 'approved' && (
-                            <div className="mt-2 text-sm text-green-600 dark:text-green-400">
-                              <span className="font-medium">Approved by:</span> {leave.approvedBy.fullName} on {formatDate(leave.approvedDate)}
-                            </div>
-                          )}
                         </div>
-                        
-                        {leave.status === 'pending' && (
-                          <button
-                            onClick={() => handleCancelLeave(leave._id)}
-                            className="ml-4 text-red-600 hover:text-red-800 text-sm font-medium"
-                          >
-                            Cancel
-                          </button>
-                        )}
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-            </div>
-          )}
-
-          {/* Leave Balance Tab */}
-          {activeTab === 'balance' && (
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6">Leave Balance ({new Date().getFullYear()})</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Object.entries(leaveBalance).map(([type, balance]) => {
-                  const leaveTypeInfo = leaveTypes.find(t => t.value === type);
-                  return (
-                    <div key={type} className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-medium text-gray-900 dark:text-white flex items-center">
-                          <span className="mr-2">{leaveTypeInfo?.icon}</span>
-                          {leaveTypeInfo?.label}
-                        </h4>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600 dark:text-gray-400">Total:</span>
-                          <span className="font-medium text-gray-900 dark:text-white">{balance.total} days</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600 dark:text-gray-400">Used:</span>
-                          <span className="font-medium text-red-600 dark:text-red-400">{balance.used} days</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600 dark:text-gray-400">Remaining:</span>
-                          <span className="font-medium text-green-600 dark:text-green-400">{balance.remaining} days</span>
-                        </div>
-                        
-                        {/* Progress bar */}
-                        <div className="mt-3">
-                          <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                            <div 
-                              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                              style={{ width: `${(balance.used / balance.total) * 100}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
           )}
         </div>

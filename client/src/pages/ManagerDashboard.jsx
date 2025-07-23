@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout/Layout';
 import { authAPI, salesAPI } from '../services/api';
-import { FaEdit, FaTrash, FaPlus, FaTimes, FaLock, FaChartLine, FaUsers, FaFileAlt, FaMoneyBillWave } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaPlus, FaTimes, FaLock, FaChartLine, FaUsers, FaFileAlt, FaMoneyBillWave, FaCalendarAlt } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { getDirectSalesCount } from '../utils/helpers';
+import leaveAPI from '../services/leaveAPI';
 
 import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 const ManagerDashboard = () => {
@@ -35,6 +36,8 @@ const ManagerDashboard = () => {
       admin: 0
     }
   });
+  const [pendingLeaves, setPendingLeaves] = useState(0);
+  const navigate = useNavigate();
 
   // Check if current user is admin
   const isAdmin = currentUser?.role === 'Admin';
@@ -42,6 +45,7 @@ const ManagerDashboard = () => {
   useEffect(() => {
     fetchUsers();
     fetchDashboardStats();
+    fetchPendingLeaves();
   }, []);
 
   // New function to fetch dashboard stats
@@ -119,6 +123,21 @@ const ManagerDashboard = () => {
       setError('Failed to load users. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch pending leave requests
+  const fetchPendingLeaves = async () => {
+    try {
+      // Only fetch if manager or admin
+      if (currentUser?.role === 'Manager' || currentUser?.role === 'Admin') {
+        const response = await leaveAPI.getAllLeaves({ status: 'pending' });
+        if (response.data && response.data.success) {
+          setPendingLeaves(response.data.data.length);
+        }
+      }
+    } catch (err) {
+      setPendingLeaves(0);
     }
   };
 
@@ -235,6 +254,24 @@ const ManagerDashboard = () => {
             <FaPlus className="mr-2" /> Add New User
           </button>
         </div>
+
+        {/* Leave Requests Button */}
+        {(currentUser?.role === 'Manager' || currentUser?.role === 'Admin') && (
+          <div className="mb-6 flex justify-end">
+            <button
+              onClick={() => navigate('/employees?tab=leave')}
+              className="relative flex items-center px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200"
+            >
+              <FaCalendarAlt className="mr-2" />
+              Review Leave Requests
+              {pendingLeaves > 0 && (
+                <span className="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                  {pendingLeaves}
+                </span>
+              )}
+            </button>
+          </div>
+        )}
 
         {/* Dashboard Stats Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">

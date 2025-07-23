@@ -373,8 +373,8 @@ const ChatWindow = () => {
             <div className="chat-welcome">
               <div className="welcome-content">
                 <i className="fas fa-comments"></i>
-                <h3>Welcome to Chat</h3>
-                <p>Select a user to start chatting, or click the + button to browse available users.</p>
+                {/* <h3>Welcome to Chat</h3> */}
+                {/* <p>Select a user to start chatting, or click the + button to browse available users.</p> */}
                 <div className="welcome-stats">
                   <div className="stat">
                     <span className="stat-number">{onlineUsers.length}</span>
@@ -391,14 +391,14 @@ const ChatWindow = () => {
                 </div>
                 
                 {/* Quick Test Button */}
-                <div className="mt-6">
+                {/* <div className="mt-6">
                   <button
                     onClick={() => setShowSoundTest(true)}
                     className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg"
                   >
                     🔊 Test WhatsApp-Style Notifications
                   </button>
-                </div>
+                </div> */}
               </div>
             </div>
           )}

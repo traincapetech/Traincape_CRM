@@ -10,6 +10,7 @@ import 'aos/dist/aos.css';
 import { FaEdit, FaTrash, FaFilter, FaPlus } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import LoggingService from '../services/loggingService'; // Add LoggingService import
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
 
@@ -488,8 +489,13 @@ const LeadsPage = () => {
                 
                 {loading ? (
                   <div className="p-12 flex justify-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                    <p className="ml-4 text-gray-600 dark:text-gray-500">Loading leads...</p>
+                    <LoadingSpinner 
+                      size={50}
+                      text="Loading leads..."
+                      particleCount={2}
+                      speed={1.3}
+                      hueRange={[220, 280]}
+                    />
                   </div>
                 ) : filteredLeads.length === 0 ? (
                   <div className="p-12 text-center">

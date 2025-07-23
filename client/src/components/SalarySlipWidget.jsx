@@ -1,93 +1,58 @@
 import React, { useState, useEffect } from 'react';
-import api, { payrollAPI } from '../services/api';
+import { payrollAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const SalarySlipWidget = () => {
   const [payrollData, setPayrollData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [downloadingSlip, setDownloadingSlip] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [debug, setDebug] = useState(null);
+  const { user } = useAuth();
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-
-  // Remove automatic data fetching on component mount
-  // useEffect(() => {
-  //   fetchPayrollData();
-  // }, []);
 
   const fetchPayrollData = async () => {
     try {
       setLoading(true);
-      const response = await payrollAPI.getAll({ month: selectedMonth, year: selectedYear });
+      const response = await payrollAPI.getAll({
+        month: selectedMonth,
+        year: selectedYear
+      });
+      console.log('Payroll API Response:', response.data);
       setPayrollData(response.data.data);
+      setDebug(response.data.debug);
+      setError(null);
     } catch (error) {
       console.error('Error fetching payroll data:', error);
-      alert('Error fetching payroll data: ' + (error.response?.data?.message || 'Unknown error'));
+      setError('Failed to load salary data');
+      setPayrollData([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleManualRefresh = () => {
+  useEffect(() => {
     fetchPayrollData();
-  };
+  }, [selectedMonth, selectedYear]);
 
-  const handleDownloadSlip = async (payrollId) => {
-    setDownloadingSlip(payrollId);
+  const handleDownload = async (id) => {
     try {
-      const response = await payrollAPI.generateSalarySlip(payrollId);
-      
-      // Create blob link to download
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const response = await payrollAPI.downloadSalarySlip(id);
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      
-      // Get filename from response headers or create default
-      const contentDisposition = response.headers['content-disposition'];
-      let filename = 'salary-slip.pdf';
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-        if (filenameMatch) {
-          filename = filenameMatch[1];
-        }
-      }
-      
-      link.setAttribute('download', filename);
+      link.setAttribute('download', `salary-slip-${selectedMonth}-${selectedYear}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-      
     } catch (error) {
       console.error('Error downloading salary slip:', error);
-      alert('Error downloading salary slip: ' + (error.response?.data?.message || 'Unknown error'));
-    } finally {
-      setDownloadingSlip(null);
+      alert('Failed to download salary slip. Please try again.');
     }
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
-    }).format(amount);
-  };
-
-  const getStatusBadge = (status) => {
-    const statusClasses = {
-      'DRAFT': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-      'APPROVED': 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-300',
-      'PAID': 'bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-blue-300',
-      'CANCELLED': 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-300'
-    };
-
-    return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[status] || statusClasses['DRAFT']}`}>
-        {status}
-      </span>
-    );
-  };
-
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({length: 5}, (_, i) => currentYear - i);
   const months = [
     { value: 1, label: 'January' },
     { value: 2, label: 'February' },
@@ -103,168 +68,112 @@ const SalarySlipWidget = () => {
     { value: 12, label: 'December' }
   ];
 
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 5 }, (_, i) => currentYear + 1 - i);
+
+  if (loading) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="animate-pulse flex space-x-4">
+          <div className="flex-1 space-y-4 py-1">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
           Salary Slips
-        </h3>
-        <div className="text-sm text-gray-500 dark:text-gray-400">
-          Manual Update Required
-        </div>
-      </div>
-
-      {/* Manual Controls */}
-      <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-6">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Month:
-            </label>
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
-            >
-              {months.map(month => (
-                <option key={month.value} value={month.value}>
-                  {month.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Year:
-            </label>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
-            >
-              {years.map(year => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <button
-            onClick={handleManualRefresh}
-            disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-2"
+        </h2>
+        <div className="flex space-x-4">
+          <select
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(Number(e.target.value))}
+            className="px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           >
-            {loading ? (
-              <>
-                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>Loading...</span>
-              </>
-            ) : (
-              <>
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                </svg>
-                <span>Load Salary Slips</span>
-              </>
-            )}
-          </button>
+            {months.map((month) => (
+              <option key={month.value} value={month.value}>
+                {month.label}
+              </option>
+            ))}
+          </select>
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
+            className="px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          >
+            {years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      {/* Results */}
-      {loading ? (
-        <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+      {error ? (
+        <div className="text-center text-red-500 dark:text-red-400">
+          <p>{error}</p>
+          <button
+            onClick={fetchPayrollData}
+            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Try Again
+          </button>
         </div>
       ) : payrollData.length === 0 ? (
         <div className="text-center py-8">
-          <div className="text-gray-500 dark:text-gray-400 mb-4">
-            No salary slip found for the selected month and year
-          </div>
-          <p className="text-sm text-gray-400 dark:text-gray-500">
-            Click "Load Salary Slips" to fetch data or select a different month/year
+          <p className="text-gray-500 dark:text-gray-400">
+            No salary slips available for {months.find(m => m.value === selectedMonth)?.label} {selectedYear}
           </p>
+          {debug && (
+            <div className="mt-4 text-xs text-gray-400">
+              <p>User Role: {debug.userRole}</p>
+              <p>Employee ID: {debug.employeeId}</p>
+              <p>User ID: {debug.userId}</p>
+            </div>
+          )}
         </div>
       ) : (
         <div className="space-y-4">
-          {payrollData.map((payroll) => (
-            <div key={payroll._id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">
-                    {payroll.monthName} {payroll.year}
-                  </h4>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Generated on {new Date(payroll.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <div>
-                  {getStatusBadge(payroll.status)}
-                </div>
+          {payrollData.map((slip) => (
+            <div
+              key={slip._id}
+              className="flex items-center justify-between p-4 border dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <div>
+                <h3 className="font-medium text-gray-800 dark:text-white">
+                  {months.find(m => m.value === slip.month)?.label} {slip.year}
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Net Salary: ₹{slip.netSalary.toLocaleString()}
+                </p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
+                  Status: {slip.status}
+                </p>
+                {slip._employeeMatch && (
+                  <span className="text-xs text-green-500">Employee Match</span>
+                )}
+                {slip._userMatch && (
+                  <span className="text-xs text-blue-500 ml-2">User Match</span>
+                )}
               </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
-                  <div className="text-xs text-gray-500 dark:text-gray-400">Working Days</div>
-                  <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {payroll.workingDays}
-                  </div>
-                </div>
-                <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
-                  <div className="text-xs text-green-700 dark:text-green-400">Present Days</div>
-                  <div className="text-lg font-semibold text-green-900 dark:text-green-100">
-                    {payroll.presentDays}
-                  </div>
-                </div>
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                  <div className="text-xs text-blue-700 dark:text-blue-400">Gross Salary</div>
-                  <div className="text-lg font-semibold text-blue-900 dark:text-blue-100">
-                    {formatCurrency(payroll.grossSalary)}
-                  </div>
-                </div>
-                <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
-                  <div className="text-xs text-purple-700 dark:text-purple-400">Net Salary</div>
-                  <div className="text-lg font-semibold text-purple-900 dark:text-purple-100">
-                    {formatCurrency(payroll.netSalary)}
-                  </div>
-                </div>
-              </div>
-
-              {payroll.status === 'APPROVED' || payroll.status === 'PAID' ? (
+              <div className="flex space-x-2">
                 <button
-                  onClick={() => handleDownloadSlip(payroll._id)}
-                  disabled={downloadingSlip === payroll._id}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-2 px-4 rounded-md transition-colors flex items-center justify-center space-x-2"
+                  onClick={() => handleDownload(slip._id)}
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:ring-offset-gray-800"
                 >
-                  {downloadingSlip === payroll._id ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <span>Downloading...</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                      </svg>
-                      <span>Download Salary Slip</span>
-                    </>
-                  )}
+                  Download
                 </button>
-              ) : (
-                <div className="w-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 py-2 px-4 rounded-md text-center">
-                  Salary slip not available (Status: {payroll.status})
-                </div>
-              )}
+              </div>
             </div>
           ))}
         </div>

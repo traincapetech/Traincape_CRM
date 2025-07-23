@@ -1,31 +1,30 @@
 import api from './api';
 
-const employeeAPI = {
-  // Employee CRUD operations
+export const employeeAPI = {
+  // Employee operations
   getAll: () => api.get('/employees'),
   getById: (id) => api.get(`/employees/${id}`),
-  create: (formData) => api.post('/employees', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  }),
-  update: (id, formData) => api.put(`/employees/${id}`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  }),
+  create: (employeeData) => api.post('/employees', employeeData),
+  update: (id, employeeData) => api.put(`/employees/${id}`, employeeData),
   delete: (id) => api.delete(`/employees/${id}`),
 
-  // Department operations
+  // Department and Role operations
   getDepartments: () => api.get('/employees/departments'),
-  createDepartment: (data) => api.post('/employees/departments', data),
-
-  // Role operations
   getRoles: () => api.get('/employees/roles'),
-  createRole: (data) => api.post('/employees/roles', data),
 
-  // Conversion operations
-  convertUsers: () => api.post('/employees/convert-users'),
+  // Document operations
+  uploadDocument: (id, documentType, file) => {
+    const formData = new FormData();
+    formData.append('document', file);
+    return api.post(`/employees/${id}/documents/${documentType}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  },
+  getDocument: (filename) => api.get(`/employees/documents/${filename}`, {
+    responseType: 'blob'
+  }),
 };
 
 export default employeeAPI; 

@@ -30,7 +30,7 @@ const HomePage = () => {
             ) : (
               <div className="flex flex-wrap gap-4 justify-center sm:justify-start">
                 {user.role === "Sales Person" && (
-                  <Link to="/sales" className="w-full sm:w-auto px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out text-center shadow-sm">
+                  <Link to="/sales" className="w-full sm:w-auto px-6 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white dark:bg-slate-900 transition-all duration-200 ease-out text-center">
                     My Leads
                   </Link>
                 )}

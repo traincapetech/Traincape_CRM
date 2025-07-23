@@ -78,7 +78,7 @@ const ForgotPassword = () => {
         return;
       }
 
-      const response = await authAPI.sendOTP(payload.email);
+      const response = await authAPI.forgotPassword(payload.email);
       const result = response.data;
       
       if (result.success) {
@@ -151,9 +151,14 @@ const ForgotPassword = () => {
     }
   };
 
-  const handleResetPassword = async (e) => {
-    setSuccessMessage(false);
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!payload.newPassword.trim()) {
+      toast.error("New password is required");
+      setError("New password is required");
+      return;
+    }
     
     if (payload.newPassword !== payload.confirmPassword) {
       toast.error("Passwords do not match");
@@ -161,15 +166,14 @@ const ForgotPassword = () => {
       return;
     }
     
-    if (payload.newPassword.length < 8) {
-      toast.error("Password must be at least 8 characters long");
-      setError("Password must be at least 8 characters long");
+    if (payload.newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      setError("Password must be at least 6 characters");
       return;
     }
     
     try {
       setLoading(true);
-      console.log("newPassword sending to backend is ", payload.newPassword);
       const response = await authAPI.resetPassword({ 
         email: payload.email, 
         newPassword: payload.newPassword 
@@ -179,11 +183,15 @@ const ForgotPassword = () => {
       if (result.success) {
         setError(false);
         setLoading(false);
-        toast.success("Password changed successfully!");
+        setSuccessMessage("Password reset successfully!");
+        toast.success("Password reset successfully! You can now login with your new password.");
+        
+        // Redirect to login after 2 seconds
         setTimeout(() => {
-          navigate("/login");
+          navigate('/login');
         }, 2000);
       } else {
+        setSuccessMessage(false);
         toast.error(result.message || "Failed to reset password");
         setError(result.message || "Failed to reset password");
         setLoading(false);
@@ -457,7 +465,7 @@ const ForgotPassword = () => {
                     className="text-center text-gray-600 dark:text-gray-400 mb-6"
                     variants={itemVariants}
                   >
-                    Your new password must be at least 8 characters
+                    Your new password must be at least 6 characters
                   </motion.p>
                   <motion.div className="mb-5 relative" variants={itemVariants}>
                     <label
@@ -506,7 +514,7 @@ const ForgotPassword = () => {
                   </motion.div>
                   <motion.button
                     type="button"
-                    onClick={handleResetPassword}
+                    onClick={handlePasswordSubmit}
                     disabled={loading}
                     variants={itemVariants}
                     whileHover={{ scale: 1.02 }}

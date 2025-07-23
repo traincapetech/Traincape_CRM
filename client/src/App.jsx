@@ -6,11 +6,11 @@ import "./App.css";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ChatProvider } from "./context/ChatContext";
 import { Toaster } from 'react-hot-toast';
-import FloatingAIButton from "./components/AI/FloatingAIButton";
 import ChatWindow from "./components/Chat/ChatWindow";
 import ChatDebug from "./components/Chat/ChatDebug";
 import notificationService from "./services/notificationService";
 import DocumentationPage from './pages/DocumentationPage';
+import MagicLoader from "./components/lightswind/magic-loader";
 
 // Component to handle notification service initialization
 const NotificationHandler = () => {
@@ -47,7 +47,6 @@ const App = () => {
           <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-all duration-200 ease-out">
             <NotificationHandler />
             <AllRoutes />
-            <FloatingAIButton />
             <ChatWindow />
             <ChatDebug />
             <Toaster 

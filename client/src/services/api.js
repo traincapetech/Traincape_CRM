@@ -57,12 +57,18 @@ export const authAPI = {
   register: (userData) => api.post('/auth/register', userData),
   getProfile: () => api.get('/auth/me'),
   updateProfile: (userData) => api.put('/auth/me', userData),
+  updateProfilePicture: (formData) => api.put('/auth/profile-picture', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
   getUsers: (role) => api.get(`/auth/users${role ? `?role=${role}` : ''}`),
   createUser: (userData) => api.post('/auth/users', userData),
   updateUser: (userId, userData) => api.put(`/auth/users/${userId}`, userData),
   deleteUser: (userId) => api.delete(`/auth/users/${userId}`),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
-  resetPassword: (token, password) => api.post('/auth/reset-password', { token, password })
+  verifyOTP: (data) => api.post('/auth/verifyOtp', data),
+  resetPassword: (data) => api.post('/auth/reset_password', data)
 };
 
 // Leads API
@@ -231,13 +237,6 @@ export const prospectsAPI = {
   convertToLead: (id) => api.post(`/prospects/${id}/convert`),
 };
 
-// Gemini API
-export const geminiAPI = {
-  generateContent: (prompt) => api.post('/gemini/generate', { prompt }),
-  generateContentWithImage: (prompt, imageData) => api.post('/gemini/generate-with-image', { prompt, imageData }),
-  chatWithGemini: (messages) => api.post('/gemini/chat', { messages }),
-};
-
 // Activity API
 export const activityAPI = {
   startSession: () => api.post('/activity/start-session'),
@@ -270,20 +269,13 @@ export const activityAPI = {
 
 // Payroll API
 export const payrollAPI = {
-  getAll: (filters = {}) => {
-    const params = new URLSearchParams();
-    
-    // Add filters to params
-    Object.keys(filters).forEach(key => {
-      if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
-        params.append(key, filters[key]);
-      }
-    });
-    
-    const queryString = params.toString();
-    const url = queryString ? `/payroll?${queryString}` : '/payroll';
-    
-    return api.get(url);
+  getAll: (params = {}) => {
+    const queryParams = new URLSearchParams();
+    if (params.month) queryParams.append('month', params.month);
+    if (params.year) queryParams.append('year', params.year);
+    if (params.employeeId) queryParams.append('employeeId', params.employeeId);
+    const queryString = queryParams.toString();
+    return api.get(`/payroll${queryString ? `?${queryString}` : ''}`);
   },
   getById: (id) => api.get(`/payroll/${id}`),
   generate: (payrollData) => api.post('/payroll/generate', payrollData),
@@ -291,11 +283,38 @@ export const payrollAPI = {
   delete: (id) => api.delete(`/payroll/${id}`),
   approve: (id) => api.put(`/payroll/${id}/approve`),
   generateSalarySlip: (id) => api.get(`/payroll/${id}/salary-slip`, {
-    responseType: 'blob'
+    responseType: 'blob',
+    headers: {
+      'Accept': 'application/pdf'
+    }
   }),
   downloadSalarySlip: (id) => api.get(`/payroll/${id}/download`, {
-    responseType: 'blob'
-  }),
+    responseType: 'blob',
+    headers: {
+      'Accept': 'application/pdf'
+    }
+  })
+};
+
+export const attendanceAPI = {
+  getTodayAttendance: () => api.get('/attendance/today'),
+  checkIn: (data) => api.post('/attendance/checkin', data),
+  checkOut: (data) => api.put('/attendance/checkout', data),
+  getHistory: (params) => {
+    const queryString = new URLSearchParams(params).toString();
+    return api.get(`/attendance/history${queryString ? `?${queryString}` : ''}`);
+  },
+  getSummary: (month, year) => api.get(`/attendance/summary/${month}/${year}`)
+};
+
+export const leaveAPI = {
+  getMyLeaves: () => api.get('/leaves/my-leaves'),
+  getLeaveBalance: () => api.get('/leaves/balance'),
+  createLeave: (leaveData) => api.post('/leaves', leaveData),
+  updateLeave: (id, leaveData) => api.put(`/leaves/${id}`, leaveData),
+  deleteLeave: (id) => api.delete(`/leaves/${id}`),
+  approveLeave: (id) => api.put(`/leaves/${id}/approve`),
+  rejectLeave: (id, reason) => api.put(`/leaves/${id}/reject`, { reason })
 };
 
 export default api;

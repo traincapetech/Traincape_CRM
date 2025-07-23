@@ -2,6 +2,7 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
@@ -9,8 +10,14 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   // Show loading spinner or similar while checking auth state
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <LoadingSpinner 
+          size={80}
+          text="Authenticating..."
+          particleCount={2}
+          speed={1.5}
+          hueRange={[200, 320]}
+        />
       </div>
     );
   }

@@ -26,15 +26,13 @@ import TaskManagementPage from '../pages/TaskManagementPage';
 import RepeatCustomersPage from '../pages/RepeatCustomersPage';
 import CountriesPage from '../pages/Countries';
 import ManagementContactsPage from '../pages/ManagementContactsPage';
-import GeminiAIPage from '../pages/GeminiAIPage';
-import ManagerDashboard from '../pages/ManagerDashboard';
 import TestNotificationsPage from '../pages/TestNotificationsPage';
 import CustomerDashboard from "../pages/CustomerDashboard";
 import ProspectsPage from '../pages/ProspectsPage';
 import EmployeeManagementPage from '../pages/EmployeeManagementPage';
 import DocumentManagementPage from '../pages/DocumentManagementPage';
 import AdminActivityLogsPage from '../pages/AdminActivityLogsPage';
-
+import ManagerDashboard from "../pages/ManagerDashboard";
 // Removed Router wrapper so it can be used at a higher level
 const AllRoutes = () => {
   return (
@@ -49,6 +47,7 @@ const AllRoutes = () => {
       <Route path="/tutorials" element={<TutorialsPage />} />
       <Route path="/management-contacts" element={<ManagementContactsPage />} />
       <Route path="/countries" element={<CountriesPage />} />
+    
       
       {/* Customer Dashboard */}
       <Route
@@ -60,9 +59,6 @@ const AllRoutes = () => {
         }
       />
 
-      {/* Gemini AI Assistant - available to all users including customers */}
-      <Route path="/ai-assistant" element={<GeminiAIPage />} />
-
       {/* Test Notifications - for testing exam notifications */}
       <Route
         path="/test-notifications"
@@ -73,21 +69,11 @@ const AllRoutes = () => {
         }
       />
 
-      {/* Manager Dashboard */}
-      <Route
-        path="/manager"
-        element={
-          <ProtectedRoute allowedRoles={["Manager", "Admin"]}>
-            <ManagerDashboard />
-          </ProtectedRoute>
-        }
-      />
-      
       {/* Protected Routes */}
       <Route
         path="/leads"
         element={
-          <ProtectedRoute allowedRoles={["Lead Person", "Manager", "Admin"]}>
+          <ProtectedRoute allowedRoles={["Sales Person", "Lead Person", "Manager", "Admin"]}>
             <LeadsPage />
           </ProtectedRoute>
         }
@@ -218,6 +204,7 @@ const AllRoutes = () => {
           </ProtectedRoute>
         }
       />
+
       
       {/* Lead Sales Sheet - accessible to Lead Person, Manager, and Admin */}
       <Route 
@@ -238,6 +225,15 @@ const AllRoutes = () => {
           </ProtectedRoute>
         } 
       />
+
+<Route
+  path="/manager"
+  element={
+    <ProtectedRoute allowedRoles={["Manager", "Admin"]}>
+      <ManagerDashboard />
+    </ProtectedRoute>
+  }
+/>
       
       {/* Contact Management Page - accessible to all authenticated users */}
       {/* Disabled since we're using ManagementContactsPage instead

@@ -13,8 +13,19 @@ import AttendanceManagement from "../components/Employee/AttendanceManagement";
 import EmployeeSelfService from "../components/Employee/EmployeeSelfService";
 import AttendanceWidget from '../components/AttendanceWidget';
 import SalarySlipWidget from '../components/SalarySlipWidget';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
+import { toast } from "react-toastify";
+
+// Helper to get the correct profile picture URL
+const getProfilePictureUrl = (profilePicture) => {
+  if (!profilePicture) return null;
+  if (profilePicture.startsWith('http')) return profilePicture;
+  // Always prepend backend URL for /uploads
+  const base = import.meta.env.DEV ? 'http://localhost:8080' : window.location.origin;
+  return `${base}${profilePicture}`;
+};
 
 const ProfilePage = () => {
   const { user, loading, setUser } = useAuth();
@@ -144,25 +155,29 @@ const ProfilePage = () => {
       const response = await authAPI.updateProfilePicture(formData);
       
       if (response.data && response.data.success) {
-        // Update user context with the actual file path from server response
-        setUser({
+        // Update user context with the new profile picture URL
+        const updatedUser = {
           ...user,
-          profilePicture: response.data.profilePicture || response.data.data?.profilePicture
-        });
+          profilePicture: response.data.data.profilePicture
+        };
+        setUser(updatedUser);
         
-        // Clear preview
+        // Clear preview and reset state
         setPreviewUrl(null);
         setImage(null);
         setSelectedFile(null);
         
         // Show success message
-        console.log('Profile picture updated successfully');
+        toast.success('Profile picture updated successfully');
       } else {
         setUploadError('Failed to update profile picture');
+        toast.error('Failed to update profile picture');
       }
     } catch (error) {
       console.error('Error uploading profile picture:', error);
-      setUploadError(error.response?.data?.message || 'Failed to upload profile picture. Please try again.');
+      const errorMessage = error.response?.data?.message || 'Failed to upload profile picture. Please try again.';
+      setUploadError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setUploading(false);
     }
@@ -201,14 +216,13 @@ const ProfilePage = () => {
     };
   }, [previewUrl, image]);
 
+  // Only fetch employee data if you want to show extra info, but do NOT create employee records
   const fetchEmployeeData = async () => {
     if (user) {
       try {
         setLoadingEmployee(true);
         const response = await employeeAPI.getAll();
         const employees = response.data?.data || response.data || [];
-        
-        // Ensure employees is an array before using .find()
         if (Array.isArray(employees)) {
           // Find employee record linked to this user
           let linkedEmployee = employees.find(emp => 
@@ -217,47 +231,10 @@ const ProfilePage = () => {
             (emp.personalInfo?.email && emp.personalInfo.email === user.email) ||
             (emp.email && emp.email === user.email)
           );
-          
-          // If no employee record found, create a basic one from user data
-          if (!linkedEmployee && (user.role === 'Sales Person' || user.role === 'Lead Person' || user.role === 'Manager' || user.role === 'Employee')) {
-            try {
-              const newEmployeeData = {
-                fullName: user.fullName,
-                email: user.email,
-                userId: user._id,
-                employeeId: `EMP${Date.now()}`,
-                role: { name: user.role },
-                department: { name: user.role === 'Sales Person' ? 'Sales' : user.role === 'Lead Person' ? 'Leads' : 'General' },
-                status: 'Active',
-                joiningDate: new Date().toISOString(),
-                personalInfo: {
-                  firstName: user.fullName.split(' ')[0] || '',
-                  lastName: user.fullName.split(' ').slice(1).join(' ') || '',
-                  email: user.email
-                },
-                professionalInfo: {
-                  role: user.role,
-                  department: user.role === 'Sales Person' ? 'Sales' : user.role === 'Lead Person' ? 'Leads' : 'General',
-                  joiningDate: new Date().toISOString().split('T')[0]
-                }
-              };
-              
-              // Create employee record
-              const formData = new FormData();
-              formData.append('employee', JSON.stringify(newEmployeeData));
-              
-              const createResponse = await employeeAPI.create(formData);
-              if (createResponse.data.success) {
-                linkedEmployee = createResponse.data.data;
-                console.log('Employee profile created automatically for user:', user.fullName);
-              }
-            } catch (createError) {
-              console.error('Error creating employee profile:', createError);
-            }
-          }
-          
           if (linkedEmployee) {
             setEmployeeData(linkedEmployee);
+          } else {
+            setEmployeeData(null); // No employee record, but don't create one
           }
         }
       } catch (error) {
@@ -276,8 +253,14 @@ const ProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <LoadingSpinner 
+          size={60}
+          text="Loading profile..."
+          particleCount={2}
+          speed={1.2}
+          hueRange={[180, 260]}
+        />
       </div>
     );
   }
@@ -360,9 +343,7 @@ const ProfilePage = () => {
                     />
                   ) : user.profilePicture ? (
                     <img 
-                      src={user.profilePicture.startsWith('/uploads') ? 
-                        `${import.meta.env.DEV ? 'http://localhost:8080' : ''}${user.profilePicture}` : 
-                        user.profilePicture} 
+                      src={getProfilePictureUrl(user.profilePicture)}
                       alt={user.fullName} 
                       className="h-24 w-24 rounded-full object-cover"
                       onError={(e) => {
@@ -671,9 +652,8 @@ const ProfilePage = () => {
                     </div>
                   </div>
                 </div>
-                {employeeData && (
-                  <AttendanceManagement employeeId={employeeData._id} userRole={user?.role} />
-                )}
+                {/* Always show AttendanceManagement, use user._id if no employeeData */}
+                <AttendanceManagement employeeId={employeeData?._id || user._id} userRole={user?.role} />
               </div>
             )}
 
@@ -741,8 +721,9 @@ const ProfilePage = () => {
             )}
             
             {/* Leave Management Tab */}
-            {activeTab === 'leave' && employeeData && (
-              <LeaveManagement employeeId={employeeData._id} userRole={user?.role} />
+            {/* Always show LeaveManagement, use user._id if no employeeData */}
+            {activeTab === 'leave' && (
+              <LeaveManagement employeeId={employeeData?._id || user._id} userRole={user?.role} />
             )}
           </div>
         </div>

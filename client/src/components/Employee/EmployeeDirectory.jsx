@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaUser, FaPhone, FaEnvelope, FaLinkedin, FaFilter, FaUsers } from 'react-icons/fa';
 import employeeAPI from '../../services/employeeAPI';
+import LoadingSpinner from '../ui/LoadingSpinner';
 
 const EmployeeDirectory = () => {
   const [employees, setEmployees] = useState([]);
@@ -97,8 +98,13 @@ const EmployeeDirectory = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-        <span className="ml-2">Loading directory...</span>
+        <LoadingSpinner 
+          size={50}
+          text="Loading directory..."
+          particleCount={2}
+          speed={1.1}
+          hueRange={[160, 220]}
+        />
       </div>
     );
   }
