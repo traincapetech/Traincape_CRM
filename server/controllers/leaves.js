@@ -160,10 +160,15 @@ exports.createLeave = async (req, res) => {
     const end = new Date(req.body.endDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    
+    // Set start date to beginning of day for fair comparison
+    const startOfDay = new Date(start);
+    startOfDay.setHours(0, 0, 0, 0);
 
-    console.log('Dates:', { start, end, today });
+    console.log('Dates:', { start, end, today, startOfDay });
 
-    if (start < today) {
+    // Allow today and future dates
+    if (startOfDay < today) {
       return res.status(400).json({
         success: false,
         message: 'Start date cannot be in the past'
@@ -177,6 +182,15 @@ exports.createLeave = async (req, res) => {
       });
     }
 
+    // Calculate total days
+    let totalDays;
+    if (req.body.isHalfDay) {
+      totalDays = 0.5;
+    } else {
+      const timeDiff = end.getTime() - start.getTime();
+      totalDays = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
+    }
+
     // Create leave application with both employeeId and userId
     const leaveData = {
       employeeId: employee._id,
@@ -184,6 +198,7 @@ exports.createLeave = async (req, res) => {
       leaveType: req.body.leaveType,
       startDate: start,
       endDate: end,
+      totalDays: totalDays,
       reason: req.body.reason,
       isHalfDay: req.body.isHalfDay || false,
       halfDaySession: req.body.isHalfDay ? req.body.halfDaySession : undefined,
@@ -293,6 +308,14 @@ exports.deleteLeave = async (req, res) => {
 // @access  Private/Admin
 exports.approveLeave = async (req, res) => {
   try {
+    // Check authorization
+    if (!['Admin', 'HR', 'Manager'].includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to approve leaves'
+      });
+    }
+
     const leave = await Leave.findById(req.params.id);
     if (!leave) {
       return res.status(404).json({
@@ -301,9 +324,9 @@ exports.approveLeave = async (req, res) => {
       });
     }
 
-    leave.status = 'APPROVED';
+    leave.status = 'approved';
     leave.approvedBy = req.user.id;
-    leave.approvedAt = Date.now();
+    leave.approvedDate = Date.now();
     await leave.save();
 
     res.json({
@@ -325,6 +348,14 @@ exports.approveLeave = async (req, res) => {
 // @access  Private/Admin
 exports.rejectLeave = async (req, res) => {
   try {
+    // Check authorization
+    if (!['Admin', 'HR', 'Manager'].includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to reject leaves'
+      });
+    }
+
     const leave = await Leave.findById(req.params.id);
     if (!leave) {
       return res.status(404).json({
@@ -333,9 +364,9 @@ exports.rejectLeave = async (req, res) => {
       });
     }
 
-    leave.status = 'REJECTED';
+    leave.status = 'rejected';
     leave.rejectedBy = req.user.id;
-    leave.rejectedAt = Date.now();
+    leave.rejectedDate = Date.now();
     leave.rejectionReason = req.body.reason;
     await leave.save();
 

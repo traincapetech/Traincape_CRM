@@ -28,13 +28,29 @@ export const leaveAPI = {
   deleteLeave: (id) => api.delete(`/leaves/${id}`),
 
   // Get all leaves (admin/manager)
-  getAllLeaves: () => api.get('/leaves'),
+  getAllLeaves: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return api.get(`/leaves${queryString ? `?${queryString}` : ''}`);
+  },
 
   // Approve leave
   approveLeave: (id) => api.put(`/leaves/${id}/approve`),
 
   // Reject leave
-  rejectLeave: (id, reason) => api.put(`/leaves/${id}/reject`, { reason })
+  rejectLeave: (id, reason) => api.put(`/leaves/${id}/reject`, { reason }),
+
+  // Apply for leave (alias for createLeave)
+  applyLeave: (leaveData) => {
+    const formattedData = {
+      ...leaveData,
+      startDate: new Date(leaveData.startDate).toISOString(),
+      endDate: new Date(leaveData.endDate || leaveData.startDate).toISOString()
+    };
+    return api.post('/leaves', formattedData);
+  },
+
+  // Cancel leave
+  cancelLeave: (id) => api.put(`/leaves/${id}`, { status: 'cancelled' })
 };
 
 export default leaveAPI; 

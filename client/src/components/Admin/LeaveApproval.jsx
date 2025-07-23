@@ -121,15 +121,12 @@ const LeaveApproval = () => {
 
     try {
       setProcessing(true);
-      const data = {
-        status: actionType === 'approve' ? 'approved' : 'rejected'
-      };
       
-      if (actionType === 'reject') {
-        data.rejectionReason = rejectionReason;
+      if (actionType === 'approve') {
+        await leaveAPI.approveLeave(selectedLeave._id);
+      } else {
+        await leaveAPI.rejectLeave(selectedLeave._id, rejectionReason);
       }
-
-      await leaveAPI.updateLeaveStatus(selectedLeave._id, data);
       
       setSuccess(`Leave ${actionType === 'approve' ? 'approved' : 'rejected'} successfully`);
       setShowApprovalModal(false);
