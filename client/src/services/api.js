@@ -267,6 +267,45 @@ export const activityAPI = {
   getStatistics: (days = 7) => api.get(`/activity/statistics?days=${days}`),
 };
 
+// Invoice API
+export const invoiceAPI = {
+  getAll: (filters = {}) => {
+    const params = new URLSearchParams();
+    
+    // Add filters to params
+    if (filters.status) params.append('status', filters.status);
+    if (filters.startDate) params.append('startDate', filters.startDate);
+    if (filters.endDate) params.append('endDate', filters.endDate);
+    if (filters.clientEmail) params.append('clientEmail', filters.clientEmail);
+    if (filters.invoiceNumber) params.append('invoiceNumber', filters.invoiceNumber);
+    if (filters.page) params.append('page', filters.page);
+    if (filters.limit) params.append('limit', filters.limit);
+    
+    const queryString = params.toString();
+    const url = queryString ? `/invoices?${queryString}` : '/invoices';
+    
+    return api.get(url);
+  },
+  getById: (id) => api.get(`/invoices/${id}`),
+  create: (invoiceData) => api.post('/invoices', invoiceData),
+  update: (id, invoiceData) => api.put(`/invoices/${id}`, invoiceData),
+  delete: (id) => api.delete(`/invoices/${id}`),
+  generatePDF: (id) => api.get(`/invoices/${id}/pdf`, { responseType: 'blob' }),
+  downloadPDF: (id) => api.get(`/invoices/${id}/download`, { responseType: 'blob' }),
+  recordPayment: (id, paymentData) => api.post(`/invoices/${id}/payment`, paymentData),
+  getStats: (filters = {}) => {
+    const params = new URLSearchParams();
+    
+    if (filters.startDate) params.append('startDate', filters.startDate);
+    if (filters.endDate) params.append('endDate', filters.endDate);
+    
+    const queryString = params.toString();
+    const url = queryString ? `/invoices/stats?${queryString}` : '/invoices/stats';
+    
+    return api.get(url);
+  }
+};
+
 // Payroll API
 export const payrollAPI = {
   getAll: (params = {}) => {

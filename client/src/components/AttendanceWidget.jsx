@@ -15,8 +15,8 @@ const AttendanceWidget = () => {
 
   // Office location coordinates
   const OFFICE_LOCATION = {
-    latitude: 28.607390 ,   // UPDATE: Replace with your actual office latitude
-    longitude: 77.081735,  // UPDATE: Replace with your actual office longitude
+    latitude: 28.607407 ,   // UPDATE: Replace with your actual office latitude
+    longitude: 77.081754,  // UPDATE: Replace with your actual office longitude
     allowedRadius: 40    // 40 meters radius
   };
 

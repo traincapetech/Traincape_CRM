@@ -4,6 +4,7 @@ import employeeAPI from '../../services/employeeAPI';
 import AddEmployeeDialog from './AddEmployeeDialog';
 import EmployeeDetailsDialog from './EmployeeDetailsDialog';
 import EditEmployeeDialog from './EditEmployeeDialog';
+import { toast } from 'react-toastify';
 
 const EmployeeList = () => {
   const { user } = useAuth();
@@ -84,6 +85,37 @@ const EmployeeList = () => {
       );
     });
   }, [employees, searchTerm]);
+
+  // Handle edit employee
+  const handleEdit = (employeeId) => {
+    setSelectedEmployeeId(employeeId);
+    setShowEditDialog(true);
+  };
+
+  // Handle view employee details
+  const handleView = (employeeId) => {
+    setSelectedEmployeeId(employeeId);
+    setShowDetailsDialog(true);
+  };
+
+  // Handle delete employee
+  const handleDelete = async (employeeId) => {
+    if (!window.confirm('Are you sure you want to delete this employee? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setDeletingId(employeeId);
+      await employeeAPI.delete(employeeId);
+      toast.success('Employee deleted successfully');
+      fetchEmployees(); // Refresh the list
+    } catch (error) {
+      console.error('Error deleting employee:', error);
+      toast.error('Failed to delete employee. Please try again.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -185,12 +217,25 @@ const EmployeeList = () => {
               )}
             </div>
 
-            <div className="mt-4 flex justify-end">
+            <div className="mt-4 flex justify-end space-x-2">
+              <button
+                onClick={() => handleView(employee._id)}
+                className="px-3 py-1 text-sm text-green-500 hover:text-green-600 focus:outline-none"
+              >
+                View
+              </button>
               <button
                 onClick={() => handleEdit(employee._id)}
                 className="px-3 py-1 text-sm text-blue-500 hover:text-blue-600 focus:outline-none"
               >
                 Edit
+              </button>
+              <button
+                onClick={() => handleDelete(employee._id)}
+                disabled={deletingId === employee._id}
+                className="px-3 py-1 text-sm text-red-500 hover:text-red-600 focus:outline-none disabled:opacity-50"
+              >
+                {deletingId === employee._id ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>

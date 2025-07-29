@@ -33,6 +33,8 @@ import EmployeeManagementPage from '../pages/EmployeeManagementPage';
 import DocumentManagementPage from '../pages/DocumentManagementPage';
 import AdminActivityLogsPage from '../pages/AdminActivityLogsPage';
 import ManagerDashboard from "../pages/ManagerDashboard";
+import InvoiceManagementPage from "../pages/InvoiceManagementPage";
+import StripeInvoicePage from '../pages/StripeInvoicePage';
 // Removed Router wrapper so it can be used at a higher level
 const AllRoutes = () => {
   return (
@@ -105,6 +107,16 @@ const AllRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={["Sales Person", "Manager", "Admin"]}>
             <SalesCreatePage />
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* Invoice Management Route */}
+      <Route
+        path="/invoices"
+        element={
+          <ProtectedRoute allowedRoles={["Sales Person", "Manager", "Admin"]}>
+            <InvoiceManagementPage />
           </ProtectedRoute>
         }
       />
@@ -277,6 +289,24 @@ const AllRoutes = () => {
         } 
       />
       
+      {/* Invoice Management Routes */}
+      <Route 
+        path="/invoice-management" 
+        element={
+          <ProtectedRoute allowedRoles={['Admin', 'Manager', 'Sales']}>
+            <InvoiceManagementPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/stripe-invoices" 
+        element={
+          <ProtectedRoute allowedRoles={['Admin', 'Manager', 'Sales']}>
+            <StripeInvoicePage />
+          </ProtectedRoute>
+        } 
+      />
+
       {/* Catch-all route for 404 errors */}
       <Route path="*" element={<HomePage />} />
     </Routes>

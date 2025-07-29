@@ -7,6 +7,7 @@ import { componentClasses, darkModeClasses } from '../utils/darkModeClasses';
 import GuestChat from "../components/Chat/GuestChat";
 
 import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
+import { FaFileInvoiceDollar } from 'react-icons/fa';
 const HomePage = () => {
   const { user } = useAuth();
 
@@ -42,6 +43,11 @@ const HomePage = () => {
                 <Link to="/profile" className="w-full sm:w-auto px-6 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white dark:bg-slate-900 transition-all duration-200 ease-out text-center">
                   My Profile
                 </Link>
+                {(user.role === "Sales Person" || user.role === "Manager" || user.role === "Admin" || user.role === "Sales Person" && user.role === "Employee") && (
+                  <Link to="/invoices" className="w-full sm:w-auto px-6 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white dark:bg-slate-900 transition-all duration-200 ease-out text-center">
+                    Invoice Management
+                  </Link>
+                )}
               </div>
             )}
           </div>
@@ -51,7 +57,52 @@ const HomePage = () => {
       {/* Quick Access Cards - Improved for mobile */}
       <div className="bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out py-6">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-8 md:-mt-10 relative z-10">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {/* Quick Access Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {/* Invoice Management Card */}
+            {/* {['Admin', 'Manager', 'Sales'].includes(user?.role) && (
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold mb-1 text-gray-900 dark:text-white">Invoice Management</h3>
+                  <FaFileInvoiceDollar className="text-blue-600 text-xl" />
+                </div>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  Create and manage professional invoices with PDF generation and payment tracking.
+                </p>
+                <Link
+                  to="/invoice-management"
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Manage Invoices
+                  <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+            )} */}
+
+            {/* Stripe Invoices Card */}
+            {['Admin', 'Manager', 'Sales'].includes(user?.role) && (
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold mb-1 text-gray-900 dark:text-white">Stripe Invoices</h3>
+                  <FaFileInvoiceDollar className="text-green-600 text-xl" />
+                </div>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  Create Stripe-powered invoices with automatic payment processing and customer notifications.
+                </p>
+                <Link
+                  to="/stripe-invoices"
+                  className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                >
+                  Stripe Invoices
+                  <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+            )}
+
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 ease-out">
               <div className="flex flex-col sm:flex-row items-center sm:items-start">
                 <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 p-3 rounded-lg mb-3 sm:mb-0 sm:mr-4">
@@ -96,6 +147,23 @@ const HomePage = () => {
                 </div>
               </div>
             </div>
+            
+            {user && (user.role === "Sales Person" || user.role === "Manager" || user.role === "Admin") && (
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 ease-out">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start">
+                  <div className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 p-3 rounded-lg mb-3 sm:mb-0 sm:mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div className="text-center sm:text-left">
+                    <h3 className="text-lg font-bold mb-1 text-gray-900 dark:text-white">Invoice Management</h3>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm">Create professional invoices and track payments.</p>
+                    <Link to="/invoices" className="text-orange-700 dark:text-orange-400 font-medium text-sm mt-2 inline-block hover:underline">Manage Invoices →</Link>
+                  </div>
+                </div>
+              </div>
+            )}
             
             {user && (user.role === "Manager" || user.role === "Admin") && (
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 ease-out">

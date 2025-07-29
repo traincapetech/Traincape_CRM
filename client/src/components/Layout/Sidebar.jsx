@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { FaHome, FaUser, FaUsers, FaChartLine, FaClipboardList, FaChartBar, FaCog, FaFileImport, FaCalendarCheck, FaUserCog, FaClock, FaUserTie, FaFileAlt, FaHistory } from 'react-icons/fa';
+import { FaHome, FaUser, FaUsers, FaChartLine, FaClipboardList, FaChartBar, FaCog, FaFileImport, FaCalendarCheck, FaUserCog, FaClock, FaUserTie, FaFileAlt, FaHistory, FaFileInvoiceDollar } from 'react-icons/fa';
 import ThemeToggle from '../ThemeToggle';
 
 const Sidebar = () => {
@@ -128,6 +128,50 @@ const Sidebar = () => {
                   Create Sale for Lead
                 </Link>
               </li>
+            )}
+            
+            {/* Invoice Management - Only visible to Sales Person, Manager, and Admin */}
+            {(user?.role === 'Sales Person' || user?.role === 'Manager' || user?.role === 'Admin') && (
+              <>
+                <li>
+                  <Link
+                    to="/invoice-management"
+                    className={`${
+                      location.pathname === '/invoice-management'
+                        ? 'bg-gray-900 text-white'
+                        : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
+                    } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
+                  >
+                    <FaFileInvoiceDollar
+                      className={`${
+                        location.pathname === '/invoice-management'
+                          ? 'text-gray-300 dark:text-gray-400'
+                          : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
+                      } mr-3 flex-shrink-0 h-6 w-6`}
+                    />
+                    Invoice Management
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/stripe-invoices"
+                    className={`${
+                      location.pathname === '/stripe-invoices'
+                        ? 'bg-gray-900 text-white'
+                        : 'text-gray-300 dark:text-gray-400 hover:bg-gray-700 hover:text-white'
+                    } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
+                  >
+                    <FaFileInvoiceDollar
+                      className={`${
+                        location.pathname === '/stripe-invoices'
+                          ? 'text-gray-300 dark:text-gray-400'
+                          : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-300 dark:text-gray-400'
+                      } mr-3 flex-shrink-0 h-6 w-6`}
+                    />
+                    Stripe Invoices
+                  </Link>
+                </li>
+              </>
             )}
             
             {/* Task Management - Visible to all authenticated users */}

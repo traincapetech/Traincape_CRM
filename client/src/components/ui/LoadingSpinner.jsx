@@ -2,7 +2,7 @@ import React from 'react';
 import MagicLoader from '../lightswind/magic-loader.tsx';
 
 const LoadingSpinner = ({ 
-  size = 40, 
+  size = 100, 
   text = "Loading...", 
   className = "",
   showText = true,

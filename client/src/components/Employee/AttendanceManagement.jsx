@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaClock, FaCalendarCheck, FaSignInAlt, FaSignOutAlt, FaChartBar, FaMapMarkerAlt, FaDownload, FaFilter, FaSpinner } from 'react-icons/fa';
-import employeeAPI from '../../services/employeeAPI';
+import { attendanceAPI } from '../../services/api';
 import LoadingSpinner from '../ui/LoadingSpinner';
+import { toast } from 'react-toastify';
 
 // Office location coordinates (update these with your actual office coordinates)
 const OFFICE_LOCATION = {
@@ -61,53 +62,30 @@ const AttendanceManagement = ({ employeeId, userRole }) => {
 
   useEffect(() => {
     // Initial fetch
-    if (employeeId) {
-      fetchAttendance();
-      fetchTodayAttendance();
-    }
+    fetchAttendance();
+    fetchTodayAttendance();
 
     // Set up interval to refresh data every minute
     const interval = setInterval(() => {
-      if (employeeId) {
-        fetchAttendance();
-        fetchTodayAttendance();
-      }
+      fetchAttendance();
+      fetchTodayAttendance();
     }, 60000); // 60000 ms = 1 minute
 
     return () => clearInterval(interval);
-  }, [employeeId]);
+  }, [selectedMonth, selectedYear]);
 
   const fetchAttendance = async () => {
     try {
       setLoading(true);
-      // This would be implemented in the API
-      // const response = await employeeAPI.getAttendance(employeeId, selectedMonth, selectedYear);
-      // setAttendance(response.data || []);
-      
-      // Mock data for now
-      const mockAttendance = [];
-      const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
-      
-      for (let day = 1; day <= daysInMonth; day++) {
-        const date = new Date(selectedYear, selectedMonth, day);
-        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-        const isFuture = date > new Date();
-        
-        if (!isWeekend && !isFuture && Math.random() > 0.1) { // 90% attendance
-          mockAttendance.push({
-            _id: `${selectedYear}-${selectedMonth}-${day}`,
-            date: date.toISOString().split('T')[0],
-            checkIn: `09:${Math.floor(Math.random() * 30).toString().padStart(2, '0')}`,
-            checkOut: `18:${Math.floor(Math.random() * 30).toString().padStart(2, '0')}`,
-            workingHours: 8 + Math.random() * 2,
-            status: 'Present'
-          });
-        }
-      }
-      
-      setAttendance(mockAttendance);
+      const params = {
+        month: selectedMonth + 1, // API expects 1-based month
+        year: selectedYear
+      };
+      const response = await attendanceAPI.getHistory(params);
+      setAttendance(response.data.data || []);
     } catch (error) {
       console.error('Error fetching attendance:', error);
+      toast.error('Failed to fetch attendance history');
     } finally {
       setLoading(false);
     }
@@ -115,27 +93,15 @@ const AttendanceManagement = ({ employeeId, userRole }) => {
 
   const fetchTodayAttendance = async () => {
     try {
-      // This would be implemented in the API
-      // const response = await employeeAPI.getTodayAttendance(employeeId);
-      // setTodayAttendance(response.data);
-      
-      // Get today's date
-      const today = new Date().toISOString().split('T')[0];
-      const existingToday = attendance.find(att => att.date === today);
-      
-      if (!existingToday) {
-        setTodayAttendance({
-          date: today,
-          checkIn: null,
-          checkOut: null,
-          workingHours: 0,
-          status: 'Absent'
-        });
+      const response = await attendanceAPI.getTodayAttendance();
+      if (response.data.success) {
+        setTodayAttendance(response.data.data);
       } else {
-        setTodayAttendance(existingToday);
+        setTodayAttendance(null);
       }
     } catch (error) {
       console.error('Error fetching today attendance:', error);
+      toast.error('Failed to fetch today\'s attendance status');
     }
   };
 
@@ -210,9 +176,6 @@ const AttendanceManagement = ({ employeeId, userRole }) => {
 
   const handleCheckIn = async () => {
     try {
-      const now = new Date();
-      const timeString = now.toTimeString().slice(0, 5);
-      
       // Get location for check-in
       let locationData = null;
       try {
@@ -220,46 +183,37 @@ const AttendanceManagement = ({ employeeId, userRole }) => {
         
         // Check if user is within office range
         if (!locationData.isInOfficeRange) {
-          alert(`Cannot check in: You are ${locationData.distance.toFixed(1)} meters away from office. Please move within ${OFFICE_LOCATION.allowedRadius} meters of the office location.`);
+          toast.error(`Cannot check in: You are ${locationData.distance.toFixed(1)} meters away from office. Please move within ${OFFICE_LOCATION.allowedRadius} meters of the office location.`);
           return;
         }
       } catch (error) {
         console.warn('Could not get location:', error);
-        alert('Location access is required for attendance marking. Please enable location services and try again.');
+        toast.error('Location access is required for attendance marking. Please enable location services and try again.');
         return;
       }
       
-      // This would be implemented in the API
-      // await employeeAPI.checkIn(employeeId, { location: locationData });
-      
-      const updatedAttendance = {
-        ...todayAttendance,
-        checkIn: timeString,
-        status: 'Present',
-        location: locationData
-      };
-      
-      setTodayAttendance(updatedAttendance);
-      
-      // Update attendance list
-      const today = new Date().toISOString().split('T')[0];
-      setAttendance(prev => {
-        const filtered = prev.filter(att => att.date !== today);
-        return [...filtered, updatedAttendance];
+      const response = await attendanceAPI.checkIn({ 
+        notes: '', 
+        location: locationData 
       });
       
-      alert('Check-in successful! You are within the office premises.');
+      if (response.data.success) {
+        setTodayAttendance(response.data.data);
+        toast.success('Check-in successful! You are within the office premises.');
+        
+        // Refresh attendance data
+        fetchAttendance();
+      } else {
+        toast.error(response.data.message || 'Failed to check in');
+      }
     } catch (error) {
       console.error('Error checking in:', error);
-      alert('Failed to check in. Please try again.');
+      toast.error(error.response?.data?.message || 'Failed to check in. Please try again.');
     }
   };
 
   const handleCheckOut = async () => {
     try {
-      const now = new Date();
-      const timeString = now.toTimeString().slice(0, 5);
-      
       // Get location for check-out
       let locationData = null;
       try {
@@ -267,50 +221,39 @@ const AttendanceManagement = ({ employeeId, userRole }) => {
         
         // Check if user is within office range
         if (!locationData.isInOfficeRange) {
-          alert(`Cannot check out: You are ${locationData.distance.toFixed(1)} meters away from office. Please move within ${OFFICE_LOCATION.allowedRadius} meters of the office location.`);
+          toast.error(`Cannot check out: You are ${locationData.distance.toFixed(1)} meters away from office. Please move within ${OFFICE_LOCATION.allowedRadius} meters of the office location.`);
           return;
         }
       } catch (error) {
         console.warn('Could not get location:', error);
-        alert('Location access is required for attendance marking. Please enable location services and try again.');
+        toast.error('Location access is required for attendance marking. Please enable location services and try again.');
         return;
       }
       
-      // Calculate working hours
-      const checkInTime = new Date(`2000-01-01 ${todayAttendance.checkIn}`);
-      const checkOutTime = new Date(`2000-01-01 ${timeString}`);
-      const workingHours = (checkOutTime - checkInTime) / (1000 * 60 * 60);
-      
-      // This would be implemented in the API
-      // await employeeAPI.checkOut(employeeId);
-      
-      const updatedAttendance = {
-        ...todayAttendance,
-        checkOut: timeString,
-        workingHours: workingHours,
-        status: 'Present'
-      };
-      
-      setTodayAttendance(updatedAttendance);
-      
-      // Update attendance list
-      const today = new Date().toISOString().split('T')[0];
-      setAttendance(prev => {
-        const filtered = prev.filter(att => att.date !== today);
-        return [...filtered, updatedAttendance];
+      const response = await attendanceAPI.checkOut({ 
+        notes: '', 
+        location: locationData 
       });
       
-      alert('Check-out successful! Have a great day.');
+      if (response.data.success) {
+        setTodayAttendance(response.data.data);
+        toast.success('Check-out successful! Have a great day.');
+        
+        // Refresh attendance data
+        fetchAttendance();
+      } else {
+        toast.error(response.data.message || 'Failed to check out');
+      }
     } catch (error) {
       console.error('Error checking out:', error);
-      alert('Failed to check out. Please try again.');
+      toast.error(error.response?.data?.message || 'Failed to check out. Please try again.');
     }
   };
 
   const calculateStats = () => {
     const totalDays = attendance.length;
-    const presentDays = attendance.filter(att => att.status === 'Present').length;
-    const totalHours = attendance.reduce((sum, att) => sum + (att.workingHours || 0), 0);
+    const presentDays = attendance.filter(att => att.status === 'PRESENT').length;
+    const totalHours = attendance.reduce((sum, att) => sum + (att.totalHours || 0), 0);
     const avgHours = totalDays > 0 ? totalHours / totalDays : 0;
     
     return {
@@ -328,9 +271,9 @@ const AttendanceManagement = ({ employeeId, userRole }) => {
       ['Date', 'Check In', 'Check Out', 'Hours', 'Status', 'Location'],
       ...filteredData.map(record => [
         new Date(record.date).toLocaleDateString(),
-        record.checkIn || '--',
-        record.checkOut || '--',
-        record.workingHours ? `${record.workingHours.toFixed(1)}h` : '--',
+        record.checkIn ? new Date(record.checkIn).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '--',
+        record.checkOut ? new Date(record.checkOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '--',
+        record.totalHours ? `${record.totalHours.toFixed(1)}h` : '--',
         record.status,
         record.location ? 'Yes' : 'No'
       ])
@@ -348,6 +291,10 @@ const AttendanceManagement = ({ employeeId, userRole }) => {
   const getFilteredAttendance = () => {
     return attendance.filter(record => {
       if (filterStatus === 'all') return true;
+      if (filterStatus === 'Present') return record.status === 'PRESENT';
+      if (filterStatus === 'Absent') return record.status === 'ABSENT';
+      if (filterStatus === 'Half Day') return record.status === 'HALF_DAY';
+      if (filterStatus === 'Late') return record.status === 'LATE';
       return record.status === filterStatus;
     });
   };
@@ -378,14 +325,14 @@ const AttendanceManagement = ({ employeeId, userRole }) => {
           
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">
-              {todayAttendance?.checkIn || '--:--'}
+              {todayAttendance?.checkIn ? new Date(todayAttendance.checkIn).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Check In</div>
           </div>
           
           <div className="text-center">
             <div className="text-2xl font-bold text-red-600">
-              {todayAttendance?.checkOut || '--:--'}
+              {todayAttendance?.checkOut ? new Date(todayAttendance.checkOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Check Out</div>
           </div>
@@ -424,7 +371,7 @@ const AttendanceManagement = ({ employeeId, userRole }) => {
                 ✅ Attendance marked for today
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                Working Hours: {todayAttendance.workingHours?.toFixed(1)} hours
+                Working Hours: {todayAttendance.totalHours?.toFixed(1)} hours
               </div>
               {todayAttendance?.location && (
                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center justify-center">
@@ -624,13 +571,13 @@ const AttendanceManagement = ({ employeeId, userRole }) => {
                         {new Date(record.date).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                        {record.checkIn || '--'}
+                        {record.checkIn ? new Date(record.checkIn).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '--'}
                       </td>
                       <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                        {record.checkOut || '--'}
+                        {record.checkOut ? new Date(record.checkOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '--'}
                       </td>
                       <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                        {record.workingHours ? `${record.workingHours.toFixed(1)}h` : '--'}
+                        {record.totalHours ? `${record.totalHours.toFixed(1)}h` : '--'}
                       </td>
                       <td className="px-4 py-2">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
