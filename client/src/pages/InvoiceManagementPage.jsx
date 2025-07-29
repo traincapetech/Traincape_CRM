@@ -573,14 +573,22 @@ const InvoiceManagementPage = () => {
   const handleDelete = async (invoiceId) => {
     if (window.confirm('Are you sure you want to delete this invoice?')) {
       try {
+        console.log('Deleting invoice:', invoiceId);
         const response = await invoiceAPI.delete(invoiceId);
+        console.log('Delete response:', response);
+        
         if (response.data.success) {
           toast.success('Invoice deleted successfully');
+          // Immediately remove from local state for better UX
+          setInvoices(prevInvoices => prevInvoices.filter(invoice => invoice._id !== invoiceId));
+          // Also refresh from server to ensure consistency
           fetchInvoices();
+        } else {
+          toast.error(response.data.message || 'Failed to delete invoice');
         }
       } catch (err) {
         console.error('Error deleting invoice:', err);
-        toast.error('Failed to delete invoice');
+        toast.error(err.response?.data?.message || 'Failed to delete invoice');
       }
     }
   };
@@ -1515,4 +1523,4 @@ const InvoiceManagementPage = () => {
   );
 };
 
-export default InvoiceManagementPage; 
+export default InvoiceManagementPage;
