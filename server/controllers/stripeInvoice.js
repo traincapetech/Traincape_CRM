@@ -238,6 +238,12 @@ const createStripeInvoice = async (req, res) => {
     for (const item of items) {
       try {
         console.log('📦 Creating invoice item for:', item.description);
+        console.log('📦 Item data:', {
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          taxRate: item.taxRate
+        });
         
         // Create product first
         const product = await stripe.products.create({

@@ -71,6 +71,7 @@ const StripeInvoicePage = () => {
       }
 
       console.log('Found CRM invoice:', crmInvoice);
+      console.log('CRM invoice items:', crmInvoice.items);
 
       const stripeInvoiceData = {
         crmInvoiceId: crmInvoiceId,
@@ -79,12 +80,16 @@ const StripeInvoicePage = () => {
           name: crmInvoice.clientInfo?.name || 'Customer Name',
           crmId: crmInvoice._id
         },
-        items: crmInvoice.items?.map(item => ({
-          description: item.description || 'Item',
-          quantity: item.quantity || 1,
-          unitPrice: item.unitPrice || 0,
-          taxRate: item.taxRate || 0
-        })) || [],
+        items: crmInvoice.items?.map(item => {
+          const mappedItem = {
+            description: item.description || 'Item',
+            quantity: item.quantity || 1,
+            unitPrice: parseFloat(item.unitPrice) || parseFloat(item.total) || 0,
+            taxRate: parseFloat(item.taxRate) || 0
+          };
+          console.log('Mapping item:', item, 'to:', mappedItem);
+          return mappedItem;
+        }) || [],
         dueDate: crmInvoice.dueDate || new Date().toISOString()
       };
 
