@@ -141,59 +141,44 @@ const DocumentManagementPage = () => {
 
   const getDocumentStatusIcon = (employee, docType) => {
     const documents = employee.documents || {};
-    const hasDocument = documents[docType.key] && documents[docType.key].filename;
+    const info = documents[docType.key];
+    const hasDocument = !!(info && (info.url || info.filename || info.path));
     
-    if (hasDocument) {
-      return <FaCheck className="text-green-500" />;
-    } else if (docType.required) {
-      return <FaTimes className="text-red-500" />;
-    } else {
-      return <FaClock className="text-yellow-500" />;
-    }
+    if (hasDocument) return <FaCheck className="text-green-500" />;
+    if (docType.required) return <FaTimes className="text-red-500" />;
+    return <FaClock className="text-yellow-500" />;
   };
 
   const downloadDocument = async (employee, documentType) => {
     try {
       const documents = employee.documents || {};
       const docInfo = documents[documentType.key];
-      
-      if (!docInfo || !docInfo.filename) {
-        toast.error('Document not found');
+      if (!docInfo) return toast.error('Document not found');
+
+      // Prefer Google Drive direct link if available
+      if (docInfo.webContentLink) {
+        window.open(docInfo.webContentLink, '_blank');
+        return;
+      }
+      if (docInfo.url) {
+        window.open(docInfo.url, '_blank');
         return;
       }
 
-      // Use the API endpoint for downloading documents
+      // Fallback to backend streaming by filename
       const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-      const fileUrl = `${baseUrl}/api/auth/documents/${docInfo.filename}`;
-      
-      // Get the token from localStorage
+      const fileUrl = `${baseUrl}/api/employees/documents/${docInfo.filename}`;
       const token = localStorage.getItem('token');
-      
-      // Fetch the file with authentication
-      const response = await fetch(fileUrl, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to download document');
-      }
-      
-      // Get the file blob
+      const response = await fetch(fileUrl, { headers: { Authorization: `Bearer ${token}` } });
+      if (!response.ok) throw new Error('Failed to download');
       const blob = await response.blob();
-      
-      // Create download link
       const link = document.createElement('a');
       link.href = window.URL.createObjectURL(blob);
       link.download = `${employee.fullName || employee.email}_${documentType.label}_${docInfo.originalName || docInfo.filename}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      // Clean up the blob URL
       window.URL.revokeObjectURL(link.href);
-      
       toast.success(`Downloaded ${documentType.label}`);
     } catch (err) {
       console.error('Error downloading document:', err);
@@ -202,48 +187,27 @@ const DocumentManagementPage = () => {
   };
 
   const viewDocument = (employee, documentType) => {
-    try {
-      const documents = employee.documents || {};
-      const docInfo = documents[documentType.key];
-      
-      if (!docInfo || !docInfo.filename) {
-        toast.error('Document not found');
-        return;
-      }
+    const documents = employee.documents || {};
+    const docInfo = documents[documentType.key];
+    if (!docInfo) return toast.error('Document not found');
 
-      // Use the API endpoint for viewing documents
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-      const fileUrl = `${baseUrl}/api/auth/documents/${docInfo.filename}`;
-      const token = localStorage.getItem('token');
-      
-      // Create a new window/tab with the authenticated URL
-      const newWindow = window.open();
-      
-      // Fetch the file with authentication
-      fetch(fileUrl, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to load document');
-        }
-        return response.blob();
-      })
+    if (docInfo.url) {
+      window.open(docInfo.url, '_blank');
+      return;
+    }
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+    const fileUrl = `${baseUrl}/api/employees/documents/${docInfo.filename}`;
+    const token = localStorage.getItem('token');
+    const newWindow = window.open();
+    if (!newWindow) return;
+    newWindow.document.write('<p>Loading document...</p>');
+    fetch(fileUrl, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => res.blob())
       .then(blob => {
-        const blobUrl = window.URL.createObjectURL(blob);
+        const blobUrl = URL.createObjectURL(blob);
         newWindow.location.href = blobUrl;
       })
-      .catch(err => {
-        console.error('Error viewing document:', err);
-        toast.error('Failed to view document');
-        newWindow.close();
-      });
-    } catch (err) {
-      console.error('Error viewing document:', err);
-      toast.error('Failed to view document');
-    }
+      .catch(() => newWindow.close());
   };
 
   const handleUploadDocument = async () => {

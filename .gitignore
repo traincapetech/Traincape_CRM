@@ -95,3 +95,8 @@ public
 # Temporary folders
 tmp/
 temp/ 
+
+# Google credentials (do NOT commit)
+server/config/google-credentials.json
+*.pem
+*.p12 
