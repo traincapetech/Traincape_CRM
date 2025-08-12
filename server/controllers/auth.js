@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const fs = require('fs'); // Added for file cleanup
 const path = require('path'); // Added for path.join
 const { UPLOAD_PATHS } = require('../config/storage');
+const { sendEmail } = require('../config/nodemailer');
 const asyncHandler = require('../middleware/async'); // Added for asyncHandler
 
 // @desc    Register user
@@ -97,8 +98,8 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Check for user
-    const user = await User.findOne({ email }).select('+password');
+    // Check for user and explicitly select password field
+    const user = await User.findOne({ email }).select('+password -__v');
     
     console.log('Found user:', user ? user._id : 'Not found');
 
@@ -135,11 +136,33 @@ exports.login = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
+    
+    // Handle specific error types
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: Object.values(error.errors).map(err => err.message)
+      });
+    }
+    
+    if (error.name === 'MongoError' || error.name === 'MongoServerError') {
+      return res.status(500).json({
+        success: false,
+        message: 'Database error',
+        error: 'Please try again later'
+      });
+    }
+    
     res.status(500).json({
       success: false,
-      message: 'Error logging in',
-      error: error.message
+      message: 'Error logging in. Please try again.',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
   }
 };
@@ -920,8 +943,21 @@ exports.forgotPassword = async (req, res) => {
     user.verifyOtpExpireAt = otpExpiry;
     await user.save();
 
-    // TODO: Send OTP via email
-    console.log('Generated OTP:', otp);
+    // Send OTP via email
+    const emailText = `Your OTP for password reset is: ${otp}. This OTP will expire in 10 minutes.`;
+    const emailHtml = `
+      <h2>Password Reset OTP</h2>
+      <p>Your OTP for password reset is: <strong>${otp}</strong></p>
+      <p>This OTP will expire in 10 minutes.</p>
+      <p>If you did not request this password reset, please ignore this email.</p>
+    `;
+    
+    await sendEmail(
+      email,
+      'Password Reset OTP - Traincape CRM',
+      emailText,
+      emailHtml
+    );
 
     res.status(200).json({
       success: true,
@@ -966,7 +1002,13 @@ exports.verifyOTP = async (req, res) => {
 
     // Generate reset OTP
     const resetOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    const resetOtpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
+    const resetOtpExpiry = Date.now() + 30 * 60 * 1000; // 30 minutes
+
+    console.log('Generating reset OTP:', {
+      email,
+      resetOtp,
+      resetOtpExpiry
+    });
 
     // Save reset OTP
     user.resetOtp = resetOtp;
@@ -997,7 +1039,21 @@ exports.resetPassword = async (req, res) => {
   try {
     const { email, resetOtp, newPassword } = req.body;
 
-    console.log('Password reset request:', { email, resetOtp });
+    console.log('Password reset request:', {
+      email,
+      resetOtp,
+      hasPassword: !!newPassword,
+      passwordLength: newPassword ? newPassword.length : 0,
+      body: req.body
+    });
+
+    // Validate password
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 6 characters long'
+      });
+    }
 
     // Find user by email
     const user = await User.findOne({ email });
@@ -1010,10 +1066,40 @@ exports.resetPassword = async (req, res) => {
     }
 
     // Check if reset OTP matches and is not expired
-    if (user.resetOtp !== resetOtp || Date.now() > user.resetOtpExpireAt) {
+    console.log('Password Reset Validation:', {
+      email,
+      providedOtp: resetOtp,
+      storedOtp: user.resetOtp,
+      otpExpiry: new Date(user.resetOtpExpireAt),
+      now: new Date(),
+      timeDiff: (user.resetOtpExpireAt - Date.now()) / 1000 / 60 + ' minutes',
+      password: newPassword ? 'provided' : 'missing',
+      passwordLength: newPassword?.length
+    });
+
+    if (!user.resetOtp || !user.resetOtpExpireAt) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid or expired reset OTP'
+        message: 'No reset OTP found. Please request a new password reset.'
+      });
+    }
+
+    if (user.resetOtp !== resetOtp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid reset OTP. Please use the OTP from the verification step.'
+      });
+    }
+
+    if (Date.now() > user.resetOtpExpireAt) {
+      // Clear expired OTPs
+      user.resetOtp = undefined;
+      user.resetOtpExpireAt = undefined;
+      await user.save();
+      
+      return res.status(400).json({
+        success: false,
+        message: 'Reset OTP has expired. Please request a new password reset.'
       });
     }
 

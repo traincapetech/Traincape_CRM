@@ -130,6 +130,8 @@ const ForgotPassword = () => {
         setShowNewPassword(true);
         setShowOtp(false);
         setLoading(false);
+        // Store the resetOtp for the password reset step
+        localStorage.setItem('resetOtp', result.resetOtp);
         setSuccessMessage("OTP verified successfully. Enter your new password");
         toast.success("OTP verified successfully!");
       } else {
@@ -174,8 +176,10 @@ const ForgotPassword = () => {
     
     try {
       setLoading(true);
+      // Get the resetOtp from the verification response
       const response = await authAPI.resetPassword({ 
         email: payload.email, 
+        resetOtp: localStorage.getItem('resetOtp'), // Get the stored resetOtp
         newPassword: payload.newPassword 
       });
       const result = response.data;
@@ -185,6 +189,9 @@ const ForgotPassword = () => {
         setLoading(false);
         setSuccessMessage("Password reset successfully!");
         toast.success("Password reset successfully! You can now login with your new password.");
+        
+        // Clean up stored resetOtp
+        localStorage.removeItem('resetOtp');
         
         // Redirect to login after 2 seconds
         setTimeout(() => {

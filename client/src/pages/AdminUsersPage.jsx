@@ -370,7 +370,7 @@ const AdminUsersPage = () => {
       // Fetch employee data for this user
       let employeeData = {};
       if (['Sales Person', 'Lead Person', 'Manager', 'Employee'].includes(userItem.role)) {
-        const response = await employeeAPI.getEmployees();
+        const response = await employeeAPI.getAll();
         if (response.data && response.data.success) {
           const employee = response.data.data.find(emp => emp.userId === userItem._id);
           if (employee) {

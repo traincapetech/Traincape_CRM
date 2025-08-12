@@ -68,7 +68,16 @@ export const authAPI = {
   deleteUser: (userId) => api.delete(`/auth/users/${userId}`),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   verifyOTP: (data) => api.post('/auth/verifyOtp', data),
-  resetPassword: (data) => api.post('/auth/reset_password', data)
+  resetPassword: (data) => api.post('/auth/reset_password', data),
+  // Multipart helpers for creating/updating users with employee documents
+  createUserWithDocuments: (formData) =>
+    api.post('/auth/users/with-documents', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+  updateUserWithDocuments: (userId, formData) =>
+    api.put(`/auth/users/${userId}/with-documents`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }),
 };
 
 // Leads API
