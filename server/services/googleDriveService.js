@@ -4,6 +4,12 @@ const fs = require('fs');
 function createDriveClient() {
   try {
     const keyFile = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    console.log('Google Drive Client Creation:', {
+      keyFile: keyFile,
+      keyFileExists: keyFile ? fs.existsSync(keyFile) : false,
+      USE_GOOGLE_DRIVE: process.env.USE_GOOGLE_DRIVE
+    });
+    
     if (!keyFile || !fs.existsSync(keyFile)) {
       console.warn('GOOGLE_APPLICATION_CREDENTIALS missing or file not found');
       return null;
@@ -20,14 +26,31 @@ function createDriveClient() {
 }
 
 async function ensurePublic(drive, fileId) {
-  await drive.permissions.create({ fileId, requestBody: { type: 'anyone', role: 'reader' } });
+  await drive.permissions.create({ 
+    fileId, 
+    requestBody: { type: 'anyone', role: 'reader' },
+    supportsAllDrives: true
+  });
 }
 
 async function getOrCreateFolder(drive, name, parentId) {
   const q = `name='${name.replace(/'/g, "\\'")}' and mimeType='application/vnd.google-apps.folder' and trashed=false` + (parentId ? ` and '${parentId}' in parents` : '');
-  const r = await drive.files.list({ q, fields: 'files(id,name)' });
+  const r = await drive.files.list({ 
+    q, 
+    fields: 'files(id,name)',
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true
+  });
   if (r.data.files?.length) return r.data.files[0].id;
-  const created = await drive.files.create({ resource: { name, mimeType: 'application/vnd.google-apps.folder', parents: parentId ? [parentId] : undefined }, fields: 'id' });
+  const created = await drive.files.create({ 
+    resource: { 
+      name, 
+      mimeType: 'application/vnd.google-apps.folder', 
+      parents: parentId ? [parentId] : undefined 
+    }, 
+    fields: 'id',
+    supportsAllDrives: true
+  });
   return created.data.id;
 }
 
@@ -67,7 +90,8 @@ module.exports = {
     const res = await drive.files.create({
       requestBody: { name: fileName, parents: parent ? [parent] : undefined },
       media: { mimeType, body: fs.createReadStream(localPath) },
-      fields: 'id,name,webViewLink,webContentLink'
+      fields: 'id,name,webViewLink,webContentLink',
+      supportsAllDrives: true
     });
     await ensurePublic(drive, res.data.id);
     return {

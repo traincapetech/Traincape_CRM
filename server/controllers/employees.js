@@ -117,7 +117,12 @@ exports.getEmployees = async (req, res) => {
 // @access  Private
 exports.getEmployee = async (req, res) => {
   try {
-    const employee = await Employee.findById(req.params.id);
+    console.log('Fetching employee with ID:', req.params.id);
+    
+    const employee = await Employee.findById(req.params.id)
+      .populate('department', 'name description')
+      .populate('role', 'name description')
+      .populate('hrId', 'fullName email');
 
     if (!employee) {
       return res.status(404).json({
@@ -125,6 +130,21 @@ exports.getEmployee = async (req, res) => {
         message: 'Employee not found'
       });
     }
+
+    console.log('Found employee data:', {
+      id: employee._id,
+      fullName: employee.fullName,
+      email: employee.email,
+      hasDocuments: {
+        photograph: !!employee.photograph,
+        tenthMarksheet: !!employee.tenthMarksheet,
+        aadharCard: !!employee.aadharCard,
+        panCard: !!employee.panCard,
+        pcc: !!employee.pcc,
+        resume: !!employee.resume,
+        offerLetter: !!employee.offerLetter
+      }
+    });
 
     // Check authorization - Allow HR, Admin, Manager, and users viewing their own profile
     if (req.user.role === 'HR' || req.user.role === 'Admin' || req.user.role === 'Manager' || 
@@ -148,11 +168,72 @@ exports.getEmployee = async (req, res) => {
   }
 };
 
+// @desc    Get employee by user ID
+// @route   GET /api/employees/user/:userId
+// @access  Private
+exports.getEmployeeByUserId = async (req, res) => {
+  try {
+    console.log('Fetching employee by user ID:', req.params.userId);
+    
+    const employee = await Employee.findOne({ userId: req.params.userId })
+      .populate('department', 'name description')
+      .populate('role', 'name description')
+      .populate('hrId', 'fullName email');
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: 'Employee not found for this user'
+      });
+    }
+
+    console.log('Found employee by userId:', {
+      id: employee._id,
+      fullName: employee.fullName,
+      email: employee.email,
+      hasDocuments: {
+        photograph: !!employee.photograph,
+        tenthMarksheet: !!employee.tenthMarksheet,
+        aadharCard: !!employee.aadharCard,
+        panCard: !!employee.panCard,
+        pcc: !!employee.pcc,
+        resume: !!employee.resume,
+        offerLetter: !!employee.offerLetter
+      }
+    });
+
+    // Check authorization - Allow HR, Admin, Manager, and users viewing their own profile
+    if (req.user.role === 'HR' || req.user.role === 'Admin' || req.user.role === 'Manager' || 
+        employee.userId?.toString() === req.user.id) {
+      // Authorized
+    } else {
+      // Allow all users to view employee data for profile purposes
+    }
+
+    res.status(200).json({
+      success: true,
+      data: employee
+    });
+  } catch (err) {
+    console.error('Error fetching employee by userId:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Server Error'
+    });
+  }
+};
+
 // @desc    Create new employee
 // @route   POST /api/employees
 // @access  Private
 exports.createEmployee = async (req, res) => {
   try {
+    console.log('Create employee request received:', {
+      body: req.body,
+      files: req.files ? Object.keys(req.files) : 'No files',
+      contentType: req.headers['content-type']
+    });
+    
     // Parse employee data from form
     const employeeData = typeof req.body.employee === 'string' ? JSON.parse(req.body.employee) : req.body;
     
@@ -183,12 +264,21 @@ exports.createEmployee = async (req, res) => {
 
     // Handle file uploads
     if (req.files) {
+      console.log('Processing file uploads:', Object.keys(req.files));
       for (const fieldName of Object.keys(req.files)) {
         const arr = req.files[fieldName];
         if (arr && arr[0]) {
           const file = arr[0];
+          console.log(`Processing file ${fieldName}:`, {
+            originalName: file.originalname,
+            filename: file.filename,
+            mimetype: file.mimetype,
+            size: file.size,
+            path: file.path
+          });
           try {
             const uploaded = await fileStorage.uploadEmployeeDoc(file, fieldName);
+            console.log(`File ${fieldName} uploaded successfully:`, uploaded);
             // store rich object (with url)
             employeeData[fieldName] = uploaded;
           } catch (e) {
@@ -196,6 +286,8 @@ exports.createEmployee = async (req, res) => {
           }
         }
       }
+    } else {
+      console.log('No files found in request');
     }
 
     // Create employee

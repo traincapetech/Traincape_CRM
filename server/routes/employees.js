@@ -5,6 +5,7 @@ const fileStorage = require('../services/fileStorageService');
 const {
   getEmployees,
   getEmployee,
+  getEmployeeByUserId,
   createEmployee,
   updateEmployee,
   deleteEmployee,
@@ -27,7 +28,9 @@ const debugMiddleware = (req, res, next) => {
       role: req.user.role
     } : 'Not authenticated',
     query: req.query,
-    params: req.params
+    params: req.params,
+    contentType: req.headers['content-type'],
+    contentLength: req.headers['content-length']
   });
   
   next();
@@ -52,6 +55,10 @@ router.route('/:id')
   .get(protect, getEmployee)
   .put(protect, uploadEmployeeFiles, updateEmployee)
   .delete(protect, deleteEmployee);
+
+// Get employee by user ID
+router.route('/user/:userId')
+  .get(protect, getEmployeeByUserId);
 
 // Document routes
 router.route('/:id/documents')
