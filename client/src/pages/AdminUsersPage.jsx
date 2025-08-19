@@ -176,6 +176,17 @@ const AdminUsersPage = () => {
         }
       });
       
+      // Debug: Log form data before sending
+      console.log('AdminUsersPage - Form data being sent:', {
+        formDataEntries: Array.from(formData.entries()).map(([key, value]) => ({
+          key,
+          type: typeof value,
+          isFile: value instanceof File,
+          size: value instanceof File ? value.size : null,
+          value: value instanceof File ? value.name : value
+        }))
+      });
+
       // Create user with documents
       const response = await authAPI.createUserWithDocuments(formData);
       

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaUser, FaPhone, FaEnvelope, FaLinkedin, FaFilter, FaUsers } from 'react-icons/fa';
 import employeeAPI from '../../services/employeeAPI';
+import EmployeeDetailsModal from './EmployeeDetailsModal';
 import LoadingSpinner from '../ui/LoadingSpinner';
 
 const EmployeeDirectory = () => {
@@ -13,6 +14,8 @@ const EmployeeDirectory = () => {
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedRole, setSelectedRole] = useState('all');
   const [viewMode, setViewMode] = useState('grid'); // grid or list
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -81,6 +84,11 @@ const EmployeeDirectory = () => {
   const getEmployeeInitials = (name) => {
     if (!name) return 'E';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const handleViewEmployee = (employee) => {
+    setSelectedEmployee(employee);
+    setShowDetailsModal(true);
   };
 
   const getDepartmentStats = () => {
@@ -242,7 +250,10 @@ const EmployeeDirectory = () => {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                    <h3 
+                      className="text-sm font-semibold text-gray-900 dark:text-white truncate cursor-pointer hover:text-blue-600 transition-colors"
+                      onClick={() => handleViewEmployee(employee)}
+                    >
                       {employee.fullName || 'Unknown'}
                     </h3>
                     <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
@@ -325,7 +336,10 @@ const EmployeeDirectory = () => {
                           )}
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          <div 
+                            className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 transition-colors"
+                            onClick={() => handleViewEmployee(employee)}
+                          >
                             {employee.fullName || 'Unknown'}
                           </div>
                           <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -370,6 +384,12 @@ const EmployeeDirectory = () => {
           </div>
         )}
       </div>
+
+      <EmployeeDetailsModal
+        employee={selectedEmployee}
+        isOpen={showDetailsModal}
+        onClose={() => setShowDetailsModal(false)}
+      />
     </div>
   );
 };

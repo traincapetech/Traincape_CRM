@@ -127,6 +127,17 @@ export const leadsAPI = {
 
 // Sales API
 export const salesAPI = {
+  getSalesData: async () => {
+    try {
+      console.log('Fetching sales data...');
+      const response = await api.get('/sales/data');
+      console.log('Sales data response:', response.data);
+      return response;
+    } catch (error) {
+      console.error('Error fetching sales data:', error.response?.data || error.message);
+      throw error;
+    }
+  },
   getAll: async () => {
     try {
       console.log('Fetching all sales...');

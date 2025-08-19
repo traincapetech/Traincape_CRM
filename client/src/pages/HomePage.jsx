@@ -1,333 +1,276 @@
-// src/pages/HomePage.jsx
 import React from "react";
 import { Link } from "react-router-dom";
 import Layout from "../components/Layout/Layout";
 import { useAuth } from "../context/AuthContext";
-import { componentClasses, darkModeClasses } from '../utils/darkModeClasses';
 import GuestChat from "../components/Chat/GuestChat";
+import { FaRocket, FaPlay, FaUsers, FaChartLine, FaTasks, FaFileInvoiceDollar, FaCreditCard, FaChartBar, FaShieldAlt, FaClock, FaLinkedin, FaTwitter, FaFacebook } from 'react-icons/fa';
+import traincapeLogo from '../assets/traincape-logo.jpg';
+import '../styles/homepage.css';
 
-import { professionalClasses, transitions, shadows } from '../utils/professionalDarkMode';
-import { FaFileInvoiceDollar } from 'react-icons/fa';
 const HomePage = () => {
   const { user } = useAuth();
 
+  const stats = [
+    { value: "2.5K+", label: "Active Leads", trend: "+12% this month", icon: <FaUsers className="text-blue-600" /> },
+    { value: "100%", label: "Task Completion", trend: "On target", icon: <FaTasks className="text-green-600" /> },
+    { value: "$0.5M", label: "Monthly Revenue", trend: "+28% increase", icon: <FaChartLine className="text-purple-600" /> },
+    { value: "19", label: "Team Members", trend: "Growing team", icon: <FaUsers className="text-orange-600" /> }
+  ];
+
+  const features = [
+    {
+      title: "Contact Management",
+      description: "Organize and manage all your client data with advanced filtering and segmentation tools.",
+      icon: <FaUsers />,
+      color: "blue",
+      link: "/management-contacts"
+    },
+    {
+      title: "Sales Pipeline",
+      description: "Track deals from initial contact to closing with customizable pipeline stages.",
+      icon: <FaChartLine />,
+      color: "green",
+      link: "/sales"
+    },
+    {
+      title: "Task Management",
+      description: "Schedule tasks, set reminders, and never miss important follow-ups.",
+      icon: <FaTasks />,
+      color: "purple",
+      link: "/tasks"
+    },
+    {
+      title: "Invoice Management",
+      description: "Create professional invoices, track payments, and manage billing effortlessly.",
+      icon: <FaFileInvoiceDollar />,
+      color: "orange",
+      link: "/invoices"
+    },
+    {
+      title: "Stripe Integration",
+      description: "Secure payment processing with automatic invoice generation and notifications.",
+      icon: <FaCreditCard />,
+      color: "indigo",
+      link: "/stripe-invoices"
+    },
+    {
+      title: "Analytics Dashboard",
+      description: "Comprehensive reporting and analytics to drive data-driven decisions.",
+      icon: <FaChartBar />,
+      color: "pink",
+      link: "/analytics"
+    }
+  ];
+
   return (
     <Layout>
-      {/* Hero Section - Improved responsiveness */}
-      <div className="bg-gradient-to-br from-blue-700 to-indigo-800 text-white py-12 md:py-20 flex items-center">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mx-auto">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-center sm:text-left">TrainCape CRM</h1>
-            <p className="text-lg sm:text-xl mb-6 text-center sm:text-left">Manage leads and track sales in one centralized platform.</p>
-            {!user ? (
-              <div className="flex flex-wrap gap-4 justify-center sm:justify-start">
-                <Link to="/login" className="w-full sm:w-auto px-6 py-3 bg-blue-800 text-white font-semibold rounded-lg shadow-md dark:shadow-black/25 hover:bg-blue-900 transition text-center">
-                  Sign In
-                </Link>
-                <Link to="/customer-signup" className="w-full sm:w-auto px-6 py-3 bg-blue-800 text-white font-semibold rounded-lg shadow-md dark:shadow-black/25 hover:bg-blue-900 transition text-center">
-                  Customer Sign Up
-                </Link>
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-4 justify-center sm:justify-start">
-                {user.role === "Sales Person" && (
-                  <Link to="/sales" className="w-full sm:w-auto px-6 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white dark:bg-slate-900 transition-all duration-200 ease-out text-center">
-                    My Leads
-                  </Link>
-                )}
-                {(user.role === "Lead Person" || user.role === "Manager" || user.role === "Admin") && (
-                  <Link to="/leads" className="w-full sm:w-auto px-6 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white dark:bg-slate-900 transition-all duration-200 ease-out text-center">
-                    Manage Leads
-                  </Link>
-                )}
-                <Link to="/profile" className="w-full sm:w-auto px-6 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white dark:bg-slate-900 transition-all duration-200 ease-out text-center">
-                  My Profile
-                </Link>
-                {(user.role === "Sales Person" || user.role === "Manager" || user.role === "Admin" || user.role === "Sales Person" && user.role === "Employee") && (
-                  <Link to="/invoices" className="w-full sm:w-auto px-6 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white dark:bg-slate-900 transition-all duration-200 ease-out text-center">
-                    Invoice Management
-                  </Link>
-                )}
-              </div>
-            )}
+             {/* Hero Section */}
+       <div className="gradient-bg text-white py-12 sm:py-16 md:py-20 relative overflow-hidden">
+         {/* Background Decorations */}
+         <div className="absolute inset-0 overflow-hidden">
+           <div className="absolute -top-20 -right-20 sm:-top-40 sm:-right-40 w-40 h-40 sm:w-80 sm:h-80 rounded-full bg-white opacity-10 floating-animation"></div>
+           <div className="absolute -bottom-20 -left-20 sm:-bottom-40 sm:-left-40 w-48 h-48 sm:w-96 sm:h-96 rounded-full bg-white opacity-5 floating-animation"></div>
+           <div className="absolute top-1/2 left-1/4 w-16 h-16 sm:w-32 sm:h-32 rounded-full bg-white opacity-10 floating-animation"></div>
+         </div>
+         
+         <div className="container mx-auto px-4 sm:px-6 relative z-10">
+           <div className="max-w-4xl mx-auto text-center">
+             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
+               Transform Your <span className="text-yellow-300">Sales Process</span>
+             </h1>
+             <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-6 sm:mb-8 text-gray-100 leading-relaxed px-2">
+               Streamline lead management, track sales performance, and boost your team's productivity with our comprehensive CRM platform
+             </p>
+                         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
+               {!user ? (
+                 <>
+                   <Link to="/login" className="glassmorphism px-6 sm:px-8 py-3 sm:py-4 rounded-full text-white font-semibold hover:bg-white hover:bg-opacity-20 transition duration-300 w-full sm:w-auto flex items-center justify-center text-sm sm:text-base">
+                     <FaRocket className="mr-2 sm:mr-3" />Get Started Free
+                   </Link>
+                   <button className="bg-white text-gray-800 px-6 sm:px-8 py-3 sm:py-4 rounded-full font-semibold hover:bg-gray-100 transition duration-300 w-full sm:w-auto flex items-center justify-center text-sm sm:text-base">
+                     <FaPlay className="mr-2 sm:mr-3" />Watch Demo
+                   </button>
+                 </>
+               ) : (
+                 <Link to={user.role === "Customer" ? "/customer" : user.role === "Sales Person" ? "/sales" : "/leads"}
+                   className="glassmorphism px-6 sm:px-8 py-3 sm:py-4 rounded-full text-white font-semibold hover:bg-white hover:bg-opacity-20 transition duration-300 w-full sm:w-auto flex items-center justify-center text-sm sm:text-base">
+                   <FaRocket className="mr-2 sm:mr-3" />Go to Dashboard
+                 </Link>
+               )}
+             </div>
           </div>
         </div>
       </div>
-      
-      {/* Quick Access Cards - Improved for mobile */}
-      <div className="bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out py-6">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-8 md:-mt-10 relative z-10">
-          {/* Quick Access Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {/* Invoice Management Card */}
-            {/* {['Admin', 'Manager', 'Sales'].includes(user?.role) && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold mb-1 text-gray-900 dark:text-white">Invoice Management</h3>
-                  <FaFileInvoiceDollar className="text-blue-600 text-xl" />
-                </div>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  Create and manage professional invoices with PDF generation and payment tracking.
-                </p>
-                <Link
-                  to="/invoice-management"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  Manage Invoices
-                  <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </div>
-            )} */}
 
-            {/* Stripe Invoices Card */}
-            {['Admin', 'Manager', 'Sales'].includes(user?.role) && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold mb-1 text-gray-900 dark:text-white">Stripe Invoices</h3>
-                  <FaFileInvoiceDollar className="text-green-600 text-xl" />
-                </div>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  Create Stripe-powered invoices with automatic payment processing and customer notifications.
-                </p>
-                <Link
-                  to="/stripe-invoices"
-                  className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                >
-                  Stripe Invoices
-                  <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </div>
-            )}
+             {/* Stats Section */}
+       <div className="py-12 sm:py-16 bg-white relative">
+         <div className="container mx-auto px-4 sm:px-6">
+           {/* TrainCape Logo */}
+           {/* <div className="text-center mb-6 sm:mb-8">
+             <img 
+               src={traincapeLogo} 
+               alt="TrainCape CRM" 
+               className="h-12 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-lg shadow-lg"
+             />
+             <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1 sm:mb-2">TrainCape CRM</h3>
+             <p className="text-sm sm:text-base text-gray-600">Your Complete Business Solution</p>
+           </div> */}
+           
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 -mt-12 sm:-mt-16 relative z-10">
+             {stats.map((stat, index) => (
+               <div key={index} className="stats-card rounded-2xl p-4 sm:p-6 text-center">
+                 <div className="text-2xl sm:text-3xl font-bold mb-2 flex items-center justify-center">
+                   {stat.icon}
+                   <span className="ml-2">{stat.value}</span>
+                 </div>
+                 <div className="text-gray-600 font-medium text-sm sm:text-base">{stat.label}</div>
+                 <div className="text-xs sm:text-sm text-green-500 mt-1">
+                   {stat.trend}
+                 </div>
+               </div>
+             ))}
+           </div>
+         </div>
+       </div>
 
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 ease-out">
-              <div className="flex flex-col sm:flex-row items-center sm:items-start">
-                <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 p-3 rounded-lg mb-3 sm:mb-0 sm:mr-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-                <div className="text-center sm:text-left">
-                  <h3 className="text-lg font-bold mb-1 text-gray-900 dark:text-white">Contact Management</h3>
-                  <p className="text-gray-600 dark:text-gray-300 text-sm">Organize client data with powerful filters and segments.</p>
-                  <Link to="/management-contacts" className="text-blue-700 dark:text-blue-400 font-medium text-sm mt-2 inline-block hover:underline">Access Contacts →</Link>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 ease-out">
-              <div className="flex flex-col sm:flex-row items-center sm:items-start">
-                <div className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 p-3 rounded-lg mb-3 sm:mb-0 sm:mr-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <div className="text-center sm:text-left">
-                  <h3 className="text-lg font-bold mb-1 text-gray-900 dark:text-white">Sales Pipeline</h3>
-                  <p className="text-gray-600 dark:text-gray-300 text-sm">Track deals from lead to close with customizable processes.</p>
-                  <Link to="/sales" className="text-green-700 dark:text-green-400 font-medium text-sm mt-2 inline-block hover:underline">View Pipeline →</Link>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 ease-out">
-              <div className="flex flex-col sm:flex-row items-center sm:items-start">
-                <div className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 p-3 rounded-lg mb-3 sm:mb-0 sm:mr-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                </div>
-                <div className="text-center sm:text-left">
-                  <h3 className="text-lg font-bold mb-1 text-gray-900 dark:text-white">Task Management</h3>
-                  <p className="text-gray-600 dark:text-gray-300 text-sm">Schedule exams and get automated reminders.</p>
-                  <Link to="/tasks" className="text-purple-700 dark:text-purple-400 font-medium text-sm mt-2 inline-block hover:underline">Manage Tasks →</Link>
-                </div>
-              </div>
-            </div>
-            
-            {user && (user.role === "Sales Person" || user.role === "Manager" || user.role === "Admin") && (
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 ease-out">
-                <div className="flex flex-col sm:flex-row items-center sm:items-start">
-                  <div className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 p-3 rounded-lg mb-3 sm:mb-0 sm:mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <div className="text-center sm:text-left">
-                    <h3 className="text-lg font-bold mb-1 text-gray-900 dark:text-white">Invoice Management</h3>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">Create professional invoices and track payments.</p>
-                    <Link to="/invoices" className="text-orange-700 dark:text-orange-400 font-medium text-sm mt-2 inline-block hover:underline">Manage Invoices →</Link>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {user && (user.role === "Manager" || user.role === "Admin") && (
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 ease-out">
-                <div className="flex flex-col sm:flex-row items-center sm:items-start">
-                  <div className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 p-3 rounded-lg mb-3 sm:mb-0 sm:mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                    </svg>
-                  </div>
-                  <div className="text-center sm:text-left">
-                    <h3 className="text-lg font-bold mb-1 text-gray-900 dark:text-white">Manager Dashboard</h3>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">Manage users, roles and system access.</p>
-                    <Link to="/manager" className="text-indigo-700 dark:text-indigo-400 font-medium text-sm mt-2 inline-block hover:underline">Access Dashboard →</Link>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-      
-      {/* Quick Stats - Made mobile friendly */}
-      <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out py-8 sm:py-10">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            {[
-              { label: "Leads", value: "Today", icon: "📊" },
-              { label: "Tasks", value: "Pending", icon: "✅" },
-              { label: "Sales", value: "This Month", icon: "💰" },
-              { label: "Team", value: "Members", icon: "👥" }
-            ].map((stat, index) => (
-              <Link key={index} to={index === 0 ? "sales" : index === 1 ? "/tasks" : index === 2 ? "sales-tracking" : "/profile"} 
-                className="bg-gray-50 dark:bg-slate-800 rounded-lg p-3 sm:p-4 text-center hover:bg-gray-100 dark:hover:bg-slate-700 transition-all duration-200 ease-out">
-                <div className="text-xl sm:text-2xl mb-1">{stat.icon}</div>
-                <div className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">{stat.label}</div>
-                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">{stat.value}</div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-      
-      {/* Role-based Access - Improved layout for mobile */}
-      <div className="bg-gray-50 dark:bg-slate-800 transition-all duration-200 ease-out py-8 sm:py-10">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center text-gray-900 dark:text-white">Your Role: {user?.role || "Not Logged In"}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out p-4 sm:p-5 rounded-lg shadow shadow-sm dark:shadow-black/25">
-              <h3 className="font-bold text-blue-700 dark:text-blue-400 mb-2 text-center sm:text-left">Lead Person</h3>
-              <ul className="space-y-2">
-                <li className="flex items-start text-sm text-gray-700 dark:text-gray-300">
-                  <svg className="h-4 w-4 text-green-500 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Create and manage leads</span>
-                </li>
-                <li className="flex items-start text-sm text-gray-700 dark:text-gray-300">
-                  <svg className="h-4 w-4 text-green-500 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Assign leads to team members</span>
-                </li>
-                <li className="flex items-start text-sm text-gray-700 dark:text-gray-300">
-                  <svg className="h-4 w-4 text-green-500 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Track lead progress</span>
-                </li>
-              </ul>
-            </div>
-            
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out p-4 sm:p-5 rounded-lg shadow shadow-sm dark:shadow-black/25">
-              <h3 className="font-bold text-green-700 dark:text-green-400 mb-2 text-center sm:text-left">Sales Person</h3>
-              <ul className="space-y-2">
-                <li className="flex items-start text-sm text-gray-700 dark:text-gray-300">
-                  <svg className="h-4 w-4 text-green-500 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Access assigned leads</span>
-                </li>
-                <li className="flex items-start text-sm text-gray-700 dark:text-gray-300">
-                  <svg className="h-4 w-4 text-green-500 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Update lead status</span>
-                </li>
-                <li className="flex items-start text-sm text-gray-700 dark:text-gray-300">
-                  <svg className="h-4 w-4 text-green-500 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Schedule and track exams</span>
-                </li>
-              </ul>
-            </div>
-            
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 transition-all duration-200 ease-out p-4 sm:p-5 rounded-lg shadow shadow-sm dark:shadow-black/25">
-              <h3 className="font-bold text-purple-700 dark:text-purple-400 mb-2 text-center sm:text-left">Manager/Admin</h3>
-              <ul className="space-y-2">
-                <li className="flex items-start text-sm text-gray-700 dark:text-gray-300">
-                  <svg className="h-4 w-4 text-green-500 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Full system access</span>
-                </li>
-                <li className="flex items-start text-sm text-gray-700 dark:text-gray-300">
-                  <svg className="h-4 w-4 text-green-500 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>View all leads and sales</span>
-                </li>
-                <li className="flex items-start text-sm text-gray-700 dark:text-gray-300">
-                  <svg className="h-4 w-4 text-green-500 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Manage team and generate reports</span>
-                </li>
-                {user && (user.role === "Manager" || user.role === "Admin") && (
-                  <li className="mt-4">
-                    <Link to="/manager" className="inline-block w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded text-center transition">
-                      Access Manager Dashboard
-                    </Link>
-                  </li>
-                )}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* CTA Section - Improved for mobile */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-8 sm:py-10">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          {!user ? (
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold mb-4 text-white">Sign in to access your dashboard</h2>
-              <div className="flex flex-wrap gap-4 justify-center">
-                <Link to="/login" className="px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-blue-700 dark:text-blue-400 font-semibold rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-all duration-200 ease-out inline-block">
-                  Login
-                </Link>
-                <Link to="/customer-signup" className="px-6 py-3 bg-blue-800 text-white font-semibold rounded-lg shadow hover:bg-blue-900 transition inline-block">
-                  Customer Sign Up
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold mb-3 text-white">Welcome, {user.fullName}</h2>
-              <p className="mb-4 text-sm sm:text-base text-white">Access your dashboard to manage your tasks.</p>
-              <Link 
-                to={
-                  user.role === "Customer" ? "/customer" :
-                  user.role === "Sales Person" ? "/sales" : "/leads"
-                } 
-                className="px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-blue-700 dark:text-blue-400 font-semibold rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-all duration-200 ease-out inline-block w-full sm:w-auto"
-              >
-                Go to Dashboard
-              </Link>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {/* Guest Chat for non-registered users */}
+             {/* Features Section */}
+       <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-gray-50 to-gray-100">
+         <div className="container mx-auto px-4 sm:px-6">
+           <div className="text-center mb-12 sm:mb-16">
+             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4">Powerful Features</h2>
+             <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-2">Everything you need to manage your sales pipeline effectively</p>
+           </div>
+           
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+             {features.map((feature, index) => (
+               <div key={index} className="bg-white rounded-2xl p-6 sm:p-8 hover-scale neon-border">
+                 <div className={`w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-${feature.color}-500 to-${feature.color}-600 rounded-2xl flex items-center justify-center mb-4 sm:mb-6`}>
+                   <div className="text-white text-xl sm:text-2xl">{feature.icon}</div>
+                 </div>
+                 <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">{feature.title}</h3>
+                 <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">{feature.description}</p>
+                 <Link to={feature.link} className={`text-${feature.color}-600 font-semibold hover:text-${feature.color}-700 transition flex items-center text-sm sm:text-base`}>
+                   Learn More <FaRocket className="ml-2" />
+                 </Link>
+               </div>
+             ))}
+           </div>
+         </div>
+       </section>
+
+             {/* Role-based Access Section */}
+       <section className="py-12 sm:py-16 md:py-20 bg-white">
+         <div className="container mx-auto px-4 sm:px-6">
+           <div className="text-center mb-12 sm:mb-16">
+             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4">Role-Based Access Control</h2>
+             <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-2">
+               Secure, permission-based access ensures each team member has the right tools for their role
+             </p>
+           </div>
+           
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+             {/* Role cards */}
+             {[
+               {
+                 role: "Lead Person",
+                 color: "blue",
+                 icon: <FaUsers />,
+                 features: [
+                   "Create and manage leads",
+                   "Assign leads to team members",
+                   "Track lead progress and status",
+                   "Generate lead reports"
+                 ]
+               },
+               {
+                 role: "Sales Person",
+                 color: "green",
+                 icon: <FaChartLine />,
+                 features: [
+                   "Access assigned leads",
+                   "Update lead status and notes",
+                   "Schedule and track activities",
+                   "Create invoices and quotes"
+                 ]
+               },
+               {
+                 role: "Manager/Admin",
+                 color: "purple",
+                 icon: <FaShieldAlt />,
+                 features: [
+                   "Full system access",
+                   "View all leads and sales",
+                   "Manage team and permissions",
+                   "Advanced analytics and reports"
+                 ]
+               }
+             ].map((role, index) => (
+               <div key={index} className={`bg-gradient-to-br from-${role.color}-50 to-${role.color}-100 rounded-2xl p-6 sm:p-8 border-2 border-${role.color}-200`}>
+                 <div className={`w-16 h-16 sm:w-20 sm:h-20 bg-${role.color}-500 rounded-full flex items-center justify-center mb-4 sm:mb-6 mx-auto`}>
+                   <div className="text-white text-xl sm:text-2xl">{role.icon}</div>
+                 </div>
+                 <h3 className={`text-xl sm:text-2xl font-bold text-${role.color}-800 mb-3 sm:mb-4 text-center`}>{role.role}</h3>
+                 <ul className="space-y-2 sm:space-y-3">
+                   {role.features.map((feature, featureIndex) => (
+                     <li key={featureIndex} className="flex items-start">
+                       <FaRocket className="text-green-500 mt-1 mr-2 sm:mr-3 flex-shrink-0" />
+                       <span className="text-gray-700 text-sm sm:text-base">{feature}</span>
+                     </li>
+                   ))}
+                 </ul>
+               </div>
+             ))}
+           </div>
+         </div>
+       </section>
+
+             {/* CTA Section */}
+       <section className="gradient-bg text-white py-12 sm:py-16 md:py-20 relative overflow-hidden">
+         <div className="container mx-auto px-4 sm:px-6 text-center relative z-10">
+           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">Ready to Transform Your Sales?</h2>
+           <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 text-gray-100 max-w-2xl mx-auto px-2">
+             Join thousands of teams who have streamlined their sales process with TrainCape CRM
+           </p>
+           
+           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-8 sm:mb-12">
+             {!user ? (
+               <>
+                 <Link to="/login" className="glassmorphism px-6 sm:px-8 py-3 sm:py-4 rounded-full text-white font-semibold hover:bg-white hover:bg-opacity-20 transition duration-300 w-full sm:w-auto flex items-center justify-center text-sm sm:text-base">
+                   <FaRocket className="mr-2 sm:mr-3" />Start Free Trial
+                 </Link>
+                 <button className="border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full font-semibold hover:bg-white hover:text-gray-800 transition duration-300 w-full sm:w-auto flex items-center justify-center text-sm sm:text-base">
+                   <FaPlay className="mr-2 sm:mr-3" />Schedule Demo
+                 </button>
+               </>
+             ) : (
+               <Link to="/dashboard" className="glassmorphism px-6 sm:px-8 py-3 sm:py-4 rounded-full text-white font-semibold hover:bg-white hover:bg-opacity-20 transition duration-300 w-full sm:w-auto flex items-center justify-center text-sm sm:text-base">
+                 <FaRocket className="mr-2 sm:mr-3" />Access Dashboard
+               </Link>
+             )}
+           </div>
+           
+           {/* Trust Indicators */}
+           <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 sm:gap-6 lg:gap-8 text-gray-200">
+             <div className="flex items-center">
+               <FaShieldAlt className="text-green-400 mr-2" />
+               <span className="text-sm sm:text-base">Enterprise Security</span>
+             </div>
+             <div className="flex items-center">
+               <FaClock className="text-blue-400 mr-2" />
+               <span className="text-sm sm:text-base">24/7 Support</span>
+             </div>
+             <div className="flex items-center">
+               <FaChartLine className="text-purple-400 mr-2" />
+               <span className="text-sm sm:text-base">Real-time Analytics</span>
+             </div>
+           </div>
+         </div>
+       </section>
+
+      {/* Guest Chat Widget */}
       {!user && <GuestChat />}
+
+      
     </Layout>
   );
 };

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import employeeAPI from '../../services/employeeAPI';
 import AddEmployeeDialog from './AddEmployeeDialog';
-import EmployeeDetailsDialog from './EmployeeDetailsDialog';
+import EmployeeDetailsModal from './EmployeeDetailsModal';
 import EditEmployeeDialog from './EditEmployeeDialog';
 import { toast } from 'react-toastify';
 
@@ -15,9 +15,9 @@ const EmployeeList = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
   // Fetch departments
@@ -87,15 +87,15 @@ const EmployeeList = () => {
   }, [employees, searchTerm]);
 
   // Handle edit employee
-  const handleEdit = (employeeId) => {
-    setSelectedEmployeeId(employeeId);
+  const handleEdit = (employee) => {
+    setSelectedEmployee(employee);
     setShowEditDialog(true);
   };
 
   // Handle view employee details
-  const handleView = (employeeId) => {
-    setSelectedEmployeeId(employeeId);
-    setShowDetailsDialog(true);
+  const handleView = (employee) => {
+    setSelectedEmployee(employee);
+    setShowDetailsModal(true);
   };
 
   // Handle delete employee
@@ -184,7 +184,12 @@ const EmployeeList = () => {
                   {employee.fullName?.[0] || '?'}
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{employee.fullName}</h3>
+                  <h3 
+                    className="text-lg font-semibold text-gray-800 dark:text-white cursor-pointer hover:text-blue-600 transition-colors"
+                    onClick={() => handleView(employee)}
+                  >
+                    {employee.fullName}
+                  </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300">{employee.role?.name || 'No Role'}</p>
                 </div>
               </div>
@@ -219,13 +224,13 @@ const EmployeeList = () => {
 
             <div className="mt-4 flex justify-end space-x-2">
               <button
-                onClick={() => handleView(employee._id)}
+                onClick={() => handleView(employee)}
                 className="px-3 py-1 text-sm text-green-500 hover:text-green-600 focus:outline-none"
               >
-                View
+                View Details
               </button>
               <button
-                onClick={() => handleEdit(employee._id)}
+                onClick={() => handleEdit(employee)}
                 className="px-3 py-1 text-sm text-blue-500 hover:text-blue-600 focus:outline-none"
               >
                 Edit
@@ -256,14 +261,14 @@ const EmployeeList = () => {
         roles={roles}
       />
 
-      <EmployeeDetailsDialog
-        employeeId={selectedEmployeeId}
-        isOpen={showDetailsDialog}
-        onOpenChange={setShowDetailsDialog}
+      <EmployeeDetailsModal
+        employee={selectedEmployee}
+        isOpen={showDetailsModal}
+        onClose={() => setShowDetailsModal(false)}
       />
 
       <EditEmployeeDialog
-        employeeId={selectedEmployeeId}
+        employee={selectedEmployee}
         isOpen={showEditDialog}
         onOpenChange={setShowEditDialog}
         onEmployeeUpdated={fetchEmployees}

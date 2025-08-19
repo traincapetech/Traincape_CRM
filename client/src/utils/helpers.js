@@ -5,6 +5,15 @@
 import axios from 'axios';
 import { salesAPI } from '../services/api';
 
+/**
+ * Utility function to combine class names
+ * @param {...any} classes - Class names to combine
+ * @returns {string} Combined class names
+ */
+export const cn = (...classes) => {
+  return classes.filter(Boolean).join(' ');
+};
+
 // Default currency settings
 let currencySettings = {
   currency: 'USD',  // Default currency code

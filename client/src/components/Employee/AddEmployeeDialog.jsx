@@ -50,9 +50,11 @@ const AddEmployeeDialog = ({ open, onOpenChange, onEmployeeAdded, departments, r
     if (selectedFiles && selectedFiles[0]) {
       const file = selectedFiles[0];
       const fileSizeKB = file.size / 1024;
+      const fileSizeMB = fileSizeKB / 1024;
       
-      if (fileSizeKB < 10 || fileSizeKB > 20) {
-        toast.error(`${name} file size must be between 10KB and 20KB`);
+      // More reasonable file size limits: 10KB to 5MB
+      if (fileSizeKB < 10 || fileSizeMB > 5) {
+        toast.error(`${name} file size must be between 10KB and 5MB`);
         e.target.value = ''; // Clear the file input
         return;
       }
@@ -100,6 +102,18 @@ const AddEmployeeDialog = ({ open, onOpenChange, onEmployeeAdded, departments, r
         if (files[fieldName]) {
           form.append(fieldName, files[fieldName]);
         }
+      });
+
+      // Debug: Log form data before sending
+      console.log('Form data being sent:', {
+        employee: employeeJsonPayload,
+        files: Object.keys(files).filter(key => files[key]),
+        formDataEntries: Array.from(form.entries()).map(([key, value]) => ({
+          key,
+          type: typeof value,
+          isFile: value instanceof File,
+          size: value instanceof File ? value.size : null
+        }))
       });
 
       const response = await employeeAPI.create(form);
@@ -161,7 +175,7 @@ const AddEmployeeDialog = ({ open, onOpenChange, onEmployeeAdded, departments, r
           accept=".pdf,.jpg,.jpeg,.png"
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
         />
-        <span className="text-xs text-gray-500">(10KB-20KB)</span>
+        <span className="text-xs text-gray-500">(10KB-5MB)</span>
       </div>
     </div>
   );
