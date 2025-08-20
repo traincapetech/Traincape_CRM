@@ -314,15 +314,38 @@ const AdminUsersPage = () => {
       Object.keys(editDocuments).forEach(key => {
         if (editDocuments[key]) {
           formData.append(key, editDocuments[key]);
+          console.log(`Adding document ${key}:`, editDocuments[key].name);
         }
       });
+
+      // Debug: Log what we're sending
+      console.log('Updating user with ID:', editUser._id);
+      console.log('FormData contents:');
+      for (let [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`${key}: File - ${value.name} (${value.size} bytes)`);
+        } else {
+          console.log(`${key}: ${value}`);
+        }
+      }
 
       // Use the updateUserWithDocuments endpoint
       const response = await authAPI.updateUserWithDocuments(editUser._id, formData);
       
+      console.log('Response received:', response);
+      console.log('Response data:', response.data);
+      console.log('Response data.data:', response.data.data);
+      
       if (response.data && response.data.success) {
         setShowEditModal(false);
         fetchUsers();
+        fetchEmployees(); // Also refresh employee data
+        
+        // Force a small delay to ensure data is updated
+        setTimeout(() => {
+          fetchEmployees(); // Refresh again after a short delay
+        }, 1000);
+        
         setError(null);
         // Reset edit documents
         setEditDocuments({
@@ -337,11 +360,16 @@ const AdminUsersPage = () => {
           resume: null,
           offerLetter: null
         });
+        alert('User updated successfully!');
       } else {
         setError((response.data && response.data.message) || "Failed to update user");
       }
     } catch (err) {
       console.error("Error updating user:", err);
+      console.error("Error response:", err.response);
+      console.error("Error response data:", err.response?.data);
+      console.error("Error response status:", err.response?.status);
+      console.error("Error response statusText:", err.response?.statusText);
       setError(
         err.response?.data?.message || 
         "Failed to update user. Please check your connection and try again."
@@ -456,6 +484,7 @@ const AdminUsersPage = () => {
   };
 
   const handleEditEmployee = (employeeId) => {
+    console.log('handleEditEmployee called with employeeId:', employeeId);
     setEditEmployeeId(employeeId);
     setShowEmployeeEditModal(true);
   };
@@ -1803,8 +1832,9 @@ const AdminUsersPage = () => {
       {showEmployeeEditModal && editEmployeeId && (
         <EditEmployeeDialog
           employeeId={editEmployeeId}
-          onClose={() => setShowEmployeeEditModal(false)}
-          onUpdate={handleEmployeeUpdated}
+          isOpen={showEmployeeEditModal}
+          onOpenChange={setShowEmployeeEditModal}
+          onEmployeeUpdated={handleEmployeeUpdated}
           departments={departments}
           roles={roles}
         />
