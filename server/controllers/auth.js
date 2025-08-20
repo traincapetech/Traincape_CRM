@@ -700,6 +700,14 @@ exports.updateUserWithDocuments = async (req, res) => {
     console.log('Request body:', req.body);
     console.log('Request files:', req.files ? Object.keys(req.files) : 'No files');
     
+    // Validate required parameters
+    if (!req.params.id) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required"
+      });
+    }
+    
     const { fullName, email, role } = req.body;
 
     // Check if user exists
@@ -732,7 +740,7 @@ exports.updateUserWithDocuments = async (req, res) => {
     // Update user fields - only update provided fields
     const updateData = {};
     if (fullName && fullName.trim() !== '') updateData.fullName = fullName;
-    if (email && email.trim() !== '') updateData.email = email;
+    if (email && email.trim() !== '') updateData.email = email.toLowerCase().trim();
     if (role && role.trim() !== '') updateData.role = role;
 
     // Handle password update if provided
@@ -765,10 +773,20 @@ exports.updateUserWithDocuments = async (req, res) => {
       const Department = require('../models/Department');
       const Role = require('../models/EmployeeRole');
       
+      console.log(`Looking for employee record for user: ${user._id}, role: ${userRole}`);
+      
       // Find or create employee record
       let employee = await Employee.findOne({ userId: user._id });
       
+      console.log(`Employee lookup result:`, {
+        found: !!employee,
+        employeeId: employee?._id,
+        employeeUserId: employee?.userId,
+        searchUserId: user._id
+      });
+      
       if (!employee) {
+        console.log('No employee record found, creating new one...');
         // Find or create department
         let department = await Department.findOne({ name: 'General' });
         if (!department) {
@@ -795,6 +813,9 @@ exports.updateUserWithDocuments = async (req, res) => {
           role: employeeRole._id,
           department: department._id
         });
+        console.log(`Created new employee record: ${employee._id}`);
+      } else {
+        console.log(`Found existing employee record: ${employee._id}`);
       }
       
       // Update employee basic info with new values
@@ -861,13 +882,19 @@ exports.updateUserWithDocuments = async (req, res) => {
             
             try {
               const fileStorage = require('../services/fileStorageService');
+              console.log(`Calling fileStorage.uploadEmployeeDoc for ${docType}...`);
               const uploaded = await fileStorage.uploadEmployeeDoc(file, docType);
               console.log(`File ${docType} uploaded successfully for update:`, uploaded);
               
               // Store the uploaded file info directly in employee data
               employee[docType] = uploaded;
+              console.log(`Stored ${docType} in employee record:`, employee[docType]);
             } catch (fileError) {
               console.error(`Error processing file ${docType} for update:`, fileError);
+              console.error(`File error details:`, {
+                message: fileError.message,
+                stack: fileError.stack
+              });
               // Continue with other files if one fails
             }
           }
@@ -876,21 +903,102 @@ exports.updateUserWithDocuments = async (req, res) => {
         console.log('No files found in update auth controller request');
       }
       
-      await employee.save();
+      console.log('About to save employee with documents:', {
+        employeeId: employee._id,
+        documents: {
+          photograph: !!employee.photograph,
+          tenthMarksheet: !!employee.tenthMarksheet,
+          aadharCard: !!employee.aadharCard,
+          panCard: !!employee.panCard,
+          pcc: !!employee.pcc,
+          resume: !!employee.resume,
+          offerLetter: !!employee.offerLetter
+        }
+      });
+      
+      // Use findByIdAndUpdate instead of save() to ensure proper update
+      const employeeUpdateData = {};
+      
+      // Add all the updated fields
+      if (employee.fullName) employeeUpdateData.fullName = employee.fullName;
+      if (employee.email) employeeUpdateData.email = employee.email;
+      if (req.body.phoneNumber !== undefined) employeeUpdateData.phoneNumber = req.body.phoneNumber;
+      if (req.body.whatsappNumber !== undefined) employeeUpdateData.whatsappNumber = req.body.whatsappNumber;
+      if (req.body.linkedInUrl !== undefined) employeeUpdateData.linkedInUrl = req.body.linkedInUrl;
+      if (req.body.currentAddress !== undefined) employeeUpdateData.currentAddress = req.body.currentAddress;
+      if (req.body.permanentAddress !== undefined) employeeUpdateData.permanentAddress = req.body.permanentAddress;
+      if (req.body.dateOfBirth !== undefined) employeeUpdateData.dateOfBirth = req.body.dateOfBirth ? new Date(req.body.dateOfBirth) : null;
+      if (req.body.joiningDate !== undefined) employeeUpdateData.joiningDate = req.body.joiningDate ? new Date(req.body.joiningDate) : null;
+      if (req.body.salary !== undefined) employeeUpdateData.salary = req.body.salary ? parseFloat(req.body.salary) : 0;
+      if (req.body.status !== undefined) employeeUpdateData.status = req.body.status;
+      if (req.body.collegeName !== undefined) employeeUpdateData.collegeName = req.body.collegeName;
+      if (req.body.internshipDuration !== undefined) employeeUpdateData.internshipDuration = req.body.internshipDuration ? parseInt(req.body.internshipDuration) : null;
+      
+      // Add document fields
+      if (employee.photograph) employeeUpdateData.photograph = employee.photograph;
+      if (employee.tenthMarksheet) employeeUpdateData.tenthMarksheet = employee.tenthMarksheet;
+      if (employee.twelfthMarksheet) employeeUpdateData.twelfthMarksheet = employee.twelfthMarksheet;
+      if (employee.bachelorDegree) employeeUpdateData.bachelorDegree = employee.bachelorDegree;
+      if (employee.postgraduateDegree) employeeUpdateData.postgraduateDegree = employee.postgraduateDegree;
+      if (employee.aadharCard) employeeUpdateData.aadharCard = employee.aadharCard;
+      if (employee.panCard) employeeUpdateData.panCard = employee.panCard;
+      if (employee.pcc) employeeUpdateData.pcc = employee.pcc;
+      if (employee.resume) employeeUpdateData.resume = employee.resume;
+      if (employee.offerLetter) employeeUpdateData.offerLetter = employee.offerLetter;
+      
+      console.log('Update data for employee:', employeeUpdateData);
+      
+      employee = await Employee.findByIdAndUpdate(employee._id, employeeUpdateData, {
+        new: true,
+        runValidators: true
+      });
+      
       console.log(`Employee updated successfully with ID: ${employee._id}`);
+      
+      // Verify the saved employee data
+      const savedEmployee = await Employee.findById(employee._id);
+      console.log('Saved employee verification:', {
+        employeeId: savedEmployee._id,
+        documents: {
+          photograph: !!savedEmployee.photograph,
+          tenthMarksheet: !!savedEmployee.tenthMarksheet,
+          aadharCard: !!savedEmployee.aadharCard,
+          panCard: !!savedEmployee.panCard,
+          pcc: !!savedEmployee.pcc,
+          resume: !!savedEmployee.resume,
+          offerLetter: !!savedEmployee.offerLetter
+        }
+      });
     } else {
       console.log(`User role ${userRole} does not require employee record`);
+    }
+
+    // Fetch updated employee data if it exists
+    let updatedEmployeeData = null;
+    if (['Sales Person', 'Lead Person', 'Manager', 'Employee'].includes(userRole)) {
+      const Employee = require('../models/Employee');
+      updatedEmployeeData = await Employee.findOne({ userId: user._id })
+        .populate('department', 'name')
+        .populate('role', 'name');
     }
 
     res.status(200).json({
       success: true,
       data: user,
+      employee: updatedEmployeeData
     });
   } catch (err) {
     console.error(`Error updating user with documents: ${err.message}`);
+    console.error(`Error stack: ${err.stack}`);
+    console.error(`Error details:`, {
+      name: err.name,
+      code: err.code,
+      errors: err.errors
+    });
     res.status(400).json({
       success: false,
       message: err.message,
+      details: err.errors || err.message
     });
   }
 };
