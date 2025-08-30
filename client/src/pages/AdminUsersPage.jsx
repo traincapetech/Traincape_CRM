@@ -681,307 +681,310 @@ const AdminUsersPage = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-black/25 p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
-                Search Users
-              </label>
-              <input
-                type="text"
-                id="search"
-                placeholder="Search by name or email"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label htmlFor="roleFilter" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
-                Filter by Role
-              </label>
-              <select
-                id="roleFilter"
-                value={filterRole}
-                onChange={(e) => setFilterRole(e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 dark:focus:border-blue-400 focus:border-blue-500"
-              >
-                <option value="">All Roles</option>
-                <option value="Sales Person">Sales Person</option>
-                <option value="Lead Person">Lead Person</option>
-                <option value="Manager">Manager</option>
-                <option value="Admin">Admin</option>
-                <option value="HR">HR</option>
-                <option value="Employee">Employee</option>
-              </select>
-            </div>
-            <div className="flex items-end">
-              <button
-                onClick={() => {
-                  setSearchTerm("");
-                  setFilterRole("");
-                }}
-                className="px-4 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-400 rounded-md hover:bg-gray-50 dark:bg-slate-800 transition"
-              >
-                Clear Filters
-              </button>
-            </div>
-          </div>
-        </div>
+       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-5 mb-6">
+  <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+    
+    {/* Search Field */}
+    <div className="w-full lg:w-1/3">
+      <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        Search Users
+      </label>
+      <input
+        type="text"
+        id="search"
+        placeholder="Search by name or email"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-gray-800 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+      />
+    </div>
 
-        {/* Users Table */}
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
-        ) : (
-          <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-black/25 overflow-hidden">
-            {filteredUsers.length === 0 ? (
-              <div className="p-6 text-center text-gray-500 dark:text-gray-500">
-                No users found. Try adjusting your filters.
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full">
-                  <thead className="bg-gray-50 dark:bg-slate-800">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
-                        Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
-                        Role
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
-                        Created
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out divide-y divide-gray-200 dark:divide-slate-700">
-                    {filteredUsers.map((userItem) => (
-                      <tr key={userItem._id} className="hover:bg-gray-50 dark:bg-slate-800">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="h-10 w-10 flex-shrink-0 bg-gray-200 dark:bg-slate-600 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-500">
-                              {userItem.fullName.charAt(0).toUpperCase()}
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900 dark:text-white">{userItem.fullName}</div>
-                              <div className="text-sm text-gray-500 dark:text-gray-500">ID: {userItem._id}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900 dark:text-white">{userItem.email}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            userItem.role === "Admin" ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200" :
-                            userItem.role === "Manager" ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" :
-                            userItem.role === "Lead Person" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" :
-                            userItem.role === "HR" ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200" :
-                            userItem.role === "Employee" ? "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200" :
-                            "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                          }`}>
-                            {userItem.role}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-500">
-                          {formatDate(userItem.createdAt)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          {userItem._id !== user.id && (
-                            <div className="flex justify-end space-x-2">
-                              <button
-                                onClick={() => openEditModal(userItem)}
-                                className="text-blue-600 hover:text-blue-900 px-2 py-1"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => setConfirmDelete(userItem)}
-                                className="text-red-600 hover:text-red-900 px-2 py-1"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          )}
-                          {userItem._id === user.id && (
-                            <span className="text-gray-500 dark:text-gray-500">Current User</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
+    {/* Role Filter */}
+    <div className="w-full lg:w-1/3">
+      <label htmlFor="roleFilter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        Filter by Role
+      </label>
+      <select
+        id="roleFilter"
+        value={filterRole}
+        onChange={(e) => setFilterRole(e.target.value)}
+        className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+      >
+        <option value="">All Roles</option>
+        <option value="Sales Person">Sales Person</option>
+        <option value="Lead Person">Lead Person</option>
+        <option value="Manager">Manager</option>
+        <option value="Admin">Admin</option>
+        <option value="HR">HR</option>
+        <option value="Employee">Employee</option>
+      </select>
+    </div>
+
+    {/* Clear Button */}
+    <div className="w-full lg:w-auto flex items-end pt-1">
+      <button
+        onClick={() => {
+          setSearchTerm("");
+          setFilterRole("");
+        }}
+        className="w-full lg:w-auto px-4 py-2 rounded-md bg-green-400 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-sm text-gray-800 dark:text-gray-100 border border-gray-300 dark:border-slate-600 transition-all"
+      >
+        Clear Filters
+      </button>
+    </div>
+  </div>
+</div>
+
+
+{/* Users Table */}
+{loading ? (
+  <div className="flex justify-center items-center h-64">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+  </div>
+) : (
+  <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-black/25 overflow-hidden">
+    {filteredUsers.length === 0 ? (
+      <div className="p-6 text-center text-gray-500 dark:text-gray-500">
+        No users found. Try adjusting your filters.
+      </div>
+    ) : (
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+          <thead className="bg-gray-50 dark:bg-slate-800">
+            <tr>
+              {["Avatar", "Name", "Email", "Role", "Created", "Actions"].map((title) => (
+                <th
+                  key={title}
+                  className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider"
+                >
+                  {title}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-slate-700">
+            {filteredUsers.map((userItem) => (
+              <tr
+                key={userItem._id}
+                className="hover:bg-gray-50 dark:hover:bg-slate-800 transition duration-150 text-center"
+              >
+                {/* Avatar */}
+                <td className="px-6 py-4">
+                  <div className="h-10 w-10 mx-auto bg-gray-200 dark:bg-slate-600 rounded-full flex items-center justify-center text-gray-700 dark:text-gray-300 font-semibold">
+                    {userItem.fullName.charAt(0).toUpperCase()}
+                  </div>
+                </td>
+
+                {/* Name */}
+                <td className="px-6 py-4">
+                  <div className="text-sm font-medium text-gray-900 dark:text-white">
+                    {userItem.fullName}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-500 break-all">
+                    ID: {userItem._id}
+                  </div>
+                </td>
+
+                {/* Email */}
+                <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                  {userItem.email}
+                </td>
+
+                {/* Role */}
+                <td className="px-6 py-4">
+                  <span
+                    className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      userItem.role === "Admin"
+                        ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+                        : userItem.role === "Manager"
+                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                        : userItem.role === "Lead Person"
+                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                        : userItem.role === "HR"
+                        ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
+                        : userItem.role === "Employee"
+                        ? "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+                        : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                    }`}
+                  >
+                    {userItem.role}
+                  </span>
+                </td>
+
+                {/* Created */}
+                <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                  {formatDate(userItem.createdAt)}
+                </td>
+
+                {/* Actions */}
+                <td className="px-6 py-4 text-sm font-medium">
+                  {userItem._id !== user.id ? (
+                    <div className="flex justify-center space-x-3">
+                      <button
+                        onClick={() => openEditModal(userItem)}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => setConfirmDelete(userItem)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="text-gray-500 dark:text-gray-500">Current User</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+)}
+
           </>
         )}
 
         {/* Employees Tab */}
-        {activeTab === "employees" && (
-          <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-black/25 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Registered Employees
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Manage employee details and create user accounts for CRM access
-              </p>
-            </div>
-            
-            {loading ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-              </div>
-            ) : employees.length === 0 ? (
-              <div className="p-6 text-center text-gray-500 dark:text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <h3 className="text-lg font-medium mb-2">No employees found</h3>
-                <p className="text-sm">No employees are registered in the system yet.</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full">
-                  <thead className="bg-gray-50 dark:bg-slate-800">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Employee
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Contact
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Department
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Role
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        User Account
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-700">
-                    {employees.map((employee) => {
-                      const hasUserAccount = users.some(u => u.email === employee.email);
-                      return (
-                        <tr key={employee._id} className="hover:bg-gray-50 dark:hover:bg-slate-800">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="h-10 w-10 flex-shrink-0 bg-gray-200 dark:bg-slate-600 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400">
-                                {employee.fullName?.charAt(0)?.toUpperCase() || 'E'}
-                              </div>
-                              <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                  {employee.fullName || 'N/A'}
-                                </div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400">
-                                  ID: {employee.employeeId || employee._id}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900 dark:text-white">
-                              {employee.email || 'N/A'}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              {employee.phoneNumber || 'N/A'}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900 dark:text-white">
-                              {employee.department?.name || 'N/A'}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900 dark:text-white">
-                              {employee.role?.name || 'N/A'}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              employee.status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                              employee.status === 'Inactive' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                              'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                            }`}>
-                              {employee.status || 'N/A'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {hasUserAccount ? (
-                              <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                                Active
-                              </span>
-                            ) : (
-                              <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                None
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex justify-end space-x-2">
-                              <button
-                                onClick={() => handleEditEmployee(employee._id)}
-                                className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 px-2 py-1 rounded"
-                                title="Edit Employee Details"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                              </button>
-                              {!hasUserAccount && employee.email && (
-                                <button
-                                  onClick={() => createUserAccountForEmployee(employee)}
-                                  className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 px-2 py-1 rounded"
-                                  title="Create User Account"
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                  </svg>
-                                </button>
-                              )}
-                              {hasUserAccount && (
-                                <span className="text-gray-400 dark:text-gray-500 px-2 py-1" title="User account already exists">
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                  </svg>
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
+      {/* Employees Tab */}
+{activeTab === "employees" && (
+  <div className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out rounded-lg shadow-md dark:shadow-black/25 overflow-hidden">
+    <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        Registered Employees
+      </h3>
+      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+        Manage employee details and create user accounts for CRM access
+      </p>
+    </div>
+
+    {loading ? (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    ) : employees.length === 0 ? (
+      <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <h3 className="text-lg font-medium mb-2">No employees found</h3>
+        <p className="text-sm">No employees are registered in the system yet.</p>
+      </div>
+    ) : (
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+          <thead className="bg-gray-50 dark:bg-slate-800">
+            <tr>
+              {["Avatar", "Employee", "Contact", "Department", "Role", "Status", "User Account", "Actions"].map((title) => (
+                <th
+                  key={title}
+                  className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider"
+                >
+                  {title}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-slate-700">
+            {employees.map((employee) => {
+              const hasUserAccount = users.some(u => u.email === employee.email);
+              return (
+                <tr key={employee._id} className="hover:bg-gray-50 dark:hover:bg-slate-800 transition duration-150 text-center">
+                  
+                  {/* Avatar */}
+                  <td className="px-6 py-4">
+                    <div className="h-10 w-10 mx-auto bg-gray-200 dark:bg-slate-600 rounded-full flex items-center justify-center text-gray-700 dark:text-gray-300 font-semibold">
+                      {employee.fullName?.charAt(0)?.toUpperCase() || 'E'}
+                    </div>
+                  </td>
+
+                  {/* Employee Info */}
+                  <td className="px-6 py-4">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                      {employee.fullName || 'N/A'}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-500 break-all">
+                      ID: {employee.employeeId || employee._id}
+                    </div>
+                  </td>
+
+                  {/* Contact */}
+                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                    <div>{employee.email || 'N/A'}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{employee.phoneNumber || 'N/A'}</div>
+                  </td>
+
+                  {/* Department */}
+                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                    {employee.department?.name || 'N/A'}
+                  </td>
+
+                  {/* Role */}
+                  <td className="px-6 py-4">
+                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                      {employee.role?.name || 'N/A'}
+                    </span>
+                  </td>
+
+                  {/* Status */}
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      employee.status === 'Active'
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : employee.status === 'Inactive'
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                    }`}>
+                      {employee.status || 'N/A'}
+                    </span>
+                  </td>
+
+                  {/* User Account */}
+                  <td className="px-6 py-4">
+                    {hasUserAccount ? (
+                      <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                        Active
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                        None
+                      </span>
+                    )}
+                  </td>
+
+                  {/* Actions */}
+                  <td className="px-6 py-4 text-sm font-medium">
+                    <div className="flex justify-center space-x-3">
+                      <button
+                        onClick={() => handleEditEmployee(employee._id)}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        Edit
+                      </button>
+                      {!hasUserAccount && employee.email && (
+                        <button
+                          onClick={() => createUserAccountForEmployee(employee)}
+                          className="text-green-600 hover:text-green-900"
+                        >
+                          Create Account
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+)}
+
       </div>
 
       {/* Add User Modal */}

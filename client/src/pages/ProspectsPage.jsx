@@ -15,6 +15,8 @@ import {
   FiEye,
   FiX
 } from 'react-icons/fi';
+import Layout from "../components/Layout/Layout";
+import Navbar from '../components/Navbar';
 
 // Status badge component
 const StatusBadge = ({ status }) => {
@@ -156,7 +158,9 @@ const ProspectsPage = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+      <Layout>
+    
+    <div className="p-6 w-full min-h-screen">
       {/* Header */}
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
@@ -320,7 +324,7 @@ const ProspectsPage = () => {
                     <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                       Created
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -328,54 +332,48 @@ const ProspectsPage = () => {
                 <tbody className="bg-white dark:bg-slate-900 transition-all duration-200 ease-out divide-y divide-slate-200 dark:divide-slate-700">
                   {prospects.map((prospect, index) => (
                     <tr key={prospect._id} className={index % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50 dark:bg-slate-800'}>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-500 dark:text-gray-400">
+                      <td className="px-4 py-3 text-center">
                         {index + 1}
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="max-w-xs">
-                          <div className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
-                            {prospect.name || 'No Name'}
-                          </div>
-                          <div className="text-xs text-slate-500 dark:text-gray-400">
-                            {prospect.email && (
-                              <div className="flex items-center gap-1 truncate">
-                                <FiMail className="w-3 h-3 flex-shrink-0" />
-                                <span className="truncate">{prospect.email}</span>
-                              </div>
-                            )}
-                            {prospect.phone && (
-                              <div className="flex items-center gap-1 truncate">
-                                <FiPhone className="w-3 h-3 flex-shrink-0" />
-                                <span className="truncate">{prospect.phone}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 text-left">
+  <div className="max-w-xs">
+    <div className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
+      {prospect.name || 'No Name'}
+    </div>
+    <div className="mt-1 text-xs text-slate-600 dark:text-gray-400 space-y-0.5">
+      {prospect.phone && (
+        <div className="truncate">{prospect.phone}</div>
+      )}
+      {prospect.email && (
+        <div className="truncate">{prospect.email}</div>
+      )}
+    </div>
+  </div>
+</td>
+                      <td className="px-4 py-3 text-left">
                         <div className="max-w-xs">
                           <div className="text-sm text-slate-900 dark:text-slate-100 truncate">{prospect.company || '-'}</div>
                           <div className="text-xs text-slate-500 dark:text-gray-400 truncate">{prospect.designation || '-'}</div>
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 text-left">
                         <div className="text-sm text-slate-900 dark:text-slate-100">{prospect.source}</div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 text-left">
                         <StatusBadge status={prospect.status} />
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 text-left">
                         <PriorityBadge priority={prospect.priority} />
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 text-left">
                         <div className="text-sm text-slate-900 dark:text-slate-100 max-w-xs truncate">
                           {prospect.assignedTo?.fullName || 'Unassigned'}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-slate-500 dark:text-gray-400">
+                      <td className="px-4 py-3 text-left">
                         {new Date(prospect.createdAt).toLocaleDateString()}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 text-left">
                         <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => {
@@ -490,17 +488,11 @@ const ProspectsPage = () => {
                   {(prospect.email || prospect.phone) && (
                     <div className="mt-3 pt-3 border-t border-gray-100">
                       {prospect.email && (
-                        <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-500 mb-1">
-                          <FiMail className="w-3 h-3" />
-                          <span className="truncate">{prospect.email}</span>
-                        </div>
-                      )}
+        <div className="text-xs text-gray-600 dark:text-gray-500 mb-1 truncate">{prospect.email}</div>
+      )}
                       {prospect.phone && (
-                        <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-500">
-                          <FiPhone className="w-3 h-3" />
-                          <span>{prospect.phone}</span>
-                        </div>
-                      )}
+        <div className="text-xs text-gray-600 dark:text-gray-500 truncate">{prospect.phone}</div>
+      )}
                     </div>
                   )}
                 </div>
@@ -630,7 +622,8 @@ const ProspectsPage = () => {
         />
       )}
     </div>
-  );
+  
+      </Layout>);
 };
 
 // Prospect Modal Component

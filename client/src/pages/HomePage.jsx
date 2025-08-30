@@ -103,60 +103,75 @@ const HomePage = () => {
       </div>
 
              {/* Stats Section */}
-       <div className="py-12 sm:py-16 bg-white relative">
-         <div className="container mx-auto px-4 sm:px-6">
-           {/* TrainCape Logo */}
-           {/* <div className="text-center mb-6 sm:mb-8">
-             <img 
-               src={traincapeLogo} 
-               alt="TrainCape CRM" 
-               className="h-12 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-lg shadow-lg"
-             />
-             <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1 sm:mb-2">TrainCape CRM</h3>
-             <p className="text-sm sm:text-base text-gray-600">Your Complete Business Solution</p>
-           </div> */}
-           
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 -mt-12 sm:-mt-16 relative z-10">
-             {stats.map((stat, index) => (
-               <div key={index} className="stats-card rounded-2xl p-4 sm:p-6 text-center">
-                 <div className="text-2xl sm:text-3xl font-bold mb-2 flex items-center justify-center">
-                   {stat.icon}
-                   <span className="ml-2">{stat.value}</span>
-                 </div>
-                 <div className="text-gray-600 font-medium text-sm sm:text-base">{stat.label}</div>
-                 <div className="text-xs sm:text-sm text-green-500 mt-1">
-                   {stat.trend}
-                 </div>
-               </div>
-             ))}
-           </div>
-         </div>
-       </div>
+{/* Stats Section */}
+<div className="py-12 sm:py-16 bg-white relative">
+  <div className="container mx-auto px-4 sm:px-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 px-4 sm:px-8 lg:px-12 py-6 bg-gray-50 rounded-2xl shadow-md">
+      {stats.map((stat, index) => (
+        <div key={index} className="stats-card rounded-2xl p-4 sm:p-6 text-center bg-white shadow">
+          <div className="text-2xl sm:text-3xl font-bold mb-2 flex items-center justify-center">
+            {stat.icon}
+            <span className="ml-2">{stat.value}</span>
+          </div>
+          <div className="text-gray-600 font-medium text-sm sm:text-base">{stat.label}</div>
+          <div className="text-xs sm:text-sm text-green-500 mt-1">
+            {stat.trend}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
 
              {/* Features Section */}
-       <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-gray-50 to-gray-100">
-         <div className="container mx-auto px-4 sm:px-6">
-           <div className="text-center mb-12 sm:mb-16">
-             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4">Powerful Features</h2>
-             <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-2">Everything you need to manage your sales pipeline effectively</p>
-           </div>
-           
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-             {features.map((feature, index) => (
-               <div key={index} className="bg-white rounded-2xl p-6 sm:p-8 hover-scale neon-border">
-                 <div className={`w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-${feature.color}-500 to-${feature.color}-600 rounded-2xl flex items-center justify-center mb-4 sm:mb-6`}>
-                   <div className="text-white text-xl sm:text-2xl">{feature.icon}</div>
-                 </div>
-                 <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">{feature.title}</h3>
-                 <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">{feature.description}</p>
-                 <Link to={feature.link} className={`text-${feature.color}-600 font-semibold hover:text-${feature.color}-700 transition flex items-center text-sm sm:text-base`}>
-                   Learn More <FaRocket className="ml-2" />
-                 </Link>
-               </div>
-             ))}
-           </div>
-         </div>
-       </section>
+<section className="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-gray-50 to-gray-100">
+  <div className="container mx-auto px-4 sm:px-6">
+    <div className="text-center mb-12 sm:mb-16">
+      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4">
+        Powerful Features
+      </h2>
+      <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-2">
+        Everything you need to manage your sales pipeline effectively
+      </p>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+      {features.map((feature, index) => (
+        <div
+          key={index}
+          className="bg-white rounded-2xl p-6 sm:p-8 hover-scale neon-border flex flex-col justify-between"
+        >
+          {/* Icon + Title Side by Side */}
+          <div className="flex items-center space-x-4 mb-4 sm:mb-6">
+            <div
+              className={`min-w-[3rem] min-h-[3rem] sm:min-w-[4rem] sm:min-h-[4rem] bg-gradient-to-br from-${feature.color}-500 to-${feature.color}-600 rounded-2xl flex items-center justify-center`}
+            >
+              <div className="text-white text-xl sm:text-2xl">{feature.icon}</div>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
+              {feature.title}
+            </h3>
+          </div>
+
+          {/* Description */}
+          <p className="text-gray-600 text-sm sm:text-base mb-6">{feature.description}</p>
+
+          {/* Centered Learn More */}
+          <div className="flex justify-center">
+            <Link
+              to={feature.link}
+              className={`text-${feature.color}-600 font-semibold hover:text-${feature.color}-700 transition flex items-center text-sm sm:text-base`}
+            >
+              Learn More <FaRocket className="ml-2" />
+            </Link>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
 
              {/* Role-based Access Section */}
        <section className="py-12 sm:py-16 md:py-20 bg-white">
