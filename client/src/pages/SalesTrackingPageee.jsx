@@ -1261,9 +1261,9 @@ const SalesTrackingPage = () => {
 
   // Render a sale row
   const renderSaleRow = (sale, index) => (
-    <tr key={sale._id} className={index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}>
+    <tr key={sale._id} onClick={() => handleEdit(sale)} className={`cursor-pointer ${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}`}>
       {/* Date Column */}
-      <td className="px-6 py-4 whitespace-normal break-words">
+      <td className="px-2 py-2 whitespace-normal break-words">
         {editingSale === sale._id ? (
           <div className="flex flex-col space-y-2">
             <input
@@ -1295,19 +1295,19 @@ const SalesTrackingPage = () => {
             <div className="text-sm text-gray-900 dark:text-white">
               {formatDate(sale.date || sale.createdAt || new Date())}
             </div>
-            {canEditSale(sale) && (
-              <button
-                onClick={() => handleEdit(sale)}
-                className="text-blue-600 hover:text-blue-900 flex items-center text-xs px-2 py-1 bg-blue-50 rounded w-16"
-              >
-                <FaEdit className="mr-1" /> Edit
-              </button>
-            )}
+
+
+
+
+
+
+
+
           </div>
         )}
       </td>
       {/* Customer Column */}
-      <td className="px-6 py-4 whitespace-normal break-words">
+      <td className="px-2 py-2 whitespace-normal break-words">
         <div className="text-sm font-medium text-gray-900 dark:text-white">
           {formatCustomerName(sale)}
         </div>
@@ -1338,7 +1338,7 @@ const SalesTrackingPage = () => {
         )}
       </td>
       {/* Contact Column */}
-      <td className="px-6 py-4">
+      <td className="px-2 py-2">
         <div className="flex flex-col space-y-1">
           {(sale.contactNumber || safeGet(sale, 'leadId.phone')) && (
             <div className="flex items-center">
@@ -1394,7 +1394,7 @@ const SalesTrackingPage = () => {
         </div>
       </td>
       {/* Product Column */}
-      <td className="px-6 py-4 whitespace-normal break-words">
+      <td className="px-2 py-2 whitespace-normal break-words">
         {editingSale === sale._id ? (
           <div>
             <input
@@ -1420,7 +1420,7 @@ const SalesTrackingPage = () => {
         )}
       </td>
       {/* Sales Person Column */}
-      <td className="px-6 py-4 whitespace-normal break-words">
+      <td className="px-2 py-2 whitespace-normal break-words">
         {editingSale === sale._id ? (
           <div className="flex flex-col space-y-2">
             <select
@@ -1443,7 +1443,7 @@ const SalesTrackingPage = () => {
         )}
       </td>
       {/* Amount Column */}
-      <td className="px-6 py-4 whitespace-normal break-words">
+      <td className="px-2 py-2 whitespace-normal break-words">
         {editingSale === sale._id ? (
           <div className="flex flex-col space-y-2">
             <div className="flex items-center space-x-2">
@@ -1477,7 +1477,7 @@ const SalesTrackingPage = () => {
         )}
       </td>
       {/* Token Column */}
-      <td className="px-6 py-4 whitespace-normal break-words">
+      <td className="px-2 py-2 whitespace-normal break-words">
         {editingSale === sale._id ? (
           <div className="relative">
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">
@@ -1498,7 +1498,7 @@ const SalesTrackingPage = () => {
         )}
       </td>
       {/* Pending Column */}
-      <td className="px-6 py-4 whitespace-normal break-words">
+      <td className="px-2 py-2 whitespace-normal break-words">
         {editingSale === sale._id ? (
           <div className="relative">
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">
@@ -1525,7 +1525,7 @@ const SalesTrackingPage = () => {
         )}
       </td>
       {/* Status Column */}
-      <td className="px-6 py-4 whitespace-normal break-words">
+      <td className="px-2 py-2 whitespace-normal break-words">
         {editingSale === sale._id ? (
           <select
             value={editValues.status || sale.status}
@@ -1575,7 +1575,7 @@ const SalesTrackingPage = () => {
         )}
       </td>
       {/* Remarks Column */}
-      <td className="px-6 py-4 whitespace-normal break-words text-sm text-gray-500 dark:text-gray-400">
+      <td className="px-2 py-2 whitespace-normal break-words text-sm text-gray-500 dark:text-gray-400">
         {editingSale === sale._id ? (
           <div className="space-y-2">
             <textarea
@@ -1595,17 +1595,17 @@ const SalesTrackingPage = () => {
         )}
       </td>
       {/* Actions Column */}
-      <td className="px-6 py-4 whitespace-normal break-words text-sm text-gray-500 dark:text-gray-400">
+      <td className="px-2 py-2 whitespace-normal break-words text-sm text-gray-500 dark:text-gray-400">
         <div className="flex items-center space-x-2">
-          {canEditSale(sale) && (
-            <button
-              onClick={() => handleEdit(sale)}
-              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-150"
-              title="Edit sale"
-            >
-              <FaEdit className="h-5 w-5" />
-            </button>
-          )}
+
+
+
+
+
+
+
+
+
           {canDeleteSale(sale) && (
             <button
               onClick={() => handleDelete(sale._id)}
@@ -2109,7 +2109,7 @@ const SalesTrackingPage = () => {
             )}
 
             <div className="overflow-x-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-md dark:shadow-2xl transition-all duration-200 ease-out shadow-sm">
-                              <table className="w-full divide-y divide-slate-200 dark:divide-slate-700">
+                              <div className="w-full overflow-x-auto"><table className="min-w-full table-auto border-collapse divide-y divide-slate-200 dark:divide-slate-700">
                   <thead className="bg-gray-50 dark:bg-slate-800">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
@@ -2136,12 +2136,12 @@ const SalesTrackingPage = () => {
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredSales.map((sale, index) => (
-                    <tr key={sale._id} className={index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}>
-                      <td className="px-6 py-4 whitespace-normal break-words text-sm text-gray-500 dark:text-gray-400">
+                    <tr key={sale._id} onClick={() => handleEdit(sale)} className={`cursor-pointer ${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}`}>
+                      <td className="px-2 py-2 whitespace-normal break-words text-sm text-gray-500 dark:text-gray-400">
                         {index + 1}
                       </td>
                       {/* Date Column */}
-                      <td className="px-6 py-4 whitespace-normal break-words">
+                      <td className="px-2 py-2 whitespace-normal break-words">
                         {editingSale === sale._id ? (
                           <div className="flex flex-col space-y-2">
                             <input
@@ -2173,19 +2173,19 @@ const SalesTrackingPage = () => {
                             <div className="text-sm text-gray-900 dark:text-white">
                               {formatDate(sale.date || sale.createdAt || new Date())}
                             </div>
-                            {canEditSale(sale) && (
-                              <button
-                                onClick={() => handleEdit(sale)}
-                                className="text-blue-600 hover:text-blue-900 flex items-center text-xs px-2 py-1 bg-blue-50 rounded w-16"
-                              >
-                                <FaEdit className="mr-1" /> Edit
-                              </button>
-                            )}
+
+
+
+
+
+
+
+
                           </div>
                         )}
                       </td>
                       {/* Customer Column */}
-                      <td className="px-6 py-4 whitespace-normal break-words">
+                      <td className="px-2 py-2 whitespace-normal break-words">
                         <div className="text-sm font-medium text-gray-900 dark:text-white">
                           {formatCustomerName(sale)}
                         </div>
@@ -2216,7 +2216,7 @@ const SalesTrackingPage = () => {
                         )}
                       </td>
                       {/* Contact Column */}
-                      <td className="px-6 py-4">
+                      <td className="px-2 py-2">
                         <div className="flex flex-col space-y-1">
                           {(sale.contactNumber || safeGet(sale, 'leadId.phone')) && (
                             <div className="flex items-center">
@@ -2272,7 +2272,7 @@ const SalesTrackingPage = () => {
                         </div>
                       </td>
                       {/* Product Column */}
-                      <td className="px-6 py-4 whitespace-normal break-words">
+                      <td className="px-2 py-2 whitespace-normal break-words">
                         {editingSale === sale._id ? (
                           <div>
                             <input
@@ -2298,7 +2298,7 @@ const SalesTrackingPage = () => {
                         )}
                       </td>
                       {/* Sales Person Column */}
-                      <td className="px-6 py-4 whitespace-normal break-words">
+                      <td className="px-2 py-2 whitespace-normal break-words">
                         {editingSale === sale._id ? (
                           <div className="flex flex-col space-y-2">
                             <select
@@ -2321,7 +2321,7 @@ const SalesTrackingPage = () => {
                         )}
                       </td>
                       {/* Amount Column */}
-                      <td className="px-6 py-4 whitespace-normal break-words">
+                      <td className="px-2 py-2 whitespace-normal break-words">
                         {editingSale === sale._id ? (
                           <div className="flex flex-col space-y-2">
                             <div className="flex items-center space-x-2">
@@ -2355,7 +2355,7 @@ const SalesTrackingPage = () => {
                         )}
                       </td>
                       {/* Token Column */}
-                      <td className="px-6 py-4 whitespace-normal break-words">
+                      <td className="px-2 py-2 whitespace-normal break-words">
                         {editingSale === sale._id ? (
                           <div className="relative">
                             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">
@@ -2376,7 +2376,7 @@ const SalesTrackingPage = () => {
                         )}
                       </td>
                       {/* Pending Column */}
-                      <td className="px-6 py-4 whitespace-normal break-words">
+                      <td className="px-2 py-2 whitespace-normal break-words">
                         {editingSale === sale._id ? (
                           <div className="relative">
                             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">
@@ -2403,7 +2403,7 @@ const SalesTrackingPage = () => {
                         )}
                       </td>
                       {/* Status Column */}
-                      <td className="px-6 py-4 whitespace-normal break-words">
+                      <td className="px-2 py-2 whitespace-normal break-words">
                         {editingSale === sale._id ? (
                           <select
                             value={editValues.status || sale.status}
@@ -2453,7 +2453,7 @@ const SalesTrackingPage = () => {
                         )}
                       </td>
                       {/* Remarks Column */}
-                      <td className="px-6 py-4 whitespace-normal break-words text-sm text-gray-500 dark:text-gray-400">
+                      <td className="px-2 py-2 whitespace-normal break-words text-sm text-gray-500 dark:text-gray-400">
                         {editingSale === sale._id ? (
                           <div className="space-y-2">
                             <textarea
@@ -2473,17 +2473,17 @@ const SalesTrackingPage = () => {
                         )}
                       </td>
                       {/* Actions Column */}
-                      <td className="px-6 py-4 whitespace-normal break-words text-sm text-gray-500 dark:text-gray-400">
+                      <td className="px-2 py-2 whitespace-normal break-words text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center space-x-2">
-                          {canEditSale(sale) && (
-                            <button
-                              onClick={() => handleEdit(sale)}
-                              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-150"
-                              title="Edit sale"
-                            >
-                              <FaEdit className="h-5 w-5" />
-                            </button>
-                          )}
+
+
+
+
+
+
+
+
+
                           {canDeleteSale(sale) && (
                             <button
                               onClick={() => handleDelete(sale._id)}
@@ -2498,7 +2498,7 @@ const SalesTrackingPage = () => {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           </>
         )}
@@ -2993,6 +2993,165 @@ const SalesTrackingPage = () => {
           </div>
         )}
       </div>
+      
+// Modal for editing sale
+{editingSale && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-4xl overflow-y-auto max-h-[90vh]">
+      <h3 className="text-2xl font-semibold mb-6 text-center">Edit Sale</h3>
+
+      <form className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        {/* Date */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Date</label>
+          <input
+            type="date"
+            value={editValues.saleDate ? new Date(editValues.saleDate).toISOString().split('T')[0] : ''}
+            onChange={(e) => handleInputChange("saleDate", new Date(e.target.value))}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+          />
+        </div>
+
+        {/* Lead By */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Lead By</label>
+          <input
+            type="text"
+            value={editValues.leadBy || ""}
+            onChange={(e) => handleInputChange("leadBy", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+          />
+        </div>
+
+        {/* Contact/Login */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Login ID</label>
+          <input
+            type="text"
+            value={editValues.loginId || ""}
+            onChange={(e) => handleInputChange("loginId", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Password</label>
+          <input
+            type="text"
+            value={editValues.password || ""}
+            onChange={(e) => handleInputChange("password", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+          />
+        </div>
+
+        {/* Product */}
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium mb-1">Product</label>
+          <input
+            type="text"
+            value={editValues.product || ""}
+            onChange={(e) => handleInputChange("product", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+          />
+        </div>
+
+        {/* Sales Person */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Sales Person</label>
+          <select
+            value={editValues.salesPerson || ""}
+            onChange={(e) => handleInputChange("salesPerson", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+          >
+            <option value="">Select Sales Person</option>
+            {filterOptions.salesPersons.map(sp => (
+              <option key={sp._id} value={sp._id}>{sp.fullName}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Amount */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Amount</label>
+          <input
+            type="number"
+            value={editValues.amount || 0}
+            onChange={(e) => handleInputChange("amount", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+          />
+        </div>
+
+        {/* Token */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Token</label>
+          <input
+            type="number"
+            value={editValues.token || 0}
+            onChange={(e) => handleInputChange("token", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+          />
+        </div>
+
+        {/* Pending */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Pending</label>
+          <input
+            type="number"
+            value={editValues.pending || 0}
+            onChange={(e) => handleInputChange("pending", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+            disabled={editValues.status === "Completed"}
+          />
+        </div>
+
+        {/* Status */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Status</label>
+          <select
+            value={editValues.status || ""}
+            onChange={(e) => handleInputChange("status", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+          >
+            {getAvailableStatusOptions(editValues.status).map(status => (
+              <option key={status} value={status}>{status}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Remarks */}
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium mb-1">Remarks</label>
+          <textarea
+            value={editValues.remarks || ""}
+            onChange={(e) => handleInputChange("remarks", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+            rows="3"
+          />
+        </div>
+      </form>
+
+      <div className="flex justify-end space-x-3 mt-6">
+        <button
+          type="button"
+          onClick={() => handleSave(editingSale)}
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+        >
+          Save
+        </button>
+        <button
+          type="button"
+          onClick={() => { setEditingSale(null); setEditValues({}); }}
+          className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
     </Layout>
   );
 };
