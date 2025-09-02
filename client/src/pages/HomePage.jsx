@@ -92,10 +92,18 @@ const HomePage = () => {
                    </button>
                  </>
                ) : (
-                 <Link to={user.role === "Customer" ? "/customer" : user.role === "Sales Person" ? "/sales" : "/leads"}
-                   className="glassmorphism px-6 sm:px-8 py-3 sm:py-4 rounded-full text-white font-semibold hover:bg-white hover:bg-opacity-20 transition duration-300 w-full sm:w-auto flex items-center justify-center text-sm sm:text-base">
-                   <FaRocket className="mr-2 sm:mr-3" />Go to Dashboard
-                 </Link>
+                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
+                   <Link to={user.role === "Customer" ? "/customer" : user.role === "Sales Person" ? "/sales" : "/leads"}
+                     className="glassmorphism px-6 sm:px-8 py-3 sm:py-4 rounded-full text-white font-semibold hover:bg-white hover:bg-opacity-20 transition duration-300 w-full sm:w-auto flex items-center justify-center text-sm sm:text-base">
+                     <FaRocket className="mr-2 sm:mr-3" />Go to Dashboard
+                   </Link>
+                   {(user.role === "Admin" || user.role === "Manager") && (
+                     <Link to={user.role === "Admin" ? "/admin" : "/manager"}
+                       className="bg-purple-600 hover:bg-purple-700 px-6 sm:px-8 py-3 sm:py-4 rounded-full text-white font-semibold transition duration-300 w-full sm:w-auto flex items-center justify-center text-sm sm:text-base">
+                       <FaShieldAlt className="mr-2 sm:mr-3" />{user.role === "Admin" ? "Access Admin Dashboard" : "Access Manager Dashboard"}
+                     </Link>
+                   )}
+                 </div>
                )}
              </div>
           </div>
@@ -218,6 +226,19 @@ const HomePage = () => {
                      </li>
                    ))}
                  </ul>
+                 
+                                   {/* Add button for Manager/Admin role card */}
+                  {role.role === "Manager/Admin" && user && (user.role === "Admin" || user.role === "Manager") && (
+                    <div className="mt-6 pt-4 border-t border-purple-200">
+                      <Link 
+                        to="/manager"
+                        className={`w-full bg-${role.color}-600 hover:bg-${role.color}-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center text-sm sm:text-base`}
+                      >
+                        <FaShieldAlt className="mr-2" />
+                        Access Manager Dashboard
+                      </Link>
+                    </div>
+                  )}
                </div>
              ))}
            </div>
@@ -243,9 +264,18 @@ const HomePage = () => {
                  </button>
                </>
              ) : (
-               <Link to="/dashboard" className="glassmorphism px-6 sm:px-8 py-3 sm:py-4 rounded-full text-white font-semibold hover:bg-white hover:bg-opacity-20 transition duration-300 w-full sm:w-auto flex items-center justify-center text-sm sm:text-base">
-                 <FaRocket className="mr-2 sm:mr-3" />Access Dashboard
-               </Link>
+               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
+                 <Link to={user.role === "Customer" ? "/customer" : user.role === "Sales Person" ? "/sales" : "/leads"}
+                   className="glassmorphism px-6 sm:px-8 py-3 sm:py-4 rounded-full text-white font-semibold hover:bg-white hover:bg-opacity-20 transition duration-300 w-full sm:w-auto flex items-center justify-center text-sm sm:text-base">
+                   <FaRocket className="mr-2 sm:mr-3" />Access Dashboard
+                 </Link>
+                 {(user.role === "Admin" || user.role === "Manager") && (
+                   <Link to={user.role === "Admin" ? "/admin" : "/manager"}
+                     className="bg-purple-600 hover:bg-purple-700 px-6 sm:px-8 py-3 sm:py-4 rounded-full text-white font-semibold transition duration-300 w-full sm:w-auto flex items-center justify-center text-sm sm:text-base">
+                     <FaShieldAlt className="mr-2 sm:mr-3" />{user.role === "Admin" ? "Access Admin Dashboard" : "Access Manager Dashboard"}
+                   </Link>
+                 )}
+               </div>
              )}
            </div>
            

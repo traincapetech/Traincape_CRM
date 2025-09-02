@@ -97,21 +97,25 @@ export const formatDate = (date, format = 'DD/MM/YYYY') => {
  * @param {number} amount - The amount to format
  * @returns {string} Formatted currency string
  */
-export const formatCurrency = (amount) => {
+export const formatCurrency = (amount, currencyOverride, localeOverride) => {
   if (amount === null || amount === undefined) return 'N/A';
-  
+
   const settings = getCurrencySettings();
-  
+  const currency = currencyOverride || settings.currency || 'USD';
+  const locale = localeOverride || (currency === 'INR' ? 'en-IN' : settings.locale || 'en-US');
+
   try {
-    return new Intl.NumberFormat(settings.locale, {
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
-      currency: settings.currency,
+      currency,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(amount);
   } catch (error) {
     console.error('Error formatting currency:', error);
-    return `${settings.symbol}${amount.toFixed(2)}`;
+    const fallbackSymbolMap = { USD: '$', INR: '₹', EUR: '€', GBP: '£' };
+    const symbol = fallbackSymbolMap[currency] || settings.symbol || '';
+    return `${symbol}${Number(amount).toFixed(2)}`;
   }
 };
 
@@ -133,7 +137,7 @@ export const setCurrencySettings = (settings) => {
  */
 export const getCurrencySettings = () => {
   const settings = localStorage.getItem('currencySettings');
-  return settings ? JSON.parse(settings) : { currency: 'USD', symbol: '$' };
+  return settings ? JSON.parse(settings) : { currency: 'USD', symbol: '$', locale: 'en-US' };
 };
 
 // Add a new utility function to get a direct sales count

@@ -268,7 +268,7 @@ const EmployeeList = () => {
       />
 
       <EditEmployeeDialog
-        employee={selectedEmployee}
+        employeeId={selectedEmployee?._id}
         isOpen={showEditDialog}
         onOpenChange={setShowEditDialog}
         onEmployeeUpdated={fetchEmployees}
