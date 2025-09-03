@@ -10,7 +10,6 @@ import { professionalClasses, transitions, shadows } from '../utils/professional
 import 'react-phone-input-2/lib/style.css';
 import api from "../services/api"; // Import the api instance to access baseURL
 import LoggingService from "../services/loggingService"; // Add LoggingService import
-
 const SalesTrackingPage = () => {
   // Custom styles for PhoneInput
   const phoneInputStyle = {
@@ -34,7 +33,6 @@ const SalesTrackingPage = () => {
       width: '300px',
     }
   };
-  
   const { user } = useAuth();
   const [sales, setSales] = useState([]);
   const [filteredSales, setFilteredSales] = useState([]);
@@ -68,13 +66,11 @@ const SalesTrackingPage = () => {
   const [loadingLeads, setLoadingLeads] = useState(false);
   const [leadPersonOptions, setLeadPersonOptions] = useState([]);
   const [loadingLeadPersons, setLoadingLeadPersons] = useState(false);
-  
   // Date filtering state
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1); // Current month (1-12)
   const [filterYear, setFilterYear] = useState(new Date().getFullYear()); // Current year
   const [showCurrentMonth, setShowCurrentMonth] = useState(false); // Changed to false - don't filter by default
   const [showAllSales, setShowAllSales] = useState(true); // Changed to true - show all sales by default
-  
   // Advanced filter state
   const [filters, setFilters] = useState({
     search: "",
@@ -89,7 +85,6 @@ const SalesTrackingPage = () => {
     amountTo: "",
     currency: ""
   });
-  
   // Options for filters
   const [filterOptions, setFilterOptions] = useState({
     countries: [],
@@ -98,7 +93,6 @@ const SalesTrackingPage = () => {
     leadPersons: [],
     currencies: []
   });
-  
   // Currency options
   const currencyOptions = [
     { value: "USD", label: "USD ($)", symbol: "$" },
@@ -110,7 +104,6 @@ const SalesTrackingPage = () => {
     { value: "JPY", label: "JPY (¥)", symbol: "¥" },
     { value: "CNY", label: "CNY (¥)", symbol: "¥" }
   ];
-  
   // Generate month options
   const months = [
     { value: 1, label: "January" },
@@ -126,11 +119,9 @@ const SalesTrackingPage = () => {
     { value: 11, label: "November" },
     { value: 12, label: "December" }
   ];
-  
   // Generate year options (5 years back from current year)
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 6 }, (_, i) => currentYear - i);
-
   // Sale status options - must match the enum values in the server's Sale model
   const statusOptions = [
     "Pending", 
@@ -138,7 +129,6 @@ const SalesTrackingPage = () => {
     // Only show Cancelled in dropdown for admin users
     ...(user?.role === 'Admin' ? ["Cancelled"] : [])
   ];
-
   // Add a function to get available status options based on user role and current status
   const getAvailableStatusOptions = (currentStatus) => {
     // If status is already Cancelled, show it in options regardless of role
@@ -147,25 +137,20 @@ const SalesTrackingPage = () => {
     }
     return statusOptions;
   };
-
   // Add new state for delete confirmation
   const [deletingSale, setDeletingSale] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  
   // State for collapsible advanced filters
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-
   // Fetch sales data
   useEffect(() => {
     fetchSales();
     fetchUserOptions();
   }, [user]);
-  
   // Apply filters when sales or filters change
   useEffect(() => {
     console.log(`Sales data changed: ${sales.length} sales available`);
     console.log('Current filter states:', { showAllSales, showCurrentMonth, filterMonth, filterYear });
-    
     if (sales.length > 0) {
       applyAllFilters();
       extractFilterOptions();
@@ -175,7 +160,6 @@ const SalesTrackingPage = () => {
       console.log('No sales data available, clearing filtered sales');
     }
   }, [sales, filters, filterMonth, filterYear, showCurrentMonth, showAllSales]);
-  
   // Auto-expand advanced filters if any are active
   useEffect(() => {
     const hasActiveFilters = Object.values(filters).some(filter => filter !== "");
@@ -183,19 +167,16 @@ const SalesTrackingPage = () => {
       setShowAdvancedFilters(true);
     }
   }, [filters, showAdvancedFilters]);
-  
   // Fetch lead persons when in reference sale mode
   useEffect(() => {
     if (newSale.isReference && leadPersonOptions.length === 0) {
       fetchLeadPersons();
     }
   }, [newSale.isReference]);
-  
   // Function to apply all filters
   const applyAllFilters = () => {
     // Filter out null/undefined sales first
     let filtered = sales.filter(sale => sale && sale._id);
-    
     // Apply date filters first
     if (showAllSales) {
       // Show all sales regardless of date when showAllSales is true
@@ -204,7 +185,6 @@ const SalesTrackingPage = () => {
       // Show current month data
       const currentMonth = new Date().getMonth() + 1; // 1-12
       const currentYear = new Date().getFullYear();
-      
       filtered = filtered.filter(sale => {
         if (!sale || !sale.date && !sale.createdAt) return false;
         const saleDate = new Date(sale.date || sale.createdAt);
@@ -224,9 +204,7 @@ const SalesTrackingPage = () => {
       });
       console.log(`Filtered to selected month (${filterMonth}/${filterYear}): ${filtered.length} sales`);
     }
-    
     // Apply advanced filters
-    
     // Text search (customer name, email, product, login ID)
     if (filters.search) {
       const searchTerm = filters.search.toLowerCase();
@@ -239,17 +217,14 @@ const SalesTrackingPage = () => {
         (sale.leadBy && sale.leadBy.toLowerCase().includes(searchTerm))
       );
     }
-    
     // Status filter
     if (filters.status) {
       filtered = filtered.filter(sale => sale.status === filters.status);
     }
-    
     // Country filter
     if (filters.country) {
       filtered = filtered.filter(sale => sale.country === filters.country);
     }
-    
     // Course/Product filter
     if (filters.course) {
       filtered = filtered.filter(sale => 
@@ -257,7 +232,6 @@ const SalesTrackingPage = () => {
         (sale.product && sale.product === filters.course)
       );
     }
-    
     // Sales Person filter
     if (filters.salesPerson) {
       filtered = filtered.filter(sale => {
@@ -267,7 +241,6 @@ const SalesTrackingPage = () => {
         return salesPersonId === filters.salesPerson;
       });
     }
-    
     // Lead Person filter
     if (filters.leadPerson) {
       filtered = filtered.filter(sale => {
@@ -277,7 +250,6 @@ const SalesTrackingPage = () => {
         return leadPersonId === filters.leadPerson;
       });
     }
-    
     // Date range filter
     if (filters.dateFrom) {
       const fromDate = new Date(filters.dateFrom);
@@ -287,7 +259,6 @@ const SalesTrackingPage = () => {
         return saleDate >= fromDate;
       });
     }
-    
     if (filters.dateTo) {
       const toDate = new Date(filters.dateTo);
       toDate.setHours(23, 59, 59, 999); // End of the day
@@ -297,7 +268,6 @@ const SalesTrackingPage = () => {
         return saleDate <= toDate;
       });
     }
-    
     // Amount range filter
     if (filters.amountFrom) {
       const minAmount = parseFloat(filters.amountFrom);
@@ -307,7 +277,6 @@ const SalesTrackingPage = () => {
         return amount >= minAmount;
       });
     }
-    
     if (filters.amountTo) {
       const maxAmount = parseFloat(filters.amountTo);
       filtered = filtered.filter(sale => {
@@ -316,7 +285,6 @@ const SalesTrackingPage = () => {
         return amount <= maxAmount;
       });
     }
-    
     // Currency filter
     if (filters.currency) {
       filtered = filtered.filter(sale => 
@@ -324,17 +292,14 @@ const SalesTrackingPage = () => {
         (sale && sale.totalCostCurrency === filters.currency)
       );
     }
-    
     console.log(`Final filtered sales count: ${filtered.length} out of ${sales.length} total sales`);
     setFilteredSales(filtered);
   };
-  
   // Extract filter options from sales data
   const extractFilterOptions = () => {
     const countries = [...new Set(sales.map(sale => sale.country).filter(Boolean))];
     const courses = [...new Set(sales.map(sale => sale.course || sale.product).filter(Boolean))];
     const currencies = [...new Set(sales.map(sale => sale.currency || sale.totalCostCurrency).filter(Boolean))];
-    
     setFilterOptions(prev => ({
       ...prev,
       countries,
@@ -342,13 +307,11 @@ const SalesTrackingPage = () => {
       currencies
     }));
   };
-  
   // Fetch user options for filters
   const fetchUserOptions = async () => {
     try {
       const salesPersonsResponse = await authAPI.getUsers("Sales Person");
       const leadPersonsResponse = await authAPI.getUsers("Lead Person");
-      
       setFilterOptions(prev => ({
         ...prev,
         salesPersons: salesPersonsResponse.data.data || [],
@@ -358,18 +321,15 @@ const SalesTrackingPage = () => {
       console.error("Error fetching user options:", err);
     }
   };
-  
   // Handle filter changes
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
-    
     // Auto-expand filters when a filter is applied
     if (value && !showAdvancedFilters) {
       setShowAdvancedFilters(true);
     }
   };
-  
   // Reset all filters
   const resetFilters = () => {
     setFilters({
@@ -388,20 +348,15 @@ const SalesTrackingPage = () => {
     setShowCurrentMonth(false);
     setShowAllSales(true);
   };
-
   // Fetch sales data
   const fetchSales = async () => {
     try {
       setLoading(true);
       setError(null);
-      
       console.log('Fetching sales data...');
-      
       const response = await salesAPI.getAllForced();
-      
       if (response.data && response.data.success && Array.isArray(response.data.data)) {
         console.log(`Successfully loaded ${response.data.data.length} sales`);
-        
         // Process and set the sales data
         const processedSales = response.data.data
           .filter(sale => sale && sale._id) // Filter out invalid entries
@@ -417,10 +372,8 @@ const SalesTrackingPage = () => {
             date: sale.date || sale.createdAt,
             remarks: sale.remarks || '' // Ensure remarks are included and defaulted to empty string
           }));
-        
         setSales(processedSales);
         setFilteredSales(processedSales); // Initialize filtered sales
-        
         if (processedSales.length === 0) {
           toast.info('No sales records found.');
         }
@@ -435,13 +388,11 @@ const SalesTrackingPage = () => {
       setLoading(false);
     }
   };
-
   // Fetch available leads for selection in add sale form
   const fetchAvailableLeads = async () => {
     try {
       setLoadingLeads(true);
       let leadsData = [];
-      
       // If sales person, fetch assigned leads
       if (user.role === 'Sales Person') {
         const response = await leadsAPI.getAssigned();
@@ -455,16 +406,13 @@ const SalesTrackingPage = () => {
           leadsData = response.data.data.filter(lead => lead.status !== 'Converted');
         }
       }
-      
       setAvailableLeads(leadsData);
-      
       // Create options for select dropdown
       const options = leadsData.map(lead => ({
         value: lead._id,
         label: `${lead.name} - ${lead.course} (${lead.status})`,
         data: lead
       }));
-      
       setLeadOptions(options);
     } catch (err) {
       console.error("Error fetching leads:", err);
@@ -473,7 +421,6 @@ const SalesTrackingPage = () => {
       setLoadingLeads(false);
     }
   };
-
   // Fetch available lead persons (for lead selection in sales)
   const fetchLeadPersons = async () => {
     try {
@@ -492,7 +439,6 @@ const SalesTrackingPage = () => {
       setLoadingLeadPersons(false);
     }
   };
-
   // Handle opening add sale modal
   const handleAddSaleClick = () => {
     fetchAvailableLeads();
@@ -521,12 +467,10 @@ const SalesTrackingPage = () => {
       currency: "USD" // Default currency
     });
   };
-
   // Handle lead selection in add form
   const handleLeadSelect = (e) => {
     const selectedLeadId = e.target.value;
     const selectedLead = availableLeads.find(lead => lead._id === selectedLeadId);
-    
     if (selectedLead) {
       setNewSale(prev => ({
         ...prev,
@@ -538,28 +482,23 @@ const SalesTrackingPage = () => {
       }));
     }
   };
-
   // Handle new sale form input changes
   const handleNewSaleChange = (field, value) => {
     setNewSale(prev => {
       const updated = { ...prev, [field]: value };
-      
       // If amount or token changes, recalculate pending
       if (field === 'amount' || field === 'token') {
         const amount = field === 'amount' ? parseFloat(value) : parseFloat(prev.amount);
         const token = field === 'token' ? parseFloat(value) : parseFloat(prev.token);
         updated.pending = amount - token;
       }
-      
       // If status is Completed, set pending to 0
       if (field === 'status' && value === 'Completed') {
         updated.pending = 0;
       }
-      
       return updated;
     });
   };
-
   // Toggle between reference and lead-based sale
   const handleReferenceToggle = (isReference) => {
     // If switching to reference sale, fetch lead persons for selection
@@ -574,16 +513,13 @@ const SalesTrackingPage = () => {
       countryCode: isReference ? newSale.countryCode : "+1",
       // Don't reset leadPerson - we want to preserve this selection
     });
-    
     if (isReference && leadPersonOptions.length === 0) {
       fetchLeadPersons();
     }
   };
-
   // Submit new sale - simplified without currency conversion complexity
   const handleSubmitNewSale = async (e) => {
     e.preventDefault();
-    
     try {
       // Different validation based on whether it's a reference sale
       if (!newSale.isReference) {
@@ -592,12 +528,10 @@ const SalesTrackingPage = () => {
           setError("Please select a lead");
           return;
         }
-        
         if (!newSale.product) {
           setError("Please enter a product/course name");
           return;
         }
-        
         // Require a lead person to be selected for regular sales too
         if (!newSale.leadPerson) {
           setError("Please select a lead person who will see this sale");
@@ -609,42 +543,33 @@ const SalesTrackingPage = () => {
           setError("Please enter customer name");
           return;
         }
-        
         if (!newSale.contactNumber) {
           setError("Please enter contact number");
           return;
         }
-        
         if (!newSale.product) {
           setError("Please enter a product/course name");
           return;
         }
-        
         if (!newSale.country) {
           setError("Please enter country");
           return;
         }
       }
-      
       // Get fresh token
       const token = localStorage.getItem('token');
-      
       if (!token) {
         setError("Authentication required. Please log in again.");
         return;
       }
-      
       let saleData;
-      
       if (!newSale.isReference) {
         // Process normal sale from lead
         const selectedLead = newSale._selectedLead || availableLeads.find(lead => lead._id === newSale.leadId);
-        
         if (!selectedLead) {
           setError("Lead information not found. Please select a lead again.");
           return;
         }
-        
         // Extract lead details for the sale using the required schema fields
         saleData = {
           // Customer details from lead
@@ -654,34 +579,27 @@ const SalesTrackingPage = () => {
           countryCode: selectedLead.countryCode || selectedLead.CODE || '+1',
           contactNumber: selectedLead.phone || selectedLead.contactNumber || selectedLead.NUMBER || selectedLead.MOBILE || '0000000000',
           email: selectedLead.email || selectedLead['E-MAIL'] || selectedLead.EMAIL || '',
-          
           // ID references
           salesPerson: user._id, // Current user is the sales person
           // Use the explicitly selected lead person
           leadPerson: newSale.leadPerson,
-          
           // Optional fields - new
           loginId: newSale.loginId || '',
           password: newSale.password || '',
           leadBy: newSale.leadBy || '',
-          
           // Source info
           source: selectedLead.source || selectedLead.SOURSE || '',
           clientRemark: selectedLead.client || selectedLead['CLIENT REMARK'] || '',
-          
           // Financial info - with currency
           totalCost: parseFloat(newSale.amount) || 0,
           tokenAmount: parseFloat(newSale.token) || 0,
           currency: newSale.currency || 'USD',
-          
           // Status info
           pending: newSale.status === 'Completed' ? false : parseFloat(newSale.pending) > 0, // Set to false if status is completed
           status: newSale.status || 'Pending',
-          
           // Creation metadata
           createdBy: user._id,
           date: newSale.saleDate || new Date(), // Use selected date or current date
-          
           // Flag to ensure this shows in lead person's dashboard
           isLeadPersonSale: true
         };
@@ -695,52 +613,41 @@ const SalesTrackingPage = () => {
           countryCode: newSale.countryCode || '+1',
           contactNumber: newSale.contactNumber,
           email: newSale.email || '',
-          
           // ID references
           salesPerson: user._id, // Current user is the sales person
           leadPerson: newSale.leadPerson, // Use selected lead person
-          
           // Optional fields - new
           loginId: newSale.loginId || '',
           password: newSale.password || '',
           leadBy: newSale.leadBy || '',
-          
           // Source info
           source: 'Reference', // Mark as reference
           isReference: true,
-          
           // Financial info - with currency
           totalCost: parseFloat(newSale.amount) || 0,
           tokenAmount: parseFloat(newSale.token) || 0,
           currency: newSale.currency || 'USD',
-          
           // Status info
           pending: newSale.status === 'Completed' ? false : parseFloat(newSale.pending) > 0, // Set to false if status is completed
           status: newSale.status || 'Pending',
-          
           // Creation metadata
           createdBy: user._id,
           date: newSale.saleDate || new Date(), // Use selected date or current date
-          
           // Flag to ensure this shows in lead person's dashboard
           isLeadPersonSale: true
         };
       }
-      
       // Use the API service - explicitly set isLeadPersonSale flag to true for both types
       const response = await salesAPI.create({ ...saleData, isLeadPersonSale: true });
-      
       if (response.data && response.data.success) {
         // Add new sale to the list
         setSales(prev => [response.data.data, ...prev]);
-        
         // Log the sale creation
         try {
           await LoggingService.logSaleCreate(response.data.data);
         } catch (logError) {
           console.error('Error logging sale creation:', logError);
         }
-        
         // Close modal and reset form
         setShowAddModal(false);
         setNewSale({
@@ -763,10 +670,8 @@ const SalesTrackingPage = () => {
           saleDate: new Date(),
           currency: "USD" // Default currency
         });
-        
         // Show success message
         toast.success("Sale added successfully!");
-        
         // Refresh data to ensure we have the latest
         refreshData();
       } else {
@@ -793,14 +698,11 @@ const SalesTrackingPage = () => {
       }
     }
   };
-
   // Improved helper function to safely extract IDs from possibly nested or string IDs
   const extractId = (obj, field) => {
     if (!obj) return null;
-    
     // If field is direct property and is a string already, return it
     if (typeof obj[field] === 'string') return obj[field];
-    
     // If field is an object with _id, return that
     if (obj[field] && obj[field]._id) {
       // MongoDB ObjectId is stored as an object that can be converted to string
@@ -809,19 +711,15 @@ const SalesTrackingPage = () => {
       }
       return obj[field]._id;
     }
-    
     // If field itself is an object with an ID property, return that
     if (obj[field] && typeof obj[field].id === 'string') return obj[field].id;
-    
     // If the field is an ObjectId that can be converted to string
     if (obj[field] && typeof obj[field] === 'object' && obj[field].toString) {
       return obj[field].toString();
     }
-    
     // Return null if nothing found
     return null;
   };
-
   // Initialize edit values
   const handleEdit = (sale) => {
     if (!sale || !sale._id) {
@@ -829,7 +727,6 @@ const SalesTrackingPage = () => {
       toast.error('Cannot edit this sale - invalid data');
       return;
     }
-
     setEditingSale(sale._id);
     setEditValues({
       amount: parseFloat(Number(sale.amount || sale.totalCost || 0).toFixed(2)),
@@ -845,7 +742,6 @@ const SalesTrackingPage = () => {
       remarks: sale.remarks || '' // Initialize remarks from existing sale
     });
   };
-
   // Handle saving edits
   const handleSave = async (saleId) => {
     try {
@@ -855,7 +751,6 @@ const SalesTrackingPage = () => {
         setError("Sale not found");
         return;
       }
-
       // Create update data matching the schema
       const updateData = {
         // Keep original customer info
@@ -865,7 +760,6 @@ const SalesTrackingPage = () => {
         countryCode: originalSale.countryCode,
         contactNumber: originalSale.contactNumber,
         email: originalSale.email,
-        
         // Updated fields
         salesPerson: editValues.salesPerson || originalSale.salesPerson?._id || originalSale.salesPerson,
         leadPerson: originalSale.leadPerson?._id || originalSale.leadPerson,
@@ -881,15 +775,12 @@ const SalesTrackingPage = () => {
         loginId: editValues.loginId || originalSale.loginId || '',
         password: editValues.password || originalSale.password || '',
         leadBy: editValues.leadBy || originalSale.leadBy || '',
-        
         // Update metadata
         updatedBy: user._id,
         updatedAt: new Date()
       };
-
       // Use the API service
       const response = await salesAPI.update(saleId, updateData);
-      
       if (response.data && response.data.success) {
         // Log the sale update
         try {
@@ -897,26 +788,21 @@ const SalesTrackingPage = () => {
         } catch (logError) {
           console.error('Error logging sale update:', logError);
         }
-        
         // Immediately update the local state with the new data
         const updatedSale = response.data.data;
-        
         setSales(prevSales => 
           prevSales.map(sale => 
             sale && sale._id === saleId ? updatedSale : sale
           )
         );
-        
         setFilteredSales(prevFiltered => 
           prevFiltered.map(sale => 
             sale && sale._id === saleId ? updatedSale : sale
           )
         );
-        
         // Clear edit state
         setEditingSale(null);
         setEditValues({});
-        
         toast.success('Sale updated successfully');
       } else {
         toast.error(response.data?.message || 'Failed to update sale');
@@ -926,52 +812,42 @@ const SalesTrackingPage = () => {
       toast.error(err.response?.data?.message || 'Error updating sale');
     }
   };
-
   // Fixed handleInputChange to properly handle numeric values
   const handleInputChange = (field, value) => {
     setEditValues(prev => {
       const updated = { ...prev, [field]: value };
-      
       // If we're updating amount or token, recalculate the pending amount with proper rounding
       if (field === 'amount' || field === 'token') {
         const amount = parseFloat(Number(field === 'amount' ? value : prev.amount).toFixed(2)) || 0;
         const tokenAmount = parseFloat(Number(field === 'token' ? value : prev.token).toFixed(2)) || 0;
         updated.pending = parseFloat((amount - tokenAmount).toFixed(2));
       }
-      
       // If status is set to Completed, set pending to 0
       if (field === 'status' && value === 'Completed') {
         updated.pending = 0;
       }
-      
       return updated;
     });
   };
-
   // Fixed function to determine if user can edit a sale
   const canEditSale = (sale) => {
     if (!sale || !user || !user._id || !user.role) return false;
-    
     // Get sales person ID handling both object and string formats
     const salesPersonId = extractId(sale, 'salesPerson');
     const userId = user._id;
-    
     // Sales person can edit their own sales
     if (user.role === 'Sales Person') {
       const isOwnSale = salesPersonId && userId && salesPersonId.toString() === userId.toString();
       return isOwnSale;
     }
-    
     // Lead person can edit sales they are the lead for
     if (user.role === 'Lead Person') {
       const leadPersonId = extractId(sale, 'leadPerson');
       return leadPersonId && userId && leadPersonId.toString() === userId.toString();
     }
-    
     // Admins and managers can edit any sale
     return ['Admin', 'Manager'].includes(user.role);
   };
-  
   // Fixed function to determine if user can delete a sale
   const canDeleteSale = (sale) => {
     if (!sale || !user || !user._id || !user.role) return false;
@@ -1385,9 +1261,9 @@ const SalesTrackingPage = () => {
 
   // Render a sale row
   const renderSaleRow = (sale, index) => (
-    <tr key={sale._id} className={index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}>
+    <tr key={sale._id} onClick={() => handleEdit(sale)} className={`cursor-pointer ${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}`}>
       {/* Date Column */}
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-2 py-2 whitespace-normal break-words">
         {editingSale === sale._id ? (
           <div className="flex flex-col space-y-2">
             <input
@@ -1419,19 +1295,19 @@ const SalesTrackingPage = () => {
             <div className="text-sm text-gray-900 dark:text-white">
               {formatDate(sale.date || sale.createdAt || new Date())}
             </div>
-            {canEditSale(sale) && (
-              <button
-                onClick={() => handleEdit(sale)}
-                className="text-blue-600 hover:text-blue-900 flex items-center text-xs px-2 py-1 bg-blue-50 rounded w-16"
-              >
-                <FaEdit className="mr-1" /> Edit
-              </button>
-            )}
+
+
+
+
+
+
+
+
           </div>
         )}
       </td>
       {/* Customer Column */}
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-2 py-2 whitespace-normal break-words">
         <div className="text-sm font-medium text-gray-900 dark:text-white">
           {formatCustomerName(sale)}
         </div>
@@ -1462,7 +1338,7 @@ const SalesTrackingPage = () => {
         )}
       </td>
       {/* Contact Column */}
-      <td className="px-6 py-4">
+      <td className="px-2 py-2">
         <div className="flex flex-col space-y-1">
           {(sale.contactNumber || safeGet(sale, 'leadId.phone')) && (
             <div className="flex items-center">
@@ -1518,7 +1394,7 @@ const SalesTrackingPage = () => {
         </div>
       </td>
       {/* Product Column */}
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-2 py-2 whitespace-normal break-words">
         {editingSale === sale._id ? (
           <div>
             <input
@@ -1544,7 +1420,7 @@ const SalesTrackingPage = () => {
         )}
       </td>
       {/* Sales Person Column */}
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-2 py-2 whitespace-normal break-words">
         {editingSale === sale._id ? (
           <div className="flex flex-col space-y-2">
             <select
@@ -1567,7 +1443,7 @@ const SalesTrackingPage = () => {
         )}
       </td>
       {/* Amount Column */}
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-2 py-2 whitespace-normal break-words">
         {editingSale === sale._id ? (
           <div className="flex flex-col space-y-2">
             <div className="flex items-center space-x-2">
@@ -1601,7 +1477,7 @@ const SalesTrackingPage = () => {
         )}
       </td>
       {/* Token Column */}
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-2 py-2 whitespace-normal break-words">
         {editingSale === sale._id ? (
           <div className="relative">
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">
@@ -1622,7 +1498,7 @@ const SalesTrackingPage = () => {
         )}
       </td>
       {/* Pending Column */}
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-2 py-2 whitespace-normal break-words">
         {editingSale === sale._id ? (
           <div className="relative">
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">
@@ -1649,7 +1525,7 @@ const SalesTrackingPage = () => {
         )}
       </td>
       {/* Status Column */}
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-2 py-2 whitespace-normal break-words">
         {editingSale === sale._id ? (
           <select
             value={editValues.status || sale.status}
@@ -1699,7 +1575,7 @@ const SalesTrackingPage = () => {
         )}
       </td>
       {/* Remarks Column */}
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+      <td className="px-2 py-2 whitespace-normal break-words text-sm text-gray-500 dark:text-gray-400">
         {editingSale === sale._id ? (
           <div className="space-y-2">
             <textarea
@@ -1719,17 +1595,17 @@ const SalesTrackingPage = () => {
         )}
       </td>
       {/* Actions Column */}
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+      <td className="px-2 py-2 whitespace-normal break-words text-sm text-gray-500 dark:text-gray-400">
         <div className="flex items-center space-x-2">
-          {canEditSale(sale) && (
-            <button
-              onClick={() => handleEdit(sale)}
-              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-150"
-              title="Edit sale"
-            >
-              <FaEdit className="h-5 w-5" />
-            </button>
-          )}
+
+
+
+
+
+
+
+
+
           {canDeleteSale(sale) && (
             <button
               onClick={() => handleDelete(sale._id)}
@@ -1785,7 +1661,7 @@ const SalesTrackingPage = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto p-6">
+      <div className="w-full p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold">Sales Tracking</h2>
           <div className="flex gap-2">
@@ -2232,24 +2108,24 @@ const SalesTrackingPage = () => {
               </div>
             )}
 
-            <div className="overflow-x-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-md dark:shadow-2xl transition-all duration-200 ease-out shadow-sm">
-                              <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <div className="overflow-x-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-md dark:shadow-2xl transition-all duration-200 ease-out shadow-sm">
+                              <div className="w-full overflow-x-auto"><table className="min-w-full table-auto border-collapse divide-y divide-slate-200 dark:divide-slate-700">
                   <thead className="bg-gray-50 dark:bg-slate-800">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                       #
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Lead</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Lead</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Contact/Login</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Product</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Sales Person</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Amount</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Token</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Pending</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Product</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Sales Person</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Token</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Pending</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">Status</th>
                     {/* Add Remarks Column Header */}
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Remarks
                     </th>
                     {/* Actions Column Header */}
@@ -2260,12 +2136,12 @@ const SalesTrackingPage = () => {
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredSales.map((sale, index) => (
-                    <tr key={sale._id} className={index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <tr key={sale._id} onClick={() => handleEdit(sale)} className={`cursor-pointer ${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}`}>
+                      <td className="px-2 py-2 whitespace-normal break-words text-sm text-gray-500 dark:text-gray-400">
                         {index + 1}
                       </td>
                       {/* Date Column */}
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-2 py-2 whitespace-normal break-words">
                         {editingSale === sale._id ? (
                           <div className="flex flex-col space-y-2">
                             <input
@@ -2297,19 +2173,19 @@ const SalesTrackingPage = () => {
                             <div className="text-sm text-gray-900 dark:text-white">
                               {formatDate(sale.date || sale.createdAt || new Date())}
                             </div>
-                            {canEditSale(sale) && (
-                              <button
-                                onClick={() => handleEdit(sale)}
-                                className="text-blue-600 hover:text-blue-900 flex items-center text-xs px-2 py-1 bg-blue-50 rounded w-16"
-                              >
-                                <FaEdit className="mr-1" /> Edit
-                              </button>
-                            )}
+
+
+
+
+
+
+
+
                           </div>
                         )}
                       </td>
                       {/* Customer Column */}
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-2 py-2 whitespace-normal break-words">
                         <div className="text-sm font-medium text-gray-900 dark:text-white">
                           {formatCustomerName(sale)}
                         </div>
@@ -2340,7 +2216,7 @@ const SalesTrackingPage = () => {
                         )}
                       </td>
                       {/* Contact Column */}
-                      <td className="px-6 py-4">
+                      <td className="px-2 py-2">
                         <div className="flex flex-col space-y-1">
                           {(sale.contactNumber || safeGet(sale, 'leadId.phone')) && (
                             <div className="flex items-center">
@@ -2396,7 +2272,7 @@ const SalesTrackingPage = () => {
                         </div>
                       </td>
                       {/* Product Column */}
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-2 py-2 whitespace-normal break-words">
                         {editingSale === sale._id ? (
                           <div>
                             <input
@@ -2422,7 +2298,7 @@ const SalesTrackingPage = () => {
                         )}
                       </td>
                       {/* Sales Person Column */}
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-2 py-2 whitespace-normal break-words">
                         {editingSale === sale._id ? (
                           <div className="flex flex-col space-y-2">
                             <select
@@ -2445,7 +2321,7 @@ const SalesTrackingPage = () => {
                         )}
                       </td>
                       {/* Amount Column */}
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-2 py-2 whitespace-normal break-words">
                         {editingSale === sale._id ? (
                           <div className="flex flex-col space-y-2">
                             <div className="flex items-center space-x-2">
@@ -2479,7 +2355,7 @@ const SalesTrackingPage = () => {
                         )}
                       </td>
                       {/* Token Column */}
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-2 py-2 whitespace-normal break-words">
                         {editingSale === sale._id ? (
                           <div className="relative">
                             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">
@@ -2500,7 +2376,7 @@ const SalesTrackingPage = () => {
                         )}
                       </td>
                       {/* Pending Column */}
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-2 py-2 whitespace-normal break-words">
                         {editingSale === sale._id ? (
                           <div className="relative">
                             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">
@@ -2527,7 +2403,7 @@ const SalesTrackingPage = () => {
                         )}
                       </td>
                       {/* Status Column */}
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-2 py-2 whitespace-normal break-words">
                         {editingSale === sale._id ? (
                           <select
                             value={editValues.status || sale.status}
@@ -2577,7 +2453,7 @@ const SalesTrackingPage = () => {
                         )}
                       </td>
                       {/* Remarks Column */}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      <td className="px-2 py-2 whitespace-normal break-words text-sm text-gray-500 dark:text-gray-400">
                         {editingSale === sale._id ? (
                           <div className="space-y-2">
                             <textarea
@@ -2597,17 +2473,17 @@ const SalesTrackingPage = () => {
                         )}
                       </td>
                       {/* Actions Column */}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      <td className="px-2 py-2 whitespace-normal break-words text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center space-x-2">
-                          {canEditSale(sale) && (
-                            <button
-                              onClick={() => handleEdit(sale)}
-                              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-150"
-                              title="Edit sale"
-                            >
-                              <FaEdit className="h-5 w-5" />
-                            </button>
-                          )}
+
+
+
+
+
+
+
+
+
                           {canDeleteSale(sale) && (
                             <button
                               onClick={() => handleDelete(sale._id)}
@@ -2622,7 +2498,7 @@ const SalesTrackingPage = () => {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           </>
         )}
@@ -3117,6 +2993,165 @@ const SalesTrackingPage = () => {
           </div>
         )}
       </div>
+      
+// Modal for editing sale
+{editingSale && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-4xl overflow-y-auto max-h-[90vh]">
+      <h3 className="text-2xl font-semibold mb-6 text-center">Edit Sale</h3>
+
+      <form className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        {/* Date */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Date</label>
+          <input
+            type="date"
+            value={editValues.saleDate ? new Date(editValues.saleDate).toISOString().split('T')[0] : ''}
+            onChange={(e) => handleInputChange("saleDate", new Date(e.target.value))}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+          />
+        </div>
+
+        {/* Lead By */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Lead By</label>
+          <input
+            type="text"
+            value={editValues.leadBy || ""}
+            onChange={(e) => handleInputChange("leadBy", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+          />
+        </div>
+
+        {/* Contact/Login */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Login ID</label>
+          <input
+            type="text"
+            value={editValues.loginId || ""}
+            onChange={(e) => handleInputChange("loginId", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Password</label>
+          <input
+            type="text"
+            value={editValues.password || ""}
+            onChange={(e) => handleInputChange("password", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+          />
+        </div>
+
+        {/* Product */}
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium mb-1">Product</label>
+          <input
+            type="text"
+            value={editValues.product || ""}
+            onChange={(e) => handleInputChange("product", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+          />
+        </div>
+
+        {/* Sales Person */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Sales Person</label>
+          <select
+            value={editValues.salesPerson || ""}
+            onChange={(e) => handleInputChange("salesPerson", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+          >
+            <option value="">Select Sales Person</option>
+            {filterOptions.salesPersons.map(sp => (
+              <option key={sp._id} value={sp._id}>{sp.fullName}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Amount */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Amount</label>
+          <input
+            type="number"
+            value={editValues.amount || 0}
+            onChange={(e) => handleInputChange("amount", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+          />
+        </div>
+
+        {/* Token */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Token</label>
+          <input
+            type="number"
+            value={editValues.token || 0}
+            onChange={(e) => handleInputChange("token", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+          />
+        </div>
+
+        {/* Pending */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Pending</label>
+          <input
+            type="number"
+            value={editValues.pending || 0}
+            onChange={(e) => handleInputChange("pending", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+            disabled={editValues.status === "Completed"}
+          />
+        </div>
+
+        {/* Status */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Status</label>
+          <select
+            value={editValues.status || ""}
+            onChange={(e) => handleInputChange("status", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+          >
+            {getAvailableStatusOptions(editValues.status).map(status => (
+              <option key={status} value={status}>{status}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Remarks */}
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium mb-1">Remarks</label>
+          <textarea
+            value={editValues.remarks || ""}
+            onChange={(e) => handleInputChange("remarks", e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded p-2"
+            rows="3"
+          />
+        </div>
+      </form>
+
+      <div className="flex justify-end space-x-3 mt-6">
+        <button
+          type="button"
+          onClick={() => handleSave(editingSale)}
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+        >
+          Save
+        </button>
+        <button
+          type="button"
+          onClick={() => { setEditingSale(null); setEditValues({}); }}
+          className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
     </Layout>
   );
 };
