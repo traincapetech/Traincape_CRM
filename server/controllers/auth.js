@@ -1,5 +1,5 @@
 const User = require("../models/User");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const fs = require('fs'); // Added for file cleanup
 const path = require('path'); // Added for path.join
 const { UPLOAD_PATHS } = require('../config/storage');

@@ -321,40 +321,53 @@ const Navbar = () => {
                 <ActivityTimer />
               </div>
 
-              {/* Desktop profile */}
-              {user && (
-                <div className="hidden lg:flex items-center gap-2 relative" ref={dropdownRefs.profile}>
-                  <button
-                    onClick={() => setOpenMenu(openMenu === "profile" ? null : "profile")}
-                    className={`px-2 py-1 rounded-lg border border-transparent ${
-                      isScrolled
-                        ? "text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-slate-700"
-                        : "text-white/90 hover:bg-white/10"
-                    }`}
-                    aria-haspopup="true"
-                    aria-expanded={openMenu === "profile"}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="text-sm font-semibold">{user.fullName}</div>
-                      <div className="avatar-glow relative">
-                        <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-500 rounded-xl flex items-center justify-center text-white font-semibold text-xs">
-                          {user.fullName?.charAt(0)?.toUpperCase() || "U"}
-                        </div>
-                        <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-400 border-2 border-white rounded-full" />
-                      </div>
-                    </div>
-                  </button>
-                  {openMenu === "profile" && (
-                    <Dropdown
-                      title="Profile"
-                      items={profileItems}
-                      isScrolled={isScrolled}
-                      setOpenMenu={setOpenMenu}
-                      align="right"
-                    />
-                  )}
-                </div>
-              )}
+             {/* Desktop profile or Sign In */}
+{user ? (
+  <div className="hidden lg:flex items-center gap-2 relative" ref={dropdownRefs.profile}>
+    <button
+      onClick={() => setOpenMenu(openMenu === "profile" ? null : "profile")}
+      className={`px-2 py-1 rounded-lg border border-transparent ${
+        isScrolled
+          ? "text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-slate-700"
+          : "text-white/90 hover:bg-white/10"
+      }`}
+      aria-haspopup="true"
+      aria-expanded={openMenu === "profile"}
+    >
+      <div className="flex items-center gap-2">
+        <div className="text-sm font-semibold">{user.fullName}</div>
+        <div className="avatar-glow relative">
+          <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-500 rounded-xl flex items-center justify-center text-white font-semibold text-xs">
+            {user.fullName?.charAt(0)?.toUpperCase() || "U"}
+          </div>
+          <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-400 border-2 border-white rounded-full" />
+        </div>
+      </div>
+    </button>
+    {openMenu === "profile" && (
+      <Dropdown
+        title="Profile"
+        items={profileItems}
+        isScrolled={isScrolled}
+        setOpenMenu={setOpenMenu}
+        align="right"
+      />
+    )}
+  </div>
+) : (
+  <Link
+    to="/login"
+    className={`hidden lg:flex items-center px-4 py-2 rounded-lg font-semibold ${
+      isScrolled
+        ? "text-gray-700 dark:text-gray-300 bg-white hover:bg-blue-50"
+        : "bg-white text-blue-600 hover:bg-blue-100"
+    }`}
+  >
+    <FaUser className="mr-2" />
+    Sign In
+  </Link>
+)}
+
 
               {/* Mobile hamburger */}
               <button
