@@ -19,39 +19,45 @@ import Layout from "../components/Layout/Layout";
 import Navbar from '../components/Navbar';
 
 // Status badge component
+// Status Badge
 const StatusBadge = ({ status }) => {
   const statusColors = {
-    'New': 'bg-blue-100 text-blue-800',
-    'Contacted': 'bg-yellow-100 text-yellow-800',
-    'Interested': 'bg-green-100 text-green-800',
-    'Not Interested': 'bg-red-100 text-red-800',
-    'Follow Up': 'bg-purple-100 text-purple-800',
-    'Qualified': 'bg-indigo-100 text-indigo-800',
-    'Converted to Lead': 'bg-emerald-100 text-emerald-800',
-    'Lost': 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'
+    'New': 'bg-blue-100',
+    'Contacted': 'bg-yellow-100',
+    'Interested': 'bg-green-100',
+    'Not Interested': 'bg-red-100',
+    'Follow Up': 'bg-purple-100',
+    'Qualified': 'bg-indigo-100',
+    'Converted to Lead': 'bg-emerald-100',
+    'Lost': 'bg-gray-100 dark:bg-slate-700'
   };
 
   return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[status] || 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'}`}>
+    <span
+      className={`px-2 py-1 rounded-full text-xs font-medium text-black ${statusColors[status] || 'bg-gray-100 dark:bg-slate-700'}`}
+    >
       {status}
     </span>
   );
 };
 
-// Priority badge component
+// Priority Badge
 const PriorityBadge = ({ priority }) => {
   const priorityColors = {
-    'High': 'bg-red-100 text-red-800',
-    'Medium': 'bg-yellow-100 text-yellow-800',
-    'Low': 'bg-green-100 text-green-800'
+    'High': 'bg-red-100',
+    'Medium': 'bg-yellow-100',
+    'Low': 'bg-green-100'
   };
 
   return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${priorityColors[priority] || 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'}`}>
-      {priority}
-    </span>
+   <span
+  className={`px-2 py-1 rounded-full text-xs font-medium text-black dark:text-black ${priorityColors[priority] || 'bg-gray-100 dark:bg-slate-700'}`}
+>
+  {priority}
+</span>
   );
 };
+
 
 const ProspectsPage = () => {
   const { user, token } = useAuth();
@@ -1204,36 +1210,39 @@ const ProspectModal = ({ isOpen, onClose, prospect, onSuccess }) => {
 // View Prospect Modal Component
 const ViewProspectModal = ({ isOpen, onClose, prospect, onEdit, onConvert, onDelete, userRole }) => {
   // Local badge components for this modal
-  const StatusBadge = ({ status }) => {
-    const statusColors = {
-      'New': 'bg-blue-100 text-blue-800',
-      'Contacted': 'bg-yellow-100 text-yellow-800',
-      'Interested': 'bg-green-100 text-green-800',
-      'Not Interested': 'bg-red-100 text-red-800',
-      'Follow Up': 'bg-purple-100 text-purple-800',
-      'Qualified': 'bg-indigo-100 text-indigo-800',
-      'Converted to Lead': 'bg-emerald-100 text-emerald-800',
-      'Lost': 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'
-    };
-
+const StatusBadge = ({ status }) => {
+  const statusColors = {
+    'New': 'bg-blue-100',
+    'Contacted': 'bg-yellow-100',
+    'Interested': 'bg-green-100',
+    'Not Interested': 'bg-red-100',
+    'Follow Up': 'bg-purple-100',
+    'Qualified': 'bg-indigo-100',
+    'Converted to Lead': 'bg-emerald-100',
+    'Lost': 'bg-gray-100 dark:bg-slate-700'
+  };
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[status] || 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'}`}>
-        {status}
-      </span>
+     <span
+      className={`px-2 py-1 rounded-full text-xs font-medium text-black ${statusColors[status] || 'bg-gray-100 dark:bg-slate-700'}`}
+    >
+      {status}
+    </span>
     );
   };
 
-  const PriorityBadge = ({ priority }) => {
-    const priorityColors = {
-      'High': 'bg-red-100 text-red-800',
-      'Medium': 'bg-yellow-100 text-yellow-800',
-      'Low': 'bg-green-100 text-green-800'
-    };
+ const PriorityBadge = ({ priority }) => {
+  const priorityColors = {
+    'High': 'bg-red-100',
+    'Medium': 'bg-yellow-100',
+    'Low': 'bg-green-100'
+  };
 
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${priorityColors[priority] || 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'}`}>
-        {priority}
-      </span>
+  return (
+    <span
+      className={`px-2 py-1 rounded-full text-xs font-medium text-black ${priorityColors[priority] || 'bg-gray-100 dark:bg-slate-700'}`}
+    >
+      {priority}
+    </span>
     );
   };
 
@@ -1437,7 +1446,7 @@ const ViewProspectModal = ({ isOpen, onClose, prospect, onEdit, onConvert, onDel
               {prospect.status !== 'Converted to Lead' && (
                 <button
                   onClick={onConvert}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                  className="px-4 py-2 bg-purple-600 text-white dark rounded-lg hover:bg-purple-700"
                 >
                   Convert to Lead
                 </button>

@@ -1,9 +1,9 @@
 /* Homepage Styles */
 
-/* Gradient Backgrounds */
 .gradient-bg {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  @apply bg-primary;
 }
+
 
 .gradient-card {
   background: linear-gradient(145deg, #f8fafc, #e2e8f0);
@@ -221,4 +221,43 @@
   .stats-card:hover {
     border-color: #667eea;
   }
+}
+/* Force white text inside stats cards in dark mode */
+@media (prefers-color-scheme: dark) {
+  .stats-card {
+    color: #ffffff !important;
+  }
+
+  .stats-card h3,
+  .stats-card p,
+  .stats-card span {
+    color: #ffffff !important;
+  }
+}
+
+/* 🌙 Default: make text white in dark mode */
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6,
+.dark p,
+.dark span,
+.dark a,
+.dark li,
+.dark label,
+.dark div {
+  color: #ffffff !important;
+}
+
+/* 🔒 Force BLACK text inside stats cards in dark mode — keep icon colors */
+.dark .force-dark-text-black,
+.dark .force-dark-text-black *:not(svg) {
+  color: #0f172a !important; /* slate-900 / black-ish */
+}
+
+/* (optional) make the card background light in dark mode so black text reads well */
+.dark .force-dark-text-black {
+  background-color: #f8fafc !important; /* slate-50 */
 }

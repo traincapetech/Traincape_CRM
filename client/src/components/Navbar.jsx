@@ -28,7 +28,7 @@ const NavLink = ({ to, children, isScrolled, onClick }) => (
     onClick={onClick}
     className={`nav-link-hover px-4 py-2 rounded-xl font-medium transition-all ${
       isScrolled
-        ? "text-gray-700 dark:text-gray-300 hover:text-blue-600"
+        ? "text-gray-700 dark:text-gray-300 hover:text-primary"
         : "text-white/90 hover:text-white"
     }`}
   >
@@ -42,7 +42,7 @@ const MenuButton = ({ id, title, icon: Icon, isScrolled, openMenu, setOpenMenu }
     onClick={() => setOpenMenu(openMenu === id ? null : id)}
     className={`group flex items-center px-4 py-2 rounded-xl transition-all duration-300 border border-transparent ${
       isScrolled
-        ? "text-gray-700 dark:text-gray-300 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-700 hover:border-blue-200 dark:hover:border-slate-600"
+        ? "text-gray-700 dark:text-gray-300 hover:text-primary hover:bg-primary/5 dark:hover:bg-slate-700 hover:border-primary/20 dark:hover:border-slate-600"
         : "text-white/90 hover:text-white hover:bg-white/10 hover:border-white/20"
     }`}
   >
@@ -60,13 +60,12 @@ const MenuButton = ({ id, title, icon: Icon, isScrolled, openMenu, setOpenMenu }
 );
 
 // Desktop dropdown
-const Dropdown = ({ items, setOpenMenu, align = "left" }) => (
+const Dropdown = ({ items, setOpenMenu }) => (
   <div
-  className={`absolute top-12 right-0 mt-2 w-56 rounded-2xl shadow-xl z-50 
-              backdrop-blur-md bg-slate-900/90 border border-white/10`}
-  role="menu"
->
-
+    className={`absolute top-12 right-0 mt-2 w-56 rounded-2xl shadow-xl 
+             backdrop-blur-md bg-slate-900/90 border border-white/10 z-50`}
+    role="menu"
+  >
     <div className="py-2">
       {items.map((item, i) =>
         item.onClick ? (
@@ -77,8 +76,8 @@ const Dropdown = ({ items, setOpenMenu, align = "left" }) => (
               setOpenMenu(null);
             }}
             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-200 
-                       font-medium rounded-lg transition-colors duration-200
-                       hover:bg-white/10 hover:text-white"
+                         font-medium rounded-lg transition-colors duration-200
+                         hover:bg-white/10 hover:text-white"
             role="menuitem"
           >
             <item.icon className="opacity-70" size={16} />
@@ -90,8 +89,8 @@ const Dropdown = ({ items, setOpenMenu, align = "left" }) => (
             to={item.path}
             onClick={() => setOpenMenu(null)}
             className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-200 
-                       font-medium rounded-lg transition-colors duration-200
-                       hover:bg-white/10 hover:text-white"
+                         font-medium rounded-lg transition-colors duration-200
+                         hover:bg-white/10 hover:text-white"
             role="menuitem"
           >
             <item.icon className="opacity-70" size={16} />
@@ -102,8 +101,6 @@ const Dropdown = ({ items, setOpenMenu, align = "left" }) => (
     </div>
   </div>
 );
-
-
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -198,7 +195,7 @@ const Navbar = () => {
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isScrolled
             ? "navbar-glass-dark shadow-lg"
-            : "bg-gradient-to-r from-blue-600/95 via-purple-600/95 to-indigo-700/95"
+            : "bg-gradient-to-r from-primary via-secondary to-indigo-700/95"
         }`}
       >
         <nav className="w-full px-3 sm:px-4 md:px-6 lg:px-8">
@@ -321,53 +318,52 @@ const Navbar = () => {
                 <ActivityTimer />
               </div>
 
-             {/* Desktop profile or Sign In */}
-{user ? (
-  <div className="hidden lg:flex items-center gap-2 relative" ref={dropdownRefs.profile}>
-    <button
-      onClick={() => setOpenMenu(openMenu === "profile" ? null : "profile")}
-      className={`px-2 py-1 rounded-lg border border-transparent ${
-        isScrolled
-          ? "text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-slate-700"
-          : "text-white/90 hover:bg-white/10"
-      }`}
-      aria-haspopup="true"
-      aria-expanded={openMenu === "profile"}
-    >
-      <div className="flex items-center gap-2">
-        <div className="text-sm font-semibold">{user.fullName}</div>
-        <div className="avatar-glow relative">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-500 rounded-xl flex items-center justify-center text-white font-semibold text-xs">
-            {user.fullName?.charAt(0)?.toUpperCase() || "U"}
-          </div>
-          <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-400 border-2 border-white rounded-full" />
-        </div>
-      </div>
-    </button>
-    {openMenu === "profile" && (
-      <Dropdown
-        title="Profile"
-        items={profileItems}
-        isScrolled={isScrolled}
-        setOpenMenu={setOpenMenu}
-        align="right"
-      />
-    )}
-  </div>
-) : (
-  <Link
-    to="/login"
-    className={`hidden lg:flex items-center px-4 py-2 rounded-lg font-semibold ${
-      isScrolled
-        ? "text-gray-700 dark:text-gray-300 bg-white hover:bg-blue-50"
-        : "bg-white text-blue-600 hover:bg-blue-100"
-    }`}
-  >
-    <FaUser className="mr-2" />
-    Sign In
-  </Link>
-)}
-
+              {/* Desktop profile or Sign In */}
+              {user ? (
+                <div className="hidden lg:flex items-center gap-2 relative" ref={dropdownRefs.profile}>
+                  <button
+                    onClick={() => setOpenMenu(openMenu === "profile" ? null : "profile")}
+                    className={`px-2 py-1 rounded-lg border border-transparent ${
+                      isScrolled
+                        ? "text-gray-700 dark:text-gray-300 hover:bg-primary/5 dark:hover:bg-slate-700"
+                        : "text-white/90 hover:bg-white/10"
+                    }`}
+                    aria-haspopup="true"
+                    aria-expanded={openMenu === "profile"}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="text-sm font-semibold">{user.fullName}</div>
+                      <div className="avatar-glow relative">
+                        <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-xl flex items-center justify-center text-white font-semibold text-xs">
+                          {user.fullName?.charAt(0)?.toUpperCase() || "U"}
+                        </div>
+                        <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-third border-2 border-white rounded-full" />
+                      </div>
+                    </div>
+                  </button>
+                  {openMenu === "profile" && (
+                    <Dropdown
+                      title="Profile"
+                      items={profileItems}
+                      isScrolled={isScrolled}
+                      setOpenMenu={setOpenMenu}
+                      align="right"
+                    />
+                  )}
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  className={`hidden lg:flex items-center px-4 py-2 rounded-lg font-semibold ${
+                    isScrolled
+                      ? "text-gray-700 dark:text-gray-300 bg-white hover:bg-primary/5"
+                      : "bg-white text-primary hover:bg-primary/5"
+                  }`}
+                >
+                  <FaUser className="mr-2" />
+                  Sign In
+                </Link>
+              )}
 
               {/* Mobile hamburger */}
               <button

@@ -1690,7 +1690,7 @@ const SalesTrackingPage = () => {
         
         {/* Debug information */}
         {!loading && (
-          <div className="mb-4 p-3 bg-blue-50 text-blue-700 border border-blue-200 rounded-md text-sm">
+         <div className="mb-4 p-3 bg-white dark:bg-gray-800 text-black dark:text-white border border-gray-200 dark:border-gray-700 rounded-md text-sm">
             <strong>Debug Info:</strong> Total Sales: {sales.length} | 
             Filtered Sales: {filteredSales.length} | 
             Show All: {showAllSales ? 'Yes' : 'No'} | 
@@ -2994,7 +2994,7 @@ const SalesTrackingPage = () => {
         )}
       </div>
       
-// Modal for editing sale
+
 {editingSale && (
   <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-4xl overflow-y-auto max-h-[90vh]">
